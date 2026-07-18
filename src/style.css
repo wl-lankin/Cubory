@@ -111,6 +111,7 @@ body.intro-done .hero > *:nth-child(4) { animation-delay: 0.44s; }
 /* ── Titlebar ────────────────────────────────────────────────────────────── */
 
 #titlebar {
+  z-index: 40; /* Dropdowns müssen über dem Workspace liegen */
   height: var(--titlebar-h);
   flex: 0 0 auto;
   display: flex;
@@ -142,24 +143,42 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 
 .titlebar-actions { -webkit-app-region: no-drag; display: flex; align-items: center; gap: 8px; }
 
-.lang-select {
-  -webkit-app-region: no-drag;
-  appearance: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
+.lang-menu { position: relative; -webkit-app-region: no-drag; }
+.lang-btn { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 7px; }
+.lang-btn:hover { color: var(--text); }
+.lang-chev { font-size: 9px; color: var(--text-faint); }
+
+.lang-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 70;
+  width: 190px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 6px;
+  animation: intro-rise 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.lang-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font: 500 12.5px 'Inter', sans-serif;
   color: var(--text-muted);
   background: transparent;
   border: none;
-  border-radius: 999px;
-  padding: 6px 26px 6px 14px;
+  border-radius: 9px;
+  padding: 8px 12px;
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239aa3d0'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 11px center;
+  text-align: left;
 }
-.lang-select:hover { color: var(--text); background-color: rgba(160, 170, 255, 0.12); }
-.lang-select option { background: #131a44; color: var(--text); }
+.lang-item:hover { color: var(--text); background: rgba(160, 170, 255, 0.1); }
+.lang-item.on {
+  color: var(--text);
+  background: linear-gradient(92deg, rgba(255, 61, 138, 0.2), rgba(124, 92, 255, 0.2));
+}
+.lang-check { color: var(--accent-1); font-weight: 700; font-size: 11px; }
 
 /* ── Account ─────────────────────────────────────────────────────────────── */
 

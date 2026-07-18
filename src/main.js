@@ -51,7 +51,8 @@ const el = {
   statusEntities: document.getElementById('status-entities'),
   statusSize: document.getElementById('status-size'),
   statusHint: document.getElementById('status-hint'),
-  langSelect: document.getElementById('lang-select'),
+  langBtn: document.getElementById('lang-btn'),
+  langList: document.getElementById('lang-list'),
 };
 
 const viewer = new Viewer(document.getElementById('viewport'));
@@ -69,29 +70,46 @@ function applyStatic() {
   });
 }
 
-function buildLangSelect() {
-  el.langSelect.innerHTML = '';
-  const sys = document.createElement('option');
-  sys.value = 'system';
-  sys.textContent = t('lang.system');
-  el.langSelect.appendChild(sys);
-  for (const [code, name] of LOCALES) {
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = name;
-    el.langSelect.appendChild(opt);
-  }
-  el.langSelect.value = storedLang();
+function buildLangMenu() {
+  const stored = storedLang();
+  const label = stored === 'system'
+    ? t('lang.system')
+    : (LOCALES.find(([c]) => c === stored)?.[1] ?? stored);
+  el.langBtn.innerHTML = `${escapeHtml(label)}<span class="lang-chev">▾</span>`;
+
+  const entries = [['system', t('lang.system')], ...LOCALES];
+  el.langList.innerHTML = entries.map(([code, name]) =>
+    `<button class="lang-item${code === stored ? ' on' : ''}" data-lang="${code}">
+      <span>${escapeHtml(name)}</span>${code === stored ? '<span class="lang-check">✓</span>' : ''}
+    </button>`).join('');
+  el.langList.querySelectorAll('.lang-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      setLang(item.dataset.lang);
+      closeLangMenu();
+      applyStatic();
+      buildLangMenu();
+      if (current) renderModelUi(false);
+    });
+  });
 }
 
-el.langSelect.addEventListener('change', () => {
-  setLang(el.langSelect.value);
-  applyStatic();
-  buildLangSelect();
-  if (current) renderModelUi(false);
-});
+function closeLangMenu() {
+  el.langList.hidden = true;
+}
 
-buildLangSelect();
+el.langBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  el.langList.hidden = !el.langList.hidden;
+  if (!el.langList.hidden) {
+    el.langList.querySelector('.lang-item.on')?.scrollIntoView({ block: 'center' });
+  }
+});
+document.addEventListener('click', (e) => {
+  if (!el.langList.hidden && !el.langList.contains(e.target)) closeLangMenu();
+});
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLangMenu(); });
+
+buildLangMenu();
 applyStatic();
 
 // Pro-Features spiegeln den Lizenzzustand: gesperrte Tools bekommen ein Schloss
