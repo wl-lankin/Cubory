@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cubory Portal</title>
+<style>
+  :root {
+    --bg-0: #070b22; --bg-1: #0a0e2a; --panel: rgba(19,25,66,.55);
+    --border: rgba(160,170,255,.14); --text: #eef0ff; --muted: #9aa3d0;
+    --faint: #5d668f; --a1: #ff3d8a; --a2: #7c5cff;
+    --grad: linear-gradient(92deg,var(--a1),var(--a2));
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif; color: var(--text); min-height:100vh;
+    background:
+      radial-gradient(900px 600px at 85% -10%, rgba(255,61,138,.16), transparent 60%),
+      radial-gradient(1000px 700px at -10% 110%, rgba(124,92,255,.18), transparent 60%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, #0d1233);
+    display:flex; flex-direction:column; align-items:center; padding:40px 20px;
+  }
+  .brand { display:flex; align-items:center; gap:10px; margin-bottom:34px; }
+  .brand b { font-size:18px; letter-spacing:.02em; }
+  .brand span { font-size:11px; color:var(--faint); letter-spacing:.14em; text-transform:uppercase; }
+  .card {
+    width:100%; max-width:520px; background:var(--panel); border:1px solid var(--border);
+    border-radius:16px; padding:28px; backdrop-filter: blur(18px) saturate(1.3);
+    box-shadow: 0 12px 40px rgba(3,5,20,.45); margin-bottom:18px;
+  }
+  h2 { font-size:18px; margin-bottom:16px; }
+  h3 { font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:20px 0 10px; }
+  input {
+    width:100%; font:500 14px Inter,sans-serif; color:var(--text); background:rgba(10,14,42,.6);
+    border:1px solid rgba(160,170,255,.2); border-radius:10px; padding:12px 14px; margin-bottom:10px; outline:none;
+  }
+  input:focus { border-color: var(--a1); }
+  button {
+    font:600 13px Inter,sans-serif; color:var(--text); border:none; border-radius:999px;
+    padding:11px 22px; cursor:pointer; background:var(--grad);
+  }
+  button.ghost { background:transparent; border:1px solid rgba(160,170,255,.25); color:var(--muted); }
+  button.ghost:hover { color:var(--text); border-color:rgba(160,170,255,.5); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; font-size:13.5px; gap:12px; }
+  .row span:first-child { color:var(--muted); }
+  .badge { background:var(--grad); font-weight:700; font-size:10px; letter-spacing:.06em; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
+  .device { display:flex; align-items:center; gap:10px; font-size:13px; padding:9px 12px; border:1px solid rgba(160,170,255,.12); border-radius:10px; margin-bottom:6px; }
+  .device .n { flex:1; }
+  .device .m { color:var(--faint); font-size:11px; }
+  .error { color:#ff7b9c; font-size:13px; margin-bottom:10px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .plans { display:flex; gap:8px; }
+  .plans button { flex:1; }
+  #app { width:100%; max-width:520px; }
+</style>
+</head>
+<body>
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="24" y2="24">
+        <stop offset="0" stop-color="#ff3d8a"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs>
+      <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" stroke="url(#g)" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M12 2v20M3 7l9 5 9-5" stroke="url(#g)" stroke-width="1.2" opacity=".7"/>
+    </svg>
+    <b>Cubory</b><span>Customer Portal</span>
+  </div>
+  <div id="app"></div>
+
+<script>
+const API = localStorage.getItem('cubory-api') || 'http://localhost:8880';
+let tokens = JSON.parse(localStorage.getItem('cubory-portal-tokens') || 'null');
+
+async function api(method, path, body, retry = true) {
+  const headers = { 'content-type': 'application/json' };
+  if (tokens) headers.authorization = 'Bearer ' + tokens.access_token;
+  const res = await fetch(API + path, { method, headers, body: body && JSON.stringify(body) });
+  if (res.status === 401 && retry && tokens) {
+    const r = await fetch(API + '/api/auth/refresh', { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ refresh_token: tokens.refresh_token }) });
+    if (r.ok) {
+      tokens = (await r.json()).tokens;
+      localStorage.setItem('cubory-portal-tokens', JSON.stringify(tokens));
+      return api(method, path, body, false);
+    }
+    logout(); return null;
+  }
+  if (res.status === 204) return {};
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error?.message || res.status);
+  return data;
+}
+
+function logout() {
+  localStorage.removeItem('cubory-portal-tokens');
+  tokens = null;
+  render();
+}
+
+const el = (html) => { document.getElementById('app').innerHTML = html; };
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderLogin(error = '') {
+  el(`<div class="card">
+    <h2>Anmelden</h2>
+    ${error ? `<p class="error">${esc(error)}</p>` : ''}
+    <input id="email" type="email" placeholder="E-Mail" />
+    <input id="password" type="password" placeholder="Passwort" />
+    <button id="login">Anmelden</button>
+  </div>`);
+  document.getElementById('login').onclick = async () => {
+    try {
+      const data = await api('POST', '/api/auth/login', {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      });
+      tokens = data.tokens;
+      localStorage.setItem('cubory-portal-tokens', JSON.stringify(tokens));
+      render();
+    } catch (e) { renderLogin(e.message); }
+  };
+}
+
+async function renderDashboard() {
+  el('<div class="card">Lade …</div>');
+  try {
+    const [status, devices, sub] = await Promise.all([
+      api('GET', '/api/license/status'),
+      api('GET', '/api/devices'),
+      api('GET', '/api/subscription'),
+    ]);
+    if (!status) return;
+    const kindLabel = { trial: 'Pro-Test', free: 'Free', monthly: 'Pro · monatlich',
+      yearly: 'Pro · jährlich', lifetime: 'Pro · Lifetime', enterprise: 'Enterprise' }[status.kind] || status.kind;
+    const s = sub.subscription;
+    el(`
+      <div class="card">
+        <h2>Lizenz</h2>
+        <div class="row"><span>Status</span><span class="badge">${esc(kindLabel)}</span></div>
+        ${status.trial_days_left != null ? `<div class="row"><span>Testphase</span><span>noch ${status.trial_days_left} Tage</span></div>` : ''}
+        ${status.expires_at ? `<div class="row"><span>Läuft ab</span><span>${new Date(status.expires_at).toLocaleDateString('de-DE')}</span></div>` : ''}
+        <div class="row"><span>Geräte</span><span>${status.devices_used} von ${status.max_devices}</span></div>
+        ${status.entitlements.length === 0 ? `
+          <h3>Upgrade auf Cubory Pro</h3>
+          <div class="plans">
+            <button data-plan="monthly">Monatlich</button>
+            <button data-plan="yearly">Jährlich</button>
+            <button data-plan="lifetime">Lifetime</button>
+          </div>` : ''}
+        ${s ? `
+          <h3>Abo</h3>
+          <div class="row"><span>Intervall</span><span>${esc(s.interval)}</span></div>
+          <div class="row"><span>Status</span><span>${esc(s.status)}${s.cancel_at_period_end ? ' · endet zum Periodenende' : ''}</span></div>
+          <div class="actions">
+            ${s.cancel_at_period_end || s.status === 'cancelled'
+              ? '<button id="resume">Abo fortsetzen</button>'
+              : '<button class="ghost" id="cancel">Abo kündigen</button>'}
+            <button class="ghost" id="portal">Rechnungen & Zahlungsmethode</button>
+          </div>` : ''}
+      </div>
+      <div class="card">
+        <h2>Geräte</h2>
+        ${devices.devices.map(d => `
+          <div class="device">
+            <span class="n">${esc(d.name)}</span><span class="m">${esc(d.os)} · zuletzt ${new Date(d.last_seen_at).toLocaleDateString('de-DE')}</span>
+            <button class="ghost" data-dev="${d.id}">Deaktivieren</button>
+          </div>`).join('') || '<p class="m" style="color:var(--faint);font-size:13px">Keine aktiven Geräte</p>'}
+        <div class="actions"><button class="ghost" id="logout">Abmelden</button></div>
+      </div>`);
+
+    document.querySelectorAll('[data-plan]').forEach(b => b.onclick = async () => {
+      const { checkout_url } = await api('POST', '/api/subscription/create', { plan: b.dataset.plan });
+      location.href = checkout_url;
+    });
+    document.querySelectorAll('[data-dev]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      await api('DELETE', '/api/devices/' + b.dataset.dev);
+      renderDashboard();
+    });
+    document.getElementById('cancel')?.addEventListener('click', async () => {
+      await api('POST', '/api/subscription/cancel'); renderDashboard();
+    });
+    document.getElementById('resume')?.addEventListener('click', async () => {
+      await api('POST', '/api/subscription/resume'); renderDashboard();
+    });
+    document.getElementById('portal')?.addEventListener('click', async () => {
+      const { portal_url } = await api('GET', '/api/billing/portal');
+      location.href = portal_url;
+    });
+    document.getElementById('logout').onclick = logout;
+  } catch (e) {
+    el(`<div class="card"><p class="error">${esc(e.message)}</p>
+      <button class="ghost" onclick="localStorage.removeItem('cubory-portal-tokens');location.reload()">Neu anmelden</button></div>`);
+  }
+}
+
+function render() { tokens ? renderDashboard() : renderLogin(); }
+render();
+</script>
+</body>
+</html>

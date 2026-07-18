@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cubory - The modern CAD viewer</title>
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header id="titlebar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="none">
+          <defs>
+            <linearGradient id="bg1" x1="0" y1="0" x2="24" y2="24">
+              <stop offset="0" stop-color="#ff3d8a"/><stop offset="1" stop-color="#7c5cff"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" stroke="url(#bg1)" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M12 2v20M3 7l9 5 9-5" stroke="url(#bg1)" stroke-width="1.2" stroke-linejoin="round" opacity=".7"/>
+        </svg>
+        <span class="brand-name">Cubory</span>
+        <span class="brand-sub">The modern CAD viewer</span>
+      </div>
+      <div class="titlebar-actions">
+        <button id="btn-account" class="btn btn-ghost btn-account"></button>
+        <select id="lang-select" class="lang-select" data-i18n-title="lang.label"></select>
+        <button id="btn-open-top" class="btn btn-ghost" data-i18n="app.open" data-i18n-title="app.openTip"></button>
+      </div>
+    </header>
+
+    <main id="workspace">
+      <aside id="sidebar" class="glass" hidden>
+        <section class="panel">
+          <h2 class="panel-title" data-i18n="panel.model"></h2>
+          <dl id="model-info" class="info-list"></dl>
+        </section>
+        <section class="panel" id="layers-panel" hidden>
+          <h2 class="panel-title" id="layers-title"></h2>
+          <ul id="layers-list" class="layers-list"></ul>
+        </section>
+      </aside>
+
+      <section id="viewport-wrap">
+        <div id="viewport"></div>
+
+        <div id="dropzone" class="dropzone">
+          <div class="hero">
+            <p class="hero-eyebrow">DXF · STEP · STP · IGES · STL · OBJ</p>
+            <h1 class="hero-title"><span data-i18n="hero.title1"></span><br /><span class="grad-text" data-i18n="hero.title2"></span></h1>
+            <p class="hero-sub"><span data-i18n="hero.sub1"></span><br /><span data-i18n="hero.sub2"></span></p>
+            <div class="hero-actions">
+              <button id="btn-open" class="btn btn-primary"><span data-i18n="hero.cta"></span>&nbsp;&nbsp;→</button>
+              <span class="hero-hint" data-i18n="hero.hint"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="toolbar" class="glass" hidden>
+          <div class="tool-group">
+            <button class="tool" data-action="fit" data-i18n="tool.fit" data-i18n-title="tool.fitTip"></button>
+            <button class="tool" data-action="iso" data-i18n="tool.iso" data-i18n-title="tool.isoTip"></button>
+            <button class="tool" data-action="top" data-i18n="tool.top" data-i18n-title="tool.topTip"></button>
+            <button class="tool" data-action="front" data-i18n="tool.front" data-i18n-title="tool.frontTip"></button>
+            <button class="tool" data-action="right" data-i18n="tool.right" data-i18n-title="tool.rightTip"></button>
+          </div>
+          <div class="tool-sep"></div>
+          <div class="tool-group">
+            <button class="tool toggle" data-action="grid" data-i18n="tool.grid" data-i18n-title="tool.gridTip"></button>
+            <button class="tool toggle" data-action="wireframe" data-i18n="tool.wireframe" data-i18n-title="tool.wireframeTip"></button>
+            <button class="tool toggle" data-action="edges" data-i18n="tool.edges" data-i18n-title="tool.edgesTip"></button>
+            <button class="tool" data-action="hdshot" id="tool-hdshot" data-i18n="tool.hdshot" data-i18n-title="tool.hdshotTip"></button>
+          </div>
+          <div class="tool-sep"></div>
+          <div class="tool-group">
+            <button class="tool toggle pro-tool" data-action="measure" id="tool-measure" data-i18n="tool.measure" data-i18n-title="tool.measureTip"></button>
+            <button class="tool toggle pro-tool" data-action="section" id="tool-section" data-i18n="tool.section" data-i18n-title="tool.sectionTip"></button>
+            <button class="tool toggle pro-tool" data-action="explode" id="tool-explode" data-i18n="tool.explode" data-i18n-title="tool.explodeTip"></button>
+            <button class="tool pro-tool" data-action="export" id="tool-export" data-i18n="tool.export" data-i18n-title="tool.exportTip"></button>
+          </div>
+        </div>
+
+        <div id="feature-panel" class="glass" hidden></div>
+        <div id="measure-labels"></div>
+
+        <div id="loading" class="loading glass" hidden>
+          <div class="spinner"></div>
+          <span id="loading-text"></span>
+        </div>
+
+        <div id="drop-overlay" hidden><div class="drop-overlay-inner glass" data-i18n="drop.here"></div></div>
+      </section>
+    </main>
+
+    <footer id="statusbar" hidden>
+      <span id="status-format" class="badge"></span>
+      <span id="status-entities"></span>
+      <span id="status-size"></span>
+      <span class="status-spacer"></span>
+      <span id="status-hint"></span>
+    </footer>
+  </div>
+</body>
+</html>
