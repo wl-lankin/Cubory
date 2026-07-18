@@ -23,7 +23,7 @@ if (window.cubory?.platform === 'win32') document.body.classList.add('platform-w
 // Start-Animation: Partikel-Vortex → Kristall → Schockwelle; danach UI-Einflug.
 // Bei reduzierter Bewegung oder direktem Dateistart wird sie übersprungen.
 let intro = null;
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+if (location.hostname === 'localhost' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.body.classList.add('intro-done');
 } else {
   document.body.classList.add('intro-playing');

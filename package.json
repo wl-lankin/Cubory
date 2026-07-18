@@ -13,7 +13,8 @@
     "dist": "npm run build:renderer && electron-builder --mac --win",
     "dist:mac": "npm run build:renderer && electron-builder --mac",
     "dist:win": "npm run build:renderer && electron-builder --win",
-    "release:publish": "node scripts/publish-release.mjs"
+    "release:publish": "node scripts/publish-release.mjs",
+    "dev:app": "node scripts/dev.mjs"
   },
   "build": {
     "appId": "de.wolfganglinz.cubory",

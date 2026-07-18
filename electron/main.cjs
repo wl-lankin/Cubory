@@ -15,6 +15,9 @@ const DEV_URL = process.env.VITE_DEV_SERVER_URL;
 // eine parallel laufende Nutzer-Instanz nicht blockiert
 if (process.env.CUBORY_TEST_USERDATA) {
   app.setPath('userData', process.env.CUBORY_TEST_USERDATA);
+} else if (DEV_URL) {
+  // Dev-Modus: eigenes Profil + keine Kollision mit laufender Installation
+  app.setPath('userData', app.getPath('userData') + '-Dev');
 }
 
 let mainWindow = null;
