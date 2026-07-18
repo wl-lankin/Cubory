@@ -179,7 +179,8 @@ function renderTabbar() {
     <div class="tab${tab.id === activeTabId ? ' on' : ''}" data-tab="${tab.id}" title="${escapeHtml(tab.path || tab.name)}">
       <span class="tab-name">${escapeHtml(tab.name)}</span>
       <button class="tab-close" data-close="${tab.id}">×</button>
-    </div>`).join('');
+    </div>`).join('') + `<button id="tab-add" title="${escapeHtml(t('app.open'))}">+</button>`;
+  bar.querySelector('#tab-add').addEventListener('click', () => openFileBrowser());
   bar.querySelectorAll('[data-tab]').forEach((el) => {
     el.addEventListener('click', (e) => {
       if (e.target.dataset.close) return;

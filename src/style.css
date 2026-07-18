@@ -998,3 +998,24 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   padding: 5px;
   animation: intro-rise 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
+
+#tab-add {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 400 16px 'Inter', sans-serif;
+  color: var(--text-muted);
+  background: rgba(160, 170, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.13s, color 0.13s;
+}
+#tab-add:hover {
+  color: #fff;
+  background: linear-gradient(92deg, rgba(255, 61, 138, 0.4), rgba(124, 92, 255, 0.4));
+}
