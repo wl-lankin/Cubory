@@ -107,4 +107,6 @@ export default {
   'about.privacy': 'Datenschutz',
   'update.ready': 'Update {v} bereit',
   'update.restart': 'Jetzt neu starten',
+  'update.available': 'Version {v} verfügbar',
+  'update.download': 'Herunterladen',
 };
