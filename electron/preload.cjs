@@ -32,4 +32,11 @@ contextBridge.exposeInMainWorld('cubory', {
   exportFile: {
     save: (payload) => ipcRenderer.invoke('export:save', payload),
   },
+  update: {
+    state: () => ipcRenderer.invoke('update:state'),
+    install: () => ipcRenderer.invoke('update:install'),
+    onChange: (callback) => {
+      ipcRenderer.on('update:state', (_event, state) => callback(state));
+    },
+  },
 });

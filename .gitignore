@@ -3,3 +3,5 @@ dist/
 release/
 backend/bin/
 .DS_Store
+website/downloads/*
+!website/downloads/.gitkeep

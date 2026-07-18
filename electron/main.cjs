@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const { SecureStore } = require('./services/secureStore.cjs');
 const { AccountManager } = require('./services/accountManager.cjs');
+const { UpdateManager } = require('./services/updateManager.cjs');
+
+let updates = null; // UpdateManager
 
 let account = null; // AccountManager, initialisiert in app.whenReady
 
@@ -139,6 +142,16 @@ function setupAccountIpc() {
     }
   });
   account.startHeartbeat();
+
+  updates = new UpdateManager((state) => {
+    for (const win of BrowserWindow.getAllWindows()) {
+      win.webContents.send('update:state', state);
+    }
+  });
+  updates.start();
+
+  ipcMain.handle('update:state', () => updates.state);
+  ipcMain.handle('update:install', () => updates.install());
 
   ipcMain.handle('account:state', wrap(() => account.state()));
   ipcMain.handle('account:login', wrap((email, password) => account.login(email, password)));

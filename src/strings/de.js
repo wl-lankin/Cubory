@@ -105,4 +105,6 @@ export default {
   'about.close': 'Schließen',
   'about.imprint': 'Impressum',
   'about.privacy': 'Datenschutz',
+  'update.ready': 'Update {v} bereit',
+  'update.restart': 'Jetzt neu starten',
 };

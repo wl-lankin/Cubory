@@ -105,4 +105,6 @@ export default {
   'about.close': 'Close',
   'about.imprint': 'Legal notice',
   'about.privacy': 'Privacy policy',
+  'update.ready': 'Update {v} ready',
+  'update.restart': 'Restart now',
 };

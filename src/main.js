@@ -359,3 +359,20 @@ function fmt(n) {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
+
+
+/* ── OTA-Update-Banner ───────────────────────────────────────────────────── */
+
+window.cubory.update?.onChange((state) => {
+  let bar = document.getElementById('update-banner');
+  if (state.status !== 'ready') { bar?.remove(); return; }
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'update-banner';
+    bar.className = 'glass';
+    document.body.appendChild(bar);
+  }
+  bar.innerHTML = `<span>${t('update.ready', { v: state.version })}</span>
+    <button class="btn btn-primary" id="update-go">${t('update.restart')}</button>`;
+  document.getElementById('update-go').addEventListener('click', () => window.cubory.update.install());
+});
