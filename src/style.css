@@ -475,6 +475,19 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 }
 .btn-ghost:hover { background: rgba(160, 170, 255, 0.12); }
 
+/* Sichtbarer Button-Hintergrund nur in Modals (Schließen/Abmelden/Updates …)
+   - nicht in der Titelleiste, nicht bei Breadcrumbs */
+.account-card .btn-ghost,
+.fb-foot .btn-ghost,
+.nudge-actions .btn-ghost {
+  background: rgba(160, 170, 255, 0.1);
+}
+.account-card .btn-ghost:hover,
+.fb-foot .btn-ghost:hover,
+.nudge-actions .btn-ghost:hover {
+  background: rgba(160, 170, 255, 0.18);
+}
+
 /* ── Workspace ───────────────────────────────────────────────────────────── */
 
 #workspace {
@@ -812,13 +825,13 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .fb-sc {
   font: 600 11px 'Inter', sans-serif;
   color: var(--text-muted);
-  background: transparent;
+  background: rgba(160, 170, 255, 0.1);
   border: none;
   border-radius: 999px;
   padding: 6px 11px;
   cursor: pointer;
 }
-.fb-sc:hover { color: var(--text); background: rgba(160, 170, 255, 0.12); }
+.fb-sc:hover { color: var(--text); background: rgba(160, 170, 255, 0.2); }
 
 .fb-recent { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .fb-label { font: 600 10px 'Inter', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); margin-right: 4px; }
