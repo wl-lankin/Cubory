@@ -198,7 +198,8 @@ async function openPayload(payload) {
   await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 30)));
 
   try {
-    const result = await loadCadFile(payload.name, payload.data);
+    if (payload.error) throw new Error(payload.error);
+    const result = await loadCadFile(payload.name, payload.data, payload.loadAs);
     current = { ...result, name: payload.name, size: payload.size };
     uiState = { layerVis: {}, partVis: {}, isolated: null };
     resetProFeatures();

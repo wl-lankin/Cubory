@@ -20,11 +20,14 @@ function getOcct() {
  * { object: THREE.Object3D, mode: '2d'|'3d', format, layers: [{name,color,count}] | null,
  *   parts: [name] | null, stats: { entities?, triangles? } }
  */
-export async function loadCadFile(name, arrayBuffer) {
-  const ext = name.split('.').pop().toLowerCase();
+export async function loadCadFile(name, arrayBuffer, loadAs) {
+  const ext = loadAs || name.split('.').pop().toLowerCase();
   switch (ext) {
-    case 'dxf':
-      return loadDxf(arrayBuffer);
+    case 'dxf': {
+      const result = loadDxf(arrayBuffer);
+      if (name.toLowerCase().endsWith('.dwg')) result.format = 'DWG';
+      return result;
+    }
     case 'step':
     case 'stp':
       return loadOcct(arrayBuffer, 'step');
@@ -44,8 +47,26 @@ export async function loadCadFile(name, arrayBuffer) {
 
 /* ── DXF (2D) ────────────────────────────────────────────────────────────── */
 
+// Repariert DXF mit abgerissenen Textfortsetzungen (z.B. LibreDWG-Export):
+// eine Wertzeile ohne vorangehenden Gruppencode verschiebt sonst die strikte
+// Code/Wert-Alternierung des Parsers und ganze Sections gehen verloren.
+function repairDxf(raw) {
+  const lines = raw.split(/\r\n|\r|\n/g);
+  const out = [];
+  let expectCode = true;
+  for (const line of lines) {
+    if (expectCode && !/^\s*-?\d+\s*$/.test(line)) {
+      if (out.length) out[out.length - 1] += line; // Chunk an vorigen Wert anhängen
+      continue;
+    }
+    out.push(line);
+    expectCode = !expectCode;
+  }
+  return out.join('\n');
+}
+
 function loadDxf(arrayBuffer) {
-  const text = new TextDecoder('utf-8').decode(arrayBuffer);
+  const text = repairDxf(new TextDecoder('utf-8').decode(arrayBuffer));
   const parsed = parseDxf(text);
   const entities = denormalise(parsed);
 

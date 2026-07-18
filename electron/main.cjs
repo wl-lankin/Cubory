@@ -25,7 +25,48 @@ let mainWindow = null;
 // Datei, die per Doppelklick/„Öffnen mit" ankam, bevor das Fenster bereit war
 let pendingFile = null;
 
-const SUPPORTED = ['.dxf', '.step', '.stp', '.iges', '.igs', '.brep', '.stl', '.obj'];
+const SUPPORTED = ['.dxf', '.dwg', '.step', '.stp', '.iges', '.igs', '.brep', '.stl', '.obj'];
+
+// DWG → DXF über LibreDWG (dwg2dxf). Gesucht im PATH und an üblichen Orten.
+const { execFileSync } = require('child_process');
+const os = require('os');
+
+function findDwg2dxf() {
+  const candidates = process.platform === 'win32'
+    ? ['dwg2dxf.exe', 'C\\Program Files\\LibreDWG\\dwg2dxf.exe']
+    : ['dwg2dxf', '/opt/homebrew/bin/dwg2dxf', '/usr/local/bin/dwg2dxf', '/usr/bin/dwg2dxf'];
+  for (const c of candidates) {
+    try {
+      execFileSync(c, ['--version'], { stdio: 'pipe', timeout: 5000 });
+      return c;
+    } catch (err) {
+      if (err.status !== undefined && err.status !== 127) return c; // existiert, meckert nur über Args
+    }
+  }
+  return null;
+}
+
+function convertDwg(filePath) {
+  const tool = findDwg2dxf();
+  if (!tool) {
+    const hint = process.platform === 'darwin' ? 'brew install libredwg'
+      : process.platform === 'win32' ? 'LibreDWG von github.com/LibreDWG/libredwg/releases installieren'
+      : 'Paket libredwg-tools installieren';
+    const err = new Error(`DWG-Dateien benötigen den freien Konverter LibreDWG.\nInstallation: ${hint}`);
+    err.code = 'dwg_converter_missing';
+    throw err;
+  }
+  const out = path.join(os.tmpdir(), `cubory-dwg-${Date.now()}.dxf`);
+  try {
+    execFileSync(tool, [filePath, '-o', out], { stdio: 'pipe', timeout: 60000 });
+    return out;
+  } catch (err) {
+    if (fs.existsSync(out) && fs.statSync(out).size > 0) return out; // dwg2dxf warnt oft trotz Erfolg
+    const e = new Error('Die DWG-Datei konnte nicht konvertiert werden.');
+    e.code = 'dwg_convert_failed';
+    throw e;
+  }
+}
 
 function fileFromArgv(argv) {
   return argv
@@ -43,12 +84,20 @@ function sendFileToRenderer(filePath) {
 }
 
 function readFilePayload(filePath) {
-  const buffer = fs.readFileSync(filePath);
+  let readPath = filePath;
+  let cleanup = null;
+  if (path.extname(filePath).toLowerCase() === '.dwg') {
+    readPath = convertDwg(filePath); // wirft mit verständlicher Meldung
+    cleanup = readPath;
+  }
+  const buffer = fs.readFileSync(readPath);
+  if (cleanup) { try { fs.unlinkSync(cleanup); } catch { /* egal */ } }
   return {
     name: path.basename(filePath),
     path: filePath,
     size: buffer.length,
-    // ArrayBuffer überlebt structured clone; Text dekodiert der Renderer selbst
+    // .dwg wurde zu DXF konvertiert - der Loader entscheidet über diese Endung
+    loadAs: path.extname(filePath).toLowerCase() === '.dwg' ? 'dxf' : undefined,
     data: buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
   };
 }
@@ -109,13 +158,17 @@ ipcMain.handle('dialog:open', async () => {
     defaultPath: appStore?.get('last_open_dir') || undefined,
     properties: ['openFile'],
     filters: [
-      { name: 'CAD-Dateien', extensions: ['dxf', 'step', 'stp', 'iges', 'igs', 'brep', 'stl', 'obj'] },
+      { name: 'CAD-Dateien', extensions: ['dxf', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep', 'stl', 'obj'] },
       { name: 'Alle Dateien', extensions: ['*'] },
     ],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   rememberFile(result.filePaths[0]);
-  return readFilePayload(result.filePaths[0]);
+  try {
+    return readFilePayload(result.filePaths[0]);
+  } catch (err) {
+    return { error: err.message };
+  }
 });
 
 // Auch Doppelklick/„Öffnen mit" aktualisiert Ordner + Zuletzt-geöffnet-Liste
@@ -177,7 +230,11 @@ ipcMain.handle('fs:recent', () => {
 ipcMain.handle('file:read', async (_event, filePath) => {
   if (!SUPPORTED.includes(path.extname(filePath).toLowerCase())) return null;
   rememberFile(filePath);
-  return readFilePayload(filePath);
+  try {
+    return readFilePayload(filePath);
+  } catch (err) {
+    return { error: err.message };
+  }
 });
 
 // Account/License-IPC: dünne Wrapper; Fehler gehen strukturiert an den Renderer.
