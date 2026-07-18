@@ -64,6 +64,7 @@ func NewRouter(d Deps) *gin.Engine {
 		authed.GET("/billing/portal", bh.Portal)
 	}
 	api.POST("/webhooks/stripe", middleware.RateLimit(120), bh.Webhook)
+	api.POST("/webhooks/paddle", middleware.RateLimit(120), bh.Webhook)
 
 	adminH := &handlers.AdminHandler{Pool: d.Pool, AdminEmail: d.AdminEmail}
 	admin := api.Group("/admin", middleware.RequireAuth(d.JWTSecret), adminH.RequireAdmin)

@@ -92,6 +92,9 @@ func (h *BillingHandler) Webhook(c *gin.Context) {
 		return
 	}
 	sig := c.GetHeader("Stripe-Signature")
+	if sig == "" {
+		sig = c.GetHeader("Paddle-Signature")
+	}
 	if err := h.Svc.HandleWebhook(c.Request.Context(), payload, sig); err != nil {
 		// 4xx → Stripe wiederholt nicht; Verarbeitungsfehler → 500, Stripe retried
 		fail(c, http.StatusInternalServerError, "webhook_failed", err.Error())

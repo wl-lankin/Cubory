@@ -11,6 +11,7 @@ import (
 	"time"
 
 	devbilling "cubory/api/internal/billing/dev"
+	paddlebilling "cubory/api/internal/billing/paddle"
 	stripebilling "cubory/api/internal/billing/stripe"
 	"cubory/api/internal/config"
 	"cubory/api/internal/domain"
@@ -107,7 +108,17 @@ func main() {
 
 	// Billing: Stripe wenn konfiguriert, sonst Dev-Provider
 	var provider domain.BillingProvider
-	if key := os.Getenv("STRIPE_SECRET_KEY"); key != "" {
+	if key := os.Getenv("PADDLE_API_KEY"); key != "" {
+		provider = paddlebilling.New(paddlebilling.Config{
+			APIKey:        key,
+			WebhookSecret: os.Getenv("PADDLE_WEBHOOK_SECRET"),
+			APIBase:       os.Getenv("PADDLE_API_BASE"),
+			PriceMonthly:  os.Getenv("PADDLE_PRICE_MONTHLY"),
+			PriceYearly:   os.Getenv("PADDLE_PRICE_YEARLY"),
+			PriceLifetime: os.Getenv("PADDLE_PRICE_LIFETIME"),
+		})
+		log.Info("billing", "provider", "paddle")
+	} else if key := os.Getenv("STRIPE_SECRET_KEY"); key != "" {
 		provider = stripebilling.New(stripebilling.Config{
 			SecretKey:       key,
 			WebhookSecret:   os.Getenv("STRIPE_WEBHOOK_SECRET"),
@@ -121,7 +132,7 @@ func main() {
 		log.Info("billing", "provider", "stripe")
 	} else {
 		if cfg.Env == "prod" {
-			log.Error("billing", "err", "STRIPE_SECRET_KEY ist in prod Pflicht")
+			log.Error("billing", "err", "PADDLE_API_KEY (oder STRIPE_SECRET_KEY) ist in prod Pflicht")
 			os.Exit(1)
 		}
 		provider = devbilling.New()
