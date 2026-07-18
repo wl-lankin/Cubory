@@ -442,7 +442,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 }
 
 #sidebar {
-  flex: 0 0 250px;
+  flex: 0 0 300px;
   overflow-y: auto;
   padding: 18px 16px;
   display: flex;
