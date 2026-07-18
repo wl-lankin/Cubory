@@ -124,4 +124,7 @@ export default {
   'browser.desktop': 'Desktop',
   'browser.documents': 'Documents',
   'browser.downloads': 'Downloads',
+  'account.delete': 'Delete account',
+  'account.deleteConfirm': 'Delete your account permanently? License, devices and all data will be removed. This cannot be undone.',
+  'about.terms': 'Terms & EULA',
 };

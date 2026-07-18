@@ -124,4 +124,7 @@ export default {
   'browser.desktop': 'Schreibtisch',
   'browser.documents': 'Dokumente',
   'browser.downloads': 'Downloads',
+  'account.delete': 'Konto löschen',
+  'account.deleteConfirm': 'Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt. Das lässt sich nicht rückgängig machen.',
+  'about.terms': 'AGB & EULA',
 };

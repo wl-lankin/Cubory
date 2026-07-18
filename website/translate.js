@@ -55,7 +55,7 @@
     'Windows · 64-bit · 86 MB': 'Windows · 64-bit · 86 MB',
     'Linux · x64 · 116 MB': 'Linux · x64 · 116 MB',
     '© 2026 Cubory · The modern CAD viewer': '© 2026 Cubory · The modern CAD viewer',
-    'Entwickelt von': 'Built by', 'Impressum': 'Legal notice', 'Datenschutz': 'Privacy',
+    'Entwickelt von': 'Built by', 'Impressum': 'Legal notice', 'Datenschutz': 'Privacy', 'AGB': 'Terms',
     // Error-Pages
     'FEHLER · BLATT NICHT IM ZEICHNUNGSSATZ': 'ERROR · SHEET NOT IN DRAWING SET',
     'Dieses Blatt existiert nicht': 'This sheet does not exist',
