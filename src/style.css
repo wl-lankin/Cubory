@@ -967,5 +967,22 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 }
 .set-toggle:checked { background: linear-gradient(92deg, var(--accent-1), var(--accent-2)); }
 .set-toggle:checked::after { transform: translateX(16px); background: #fff; }
-select.account-input { width: 100%; cursor: pointer; }
-select.account-input option { background: #131a44; }
+.set-lang-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  padding-right: 18px;
+}
+.set-lang-btn .lang-chev { margin-left: 12px; }
+.set-lang-list {
+  margin-top: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(160, 170, 255, 0.18);
+  border-radius: 10px;
+  padding: 5px;
+  background: rgba(10, 14, 42, 0.7);
+  animation: intro-rise 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}

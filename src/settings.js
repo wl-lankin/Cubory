@@ -45,18 +45,24 @@ async function open() {
     ${toggle('crash_reports', t('about.crash'), s.crash_reports)}
 
     <h3 class="account-subtitle">${esc(t('settings.language'))}</h3>
-    <select id="set-lang" class="account-input">
-      <option value="system">${esc(t('lang.system'))}</option>
-      ${LOCALES.map(([code, name]) => `<option value="${code}"${storedLang() === code ? ' selected' : ''}>${esc(name)}</option>`).join('')}
-    </select>
+    <button id="set-lang-btn" class="account-input set-lang-btn">
+      <span>${esc(storedLang() === 'system' ? t('lang.system') : (LOCALES.find(([c]) => c === storedLang())?.[1] ?? storedLang()))}</span>
+      <span class="lang-chev">▾</span>
+    </button>
+    <div id="set-lang-list" class="set-lang-list" hidden>
+      ${[['system', t('lang.system')], ...LOCALES].map(([code, name]) =>
+        `<button class="lang-item${storedLang() === code ? ' on' : ''}" data-lang="${code}">
+          <span>${esc(name)}</span>${storedLang() === code ? '<span class="lang-check">✓</span>' : ''}
+        </button>`).join('')}
+    </div>
 
     <h3 class="account-subtitle">${esc(t('settings.defaultApp'))}</h3>
     ${s.platform === 'win32'
       ? `<button class="btn btn-ghost" id="set-defaultapp">${esc(t('settings.defaultAppBtn'))}</button>`
       : `<p class="account-hint">${esc(t('settings.defaultAppMacHint'))}</p>`}
 
-    <h3 class="account-subtitle">${esc(t('settings.updates'))}</h3>
-    <div class="set-row" style="cursor:default">
+    <h3 class="account-subtitle" style="margin-bottom:2px">${esc(t('settings.updates'))}</h3>
+    <div class="set-row" style="cursor:default;padding-top:0">
       <span class="account-hint" id="set-update-state">${esc(t('settings.upToDate'))}</span>
       <button class="btn btn-ghost" id="set-check-updates" style="padding:6px 14px">${esc(t('settings.checkUpdates'))}</button>
     </div>
@@ -74,11 +80,19 @@ async function open() {
     });
   });
 
-  modal.querySelector('#set-lang').addEventListener('change', (e) => {
-    setLang(e.target.value);
-    onLangChange?.();
-    close();
-    open(); // Dialog in neuer Sprache neu aufbauen
+  const langBtn = modal.querySelector('#set-lang-btn');
+  const langList = modal.querySelector('#set-lang-list');
+  langBtn.addEventListener('click', () => {
+    langList.hidden = !langList.hidden;
+    if (!langList.hidden) langList.querySelector('.lang-item.on')?.scrollIntoView({ block: 'center' });
+  });
+  langList.querySelectorAll('.lang-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      setLang(item.dataset.lang);
+      onLangChange?.();
+      close();
+      open(); // Dialog in neuer Sprache neu aufbauen
+    });
   });
 
   modal.querySelector('#set-defaultapp')?.addEventListener('click', () => {
