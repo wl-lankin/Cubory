@@ -31,7 +31,7 @@ padding:13px 28px;text-decoration:none;transition:.15s}
 .btn-ghost{border:1px solid rgba(160,170,255,.25);color:var(--muted)}
 .btn-ghost:hover{color:var(--text);border-color:rgba(160,170,255,.5)}
 header{min-height:min(88vh,780px);display:flex;flex-direction:column;position:relative;
-border:1px solid rgba(160,170,255,.22);margin-top:14px;padding:0 34px;cursor:crosshair;
+border:1px solid rgba(160,170,255,.22);margin:16px 0 90px;padding:0 34px;cursor:crosshair;
 background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.045) 39px 40px),
 repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.045) 39px 40px)}
 header::before,header::after{content:"";position:absolute;width:14px;height:14px;border:1px solid rgba(160,170,255,.5)}
@@ -168,7 +168,6 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
 </style>
 </head>
 <body>
-<canvas id="hero-canvas"></canvas>
 <div class="wrap">
 <header id="sheet0">
   <span class="sheet-label">CUBORY · BLATT 0 · ENTWURF</span>
@@ -184,8 +183,7 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
       <p class="eyebrow mono">DXF · STEP · STP · IGES · STL · OBJ</p>
       <h1>Jedes Modell<br/><span class="grad" id="h2">Sofort im Blick</span></h1>
       <div class="hdim"><i></i><span class="mono" id="hdim-label">— mm</span><i></i></div>
-      <p class="sub">Cubory öffnet Zeichnungen und 3D-Modelle ohne Umwege - auf Mac und
-      Windows, komplett offline. Free für immer. Pro, wenn du mehr willst.</p>
+      <p class="sub">Cubory öffnet Zeichnungen und 3D-Modelle ohne Umwege - auf Mac, Windows und Linux, komplett offline. Free für immer. Pro, wenn du mehr willst.</p>
       <div class="cta">
         <a class="btn btn-primary" href="#download">Kostenlos laden&nbsp;&nbsp;→</a>
         <a class="btn btn-ghost" href="#pricing">Pro entdecken</a>
@@ -314,7 +312,6 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
   <span>Entwickelt von <a href="https://wolfgang-linz.de" style="color:var(--muted)">Wolfgang Linz</a></span>
 </footer>
 </div>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
 <script type="module" src="main.js"></script>
 </body>
 </html>
