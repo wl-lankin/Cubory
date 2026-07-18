@@ -43,7 +43,7 @@
     'TABELLE A · KONDITIONEN': 'TABLE A · TERMS',
     'Preise wie im': 'Pricing like a', 'Datenblatt': 'datasheet',
     'Free bleibt für immer voll benutzbar. Pro schaltet die Positionen 3-6 frei.': 'Free stays fully usable forever. Pro unlocks positions 3-6.',
-    'Preis': 'Price', 'Abrechnung': 'Billing', 'Geräte': 'Devices', 'Testphase': 'Trial',
+    'Preis': 'Price', 'Preis (netto)': 'Price (net)', 'Abrechnung': 'Billing', 'Geräte': 'Devices', 'Testphase': 'Trial',
     'Pro Jährlich': 'Pro Yearly', 'Pro Monatlich': 'Pro Monthly', 'Empfohlen': 'Recommended',
     'pro Jahr': 'per year', 'pro Jahr · 2 Monate geschenkt': 'per year · 2 months free', 'Monatlich': 'Monthly', 'Jährlich': 'Yearly', 'pro Monat': 'per month', 'einmalig': 'one-time',
     '7 Tage gratis': '7 days free', 'Laden': 'Download', 'Testen': 'Try', 'Kaufen': 'Buy',
