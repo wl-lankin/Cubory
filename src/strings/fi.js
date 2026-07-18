@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Päivitykset',
   'settings.checkUpdates': 'Tarkista päivitykset',
   'settings.upToDate': 'Cubory on ajantasaista',
+  'common.cancel': 'Peruuta',
 };

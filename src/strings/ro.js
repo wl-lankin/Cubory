@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Actualizări',
   'settings.checkUpdates': 'Verifică actualizările',
   'settings.upToDate': 'Cubory este la zi',
+  'common.cancel': 'Anulează',
 };

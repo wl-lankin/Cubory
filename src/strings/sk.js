@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Aktualizácie',
   'settings.checkUpdates': 'Skontrolovať aktualizácie',
   'settings.upToDate': 'Cubory je aktuálny',
+  'common.cancel': 'Zrušiť',
 };

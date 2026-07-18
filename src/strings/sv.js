@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Uppdateringar',
   'settings.checkUpdates': 'Kolla efter uppdateringar',
   'settings.upToDate': 'Cubory är uppdaterad',
+  'common.cancel': 'Avbryt',
 };

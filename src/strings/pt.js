@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Atualizações',
   'settings.checkUpdates': 'Verificar atualizações',
   'settings.upToDate': 'O Cubory está atualizado',
+  'common.cancel': 'Cancelar',
 };

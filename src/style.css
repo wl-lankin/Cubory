@@ -1019,3 +1019,14 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   color: #fff;
   background: linear-gradient(92deg, rgba(255, 61, 138, 0.4), rgba(124, 92, 255, 0.4));
 }
+
+#confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 11, 34, 0.55);
+  backdrop-filter: blur(4px);
+}

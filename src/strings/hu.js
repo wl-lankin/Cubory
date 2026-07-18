@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Frissítések',
   'settings.checkUpdates': 'Frissítések keresése',
   'settings.upToDate': 'A Cubory friss a legújabb állapotban',
+  'common.cancel': 'Mégsem',
 };

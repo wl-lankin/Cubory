@@ -25,6 +25,9 @@
     background:url(../assets/ambient.jpg) center/cover; opacity:.55;
   }
   body > * { position:relative; z-index:1; }
+  .confirm-ov { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
+    background:rgba(7,11,34,.55); backdrop-filter:blur(4px); }
+  .confirm-card { max-width:420px; }
   .brand { display:flex; align-items:center; gap:12px; margin-bottom:38px; }
   .brand .bi { width:34px; height:34px; border-radius:9px; }
   .brand .bw { height:17px; width:auto; }
@@ -108,6 +111,28 @@ async function api(method, path, body, retry = true) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.error?.message || res.status);
   return data;
+}
+
+function confirmDialog(text, confirmLabel) {
+  return new Promise((resolve) => {
+    const ov = document.createElement('div');
+    ov.className = 'confirm-ov';
+    ov.innerHTML = `<div class="card confirm-card">
+      <span class="clabel">CUBORY · BESTÄTIGUNG</span>
+      <p style="font-size:14px;line-height:1.7;color:var(--muted);margin:8px 0 22px">${esc(text)}</p>
+      <div class="row" style="justify-content:flex-end;display:flex;gap:10px">
+        <button class="ghost" id="c-no">Abbrechen</button>
+        <button id="c-yes" style="background:transparent;border:1px solid rgba(255,110,130,.5);color:#ff8ba0">${esc(confirmLabel)}</button>
+      </div></div>`;
+    document.body.appendChild(ov);
+    const done = (v) => { ov.remove(); resolve(v); };
+    ov.querySelector('#c-no').onclick = () => done(false);
+    ov.querySelector('#c-yes').onclick = () => done(true);
+    ov.onclick = (e) => { if (e.target === ov) done(false); };
+    window.addEventListener('keydown', function esc2(e) {
+      if (e.key === 'Escape') { done(false); window.removeEventListener('keydown', esc2); }
+    });
+  });
 }
 
 function logout() {
@@ -235,7 +260,7 @@ async function renderDashboard() {
     });
     document.getElementById('logout').onclick = logout;
     document.getElementById('delete').onclick = async () => {
-      if (!confirm('Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt.')) return;
+      if (!(await confirmDialog('Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt.', 'Endgültig löschen'))) return;
       await api('DELETE', '/api/account');
       logout();
     };

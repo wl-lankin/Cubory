@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Ενημερώσεις',
   'settings.checkUpdates': 'Έλεγχος για ενημερώσεις',
   'settings.upToDate': 'Το Cubory είναι ενημερωμένο',
+  'common.cancel': 'Άκυρο',
 };

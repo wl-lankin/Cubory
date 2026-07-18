@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Ažuriranja',
   'settings.checkUpdates': 'Provjeri ažuriranja',
   'settings.upToDate': 'Cubory je najnovija verzija',
+  'common.cancel': 'Otkaži',
 };

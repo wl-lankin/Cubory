@@ -141,4 +141,5 @@ export default {
   'settings.updates': 'Оновлення',
   'settings.checkUpdates': 'Перевірити оновлення',
   'settings.upToDate': 'Cubory оновлений',
+  'common.cancel': 'Скасувати',
 };

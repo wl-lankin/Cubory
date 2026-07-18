@@ -211,7 +211,7 @@ function wireModal() {
   });
 
   modal.querySelector('#account-delete')?.addEventListener('click', async () => {
-    if (!confirm(t('account.deleteConfirm'))) return;
+    if (!(await confirmModal(t('account.deleteConfirm'), t('account.delete')))) return;
     await window.cubory.account.deleteAccount();
     closeModal();
   });
@@ -241,6 +241,25 @@ async function loadDevices() {
       await window.cubory.account.deactivateDevice(btn.dataset.id);
       loadDevices();
     });
+  });
+}
+
+// Bestätigungsdialog im App-Stil (ersetzt natives confirm)
+function confirmModal(text, confirmLabel) {
+  return new Promise((resolve) => {
+    const ov = document.createElement('div');
+    ov.id = 'confirm-modal';
+    ov.innerHTML = `<div class="account-card glass sheet sheet-corners" style="width:380px">
+      <p style="font-size:13.5px;line-height:1.7;color:var(--text-muted);margin-bottom:20px">${escapeHtml(text)}</p>
+      <div class="account-actions" style="justify-content:flex-end;gap:10px;margin-top:0">
+        <button class="btn btn-ghost" id="cm-no">${escapeHtml(t('common.cancel'))}</button>
+        <button class="btn btn-ghost account-danger" id="cm-yes" style="border:1px solid rgba(255,110,130,.4)">${escapeHtml(confirmLabel)}</button>
+      </div></div>`;
+    document.body.appendChild(ov);
+    const done = (v) => { ov.remove(); resolve(v); };
+    ov.querySelector('#cm-no').addEventListener('click', () => done(false));
+    ov.querySelector('#cm-yes').addEventListener('click', () => done(true));
+    ov.addEventListener('click', (e) => { if (e.target === ov) done(false); });
   });
 }
 
