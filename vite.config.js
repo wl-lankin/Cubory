@@ -8,6 +8,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 4000,
   },
   optimizeDeps: {
-    exclude: ['occt-import-js'],
+    // occt-import-js ist CommonJS und braucht das esbuild-Interop im Dev-Modus;
+    // die .wasm-Datei wird separat über ?url geladen.
+    include: ['occt-import-js', 'dxf'],
   },
 });
