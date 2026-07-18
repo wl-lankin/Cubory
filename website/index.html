@@ -17,7 +17,6 @@ body{font-family:Inter,system-ui,sans-serif;color:var(--text);background:
 radial-gradient(900px 600px at 85% -10%,rgba(255,61,138,.14),transparent 60%),
 radial-gradient(1000px 700px at -10% 40%,rgba(124,92,255,.14),transparent 60%),
 linear-gradient(180deg,var(--bg0),var(--bg1) 40%,#0d1233);overflow-x:hidden}
-#hero-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px}
 nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0;position:relative;z-index:5}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:19px}
@@ -31,12 +30,38 @@ padding:13px 28px;text-decoration:none;transition:.15s}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(255,61,138,.5)}
 .btn-ghost{border:1px solid rgba(160,170,255,.25);color:var(--muted)}
 .btn-ghost:hover{color:var(--text);border-color:rgba(160,170,255,.5)}
-header{min-height:92vh;display:flex;flex-direction:column}
+header{min-height:92vh;display:flex;flex-direction:column;position:relative;
+border:1px solid rgba(160,170,255,.22);margin-top:14px;padding:0 34px;cursor:crosshair;
+background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.045) 39px 40px),
+repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.045) 39px 40px)}
+header::before,header::after{content:"";position:absolute;width:14px;height:14px;border:1px solid rgba(160,170,255,.5)}
+header::before{top:-7px;left:-7px;border-width:0 1px 1px 0}
+header::after{bottom:-7px;right:-7px;border-width:1px 0 0 1px}
+.hero2{flex:1;display:grid;grid-template-columns:1.15fr 1fr;gap:30px;align-items:center;padding:20px 0 60px}
+.hero-l{text-align:left}
+.hero-l .cta{justify-content:flex-start}
+.hero-r svg{width:100%;max-width:440px;animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.dw path{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.1s cubic-bezier(.4,0,.2,1) forwards;animation-delay:calc(var(--i)*.22s)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.dw2{opacity:0;animation:fadein 1s ease forwards 2.4s}
+@keyframes fadein{to{opacity:1}}
+.hdim{display:flex;align-items:center;gap:10px;color:var(--faint);margin:2px 0 20px;max-width:520px}
+.hdim i{flex:1;height:1px;background:rgba(160,170,255,.35);position:relative}
+.hdim i::before,.hdim i::after{content:"";position:absolute;top:-3px;width:1px;height:7px;background:rgba(160,170,255,.5)}
+.hdim i:first-child::before{left:0}.hdim i:last-child::after{right:0}
+.hdim span{font-size:10.5px;letter-spacing:.14em}
+.xh{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s}
+header:hover .xh{opacity:1}
+.xh-h{position:absolute;left:0;right:0;height:1px;background:rgba(255,61,138,.25)}
+.xh-v{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,61,138,.25)}
+.xh-label{position:absolute;font-size:10px;color:var(--faint);letter-spacing:.1em;transform:translate(10px,10px);white-space:nowrap}
+@media(max-width:860px){.hero2{grid-template-columns:1fr}.hero-r{display:none}header{cursor:auto}.xh{display:none}}
 .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 80px;position:relative;isolation:isolate}
 .hero::before{content:"";position:absolute;inset:-8% -18%;z-index:-1;pointer-events:none;
 background:radial-gradient(55% 62% at 50% 48%,rgba(7,11,34,.8),rgba(7,11,34,.35) 60%,transparent 78%)}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-bottom:20px}
-h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(44px,7vw,76px);line-height:1.04;letter-spacing:-.015em;margin-bottom:20px}
+h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,4.6vw,60px);line-height:1.04;letter-spacing:-.015em;margin-bottom:20px}
 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{font-size:17px;line-height:1.7;color:var(--muted);max-width:560px;margin-bottom:36px}
 .cta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center}
@@ -145,7 +170,8 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
 <body>
 <canvas id="hero-canvas"></canvas>
 <div class="wrap">
-<header>
+<header id="sheet0">
+  <span class="sheet-label">CUBORY · BLATT 0 · ENTWURF</span>
   <nav>
     <a class="brand" href="#"><img src="assets/icon.png" alt="" /><img src="assets/wordmark.png" alt="Cubory" style="height:20px;width:auto"/></a>
     <div class="links">
@@ -153,17 +179,51 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
       <a href="https://github.com/wl-lankin/Cubory">GitHub</a>
     </div>
   </nav>
-  <div class="hero">
-    <p class="eyebrow">DXF · STEP · STP · IGES · STL · OBJ</p>
-    <h1>Jedes Modell<br/><span class="grad">Sofort im Blick</span></h1>
-    <p class="sub">Cubory öffnet Zeichnungen und 3D-Modelle ohne Umwege - auf Mac und Windows,
-    komplett offline. Free für immer. Pro, wenn du mehr willst.</p>
-    <div class="cta">
-      <a class="btn btn-primary" href="#download">Kostenlos laden&nbsp;&nbsp;→</a>
-      <a class="btn btn-ghost" href="#pricing">Pro entdecken</a>
+  <div class="hero2">
+    <div class="hero-l">
+      <p class="eyebrow mono">DXF · STEP · STP · IGES · STL · OBJ</p>
+      <h1>Jedes Modell<br/><span class="grad" id="h2">Sofort im Blick</span></h1>
+      <div class="hdim"><i></i><span class="mono" id="hdim-label">— mm</span><i></i></div>
+      <p class="sub">Cubory öffnet Zeichnungen und 3D-Modelle ohne Umwege - auf Mac und
+      Windows, komplett offline. Free für immer. Pro, wenn du mehr willst.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#download">Kostenlos laden&nbsp;&nbsp;→</a>
+        <a class="btn btn-ghost" href="#pricing">Pro entdecken</a>
+      </div>
+      <p class="hint" style="margin-top:18px">7 Tage Pro gratis bei jedem neuen Konto · keine Kreditkarte nötig</p>
     </div>
-    <p class="hint" style="margin-top:18px">7 Tage Pro gratis bei jedem neuen Konto · keine Kreditkarte nötig</p>
+    <div class="hero-r">
+      <svg viewBox="0 0 420 400" fill="none" aria-hidden="true">
+        <g stroke="#aab3ff" stroke-width="1.4" class="dw">
+          <path style="--i:0" pathLength="100" d="M210 60 330 120"/>
+          <path style="--i:1" pathLength="100" d="M330 120v120"/>
+          <path style="--i:2" pathLength="100" d="M330 240 210 300"/>
+          <path style="--i:3" pathLength="100" d="M210 300 90 240"/>
+          <path style="--i:4" pathLength="100" d="M90 240V120"/>
+          <path style="--i:5" pathLength="100" d="M90 120 210 60"/>
+          <path style="--i:6" pathLength="100" d="M210 180 330 120"/>
+          <path style="--i:7" pathLength="100" d="M210 180 90 120"/>
+          <path style="--i:8" pathLength="100" d="M210 180v120"/>
+        </g>
+        <g class="dw2">
+          <g stroke="#7c5cff" stroke-width=".9" opacity=".7">
+            <path d="M76 250V110M72 110h8M72 250h8"/>
+            <text x="58" y="185" fill="#9aa3d0" font-size="10.5" font-family="monospace" transform="rotate(-90 58 185)">120 mm</text>
+            <path d="M210 316 330 256M210 320v-8M330 260v-8"/>
+            <text x="258" y="308" fill="#9aa3d0" font-size="10.5" font-family="monospace">√2·a</text>
+          </g>
+          <g font-family="monospace" font-size="11">
+            <line x1="330" y1="120" x2="374" y2="92" stroke="#5d668f" stroke-width=".8"/>
+            <circle cx="386" cy="86" r="12" stroke="#ff3d8a" fill="rgba(255,61,138,.12)"/>
+            <text x="386" y="90" fill="#fff" text-anchor="middle">1</text>
+          </g>
+          <path d="M195 165h30M210 150v30" stroke="#ff3d8a" stroke-width=".8" opacity=".8"/>
+        </g>
+      </svg>
+    </div>
   </div>
+  <div class="xh" id="xh"><div class="xh-h"></div><div class="xh-v"></div>
+    <span class="xh-label mono" id="xh-label">X 0.0 · Y 0.0</span></div>
 </header>
 
 <section id="app">
