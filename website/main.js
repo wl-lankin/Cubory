@@ -132,11 +132,18 @@ if (scrub) {
     im.onload = () => { if (++loaded === 1) { scrub.width = im.naturalWidth; scrub.height = im.naturalHeight; draw(0); } };
     imgs.push(im);
   }
+  // Gedämpftes Nachziehen: die Frames folgen dem Scroll weich statt hart
   const section = document.getElementById('app');
+  let targetF = 0, curF = 0, lastDrawn = -1;
   addEventListener('scroll', () => {
     const r = section.getBoundingClientRect();
     const total = r.height - innerHeight;
-    const p = Math.min(Math.max(-r.top / total, 0), 1);
-    draw(Math.min(FR - 1, Math.round(p * (FR - 1))));
+    targetF = Math.min(Math.max(-r.top / total, 0), 1) * (FR - 1);
   }, { passive: true });
+  (function tick() {
+    curF += (targetF - curF) * 0.14;
+    const f = Math.min(FR - 1, Math.round(curF));
+    if (f !== lastDrawn) { draw(f); lastDrawn = f; }
+    requestAnimationFrame(tick);
+  })();
 }
