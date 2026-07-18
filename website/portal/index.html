@@ -36,6 +36,11 @@
   .card::before{top:-6px;left:-6px;border-width:0 1px 1px 0}
   .card::after{bottom:-6px;right:-6px;border-width:1px 0 0 1px}
   h2{font-family:'Space Grotesk',sans-serif}
+  .clabel{position:absolute;top:-8px;left:20px;background:#0a0e2a;padding:0 10px;
+  font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.2em;color:var(--faint)}
+  .row > span:first-child{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .device .m{font-family:ui-monospace,Menlo,monospace;font-size:10.5px}
   h2 { font-size:18px; margin-bottom:16px; }
   h3 { font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:20px 0 10px; }
   input {
@@ -54,7 +59,8 @@
   .row span:first-child { color:var(--muted); }
   .badge { background:var(--grad); font-weight:700; font-size:10px; letter-spacing:.06em; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
   .device { display:flex; align-items:center; gap:10px; font-size:13px; padding:9px 12px; border:1px solid rgba(160,170,255,.12); border-radius:10px; margin-bottom:6px; }
-  .device .n { flex:1; }
+  .device .n { flex:0 1 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:45%; }
+  .device .m { flex:1; }
   .device .m { color:var(--faint); font-size:11px; }
   .error { color:#ff7b9c; font-size:13px; margin-bottom:10px; }
   .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
@@ -111,7 +117,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&l
 function renderLogin(error = '', mode = 'login') {
   const reg = mode === 'register';
   el(`<div class="card">
-    <h2>${reg ? 'Konto erstellen' : 'Anmelden'}</h2>
+    <span class="clabel">CUBORY · ${reg ? 'NEUES KONTO' : 'ANMELDUNG'}</span>
+    <h2 style="margin-bottom:14px">${reg ? 'Konto erstellen' : 'Anmelden'}</h2>
     ${wantedPlan ? `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">Nach der Anmeldung geht es direkt zum Checkout (${esc(wantedPlan)}).</p>` : ''}
     ${error ? `<p class="error">${esc(error)}</p>` : ''}
     ${reg ? '<input id="name" placeholder="Name" style="margin-bottom:10px" />' : ''}
@@ -165,7 +172,8 @@ async function renderDashboard() {
     const s = sub.subscription;
     el(`
       <div class="card">
-        <h2>Lizenz</h2>
+        <span class="clabel">CUBORY · LIZENZ · BLATT K1</span>
+        <h2 style="margin-bottom:12px">Lizenz</h2>
         <div class="row"><span>Status</span><span class="badge">${esc(kindLabel)}</span></div>
         ${status.trial_days_left != null ? `<div class="row"><span>Testphase</span><span>noch ${status.trial_days_left} Tage</span></div>` : ''}
         ${status.expires_at ? `<div class="row"><span>Läuft ab</span><span>${new Date(status.expires_at).toLocaleDateString('de-DE')}</span></div>` : ''}
@@ -189,7 +197,8 @@ async function renderDashboard() {
           </div>` : ''}
       </div>
       <div class="card">
-        <h2>Geräte</h2>
+        <span class="clabel">GERÄTE · BLATT K2</span>
+        <h2 style="margin-bottom:12px">Geräte</h2>
         ${devices.devices.map(d => `
           <div class="device">
             <span class="n">${esc(d.name)}</span><span class="m">${esc(d.os)} · zuletzt ${new Date(d.last_seen_at).toLocaleDateString('de-DE')}</span>
