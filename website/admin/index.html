@@ -63,7 +63,7 @@ function logout() { localStorage.removeItem('cubory-admin-tokens'); tokens = nul
 
 function renderLogin(error = '') {
   el(`<div class="card"><div class="row">
-    <input id="email" type="email" placeholder="Admin-E-Mail" value="info@wolfgang-linz.de"/>
+    <input id="email" type="email" placeholder="Admin-E-Mail" value="info@cubory.app"/>
     <input id="password" type="password" placeholder="Passwort"/>
     <button id="go">Anmelden</button></div>
     ${error ? `<p class="err">${esc(error)}</p>` : ''}</div>`);

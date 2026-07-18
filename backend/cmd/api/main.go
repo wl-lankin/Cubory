@@ -144,7 +144,7 @@ func main() {
 
 	router := transporthttp.NewRouter(transporthttp.Deps{
 		Pool:             pool,
-		AdminEmail:       getenvDefault("CUBORY_ADMIN_EMAIL", "info@wolfgang-linz.de"),
+		AdminEmail:       getenvDefault("CUBORY_ADMIN_EMAIL", "info@cubory.app"),
 		JWTSecret:        cfg.JWTSecret,
 		Auth:             authSvc,
 		License:          licenseSvc,
