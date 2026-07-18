@@ -57,6 +57,7 @@ func NewRouter(d Deps) *gin.Engine {
 		authed.DELETE("/devices/:id", lh.DeleteDevice)
 	}
 
+	adminH := &handlers.AdminHandler{Pool: d.Pool, AdminEmail: d.AdminEmail}
 	bh := &handlers.BillingHandler{Svc: d.Billing}
 	{
 		authed.GET("/subscription", bh.Subscription)
@@ -67,14 +68,15 @@ func NewRouter(d Deps) *gin.Engine {
 	}
 	api.POST("/webhooks/stripe", middleware.RateLimit(120), bh.Webhook)
 	api.POST("/webhooks/paddle", middleware.RateLimit(120), bh.Webhook)
+	api.POST("/crashes", middleware.RateLimit(10), adminH.ReportCrash)
 
-	adminH := &handlers.AdminHandler{Pool: d.Pool, AdminEmail: d.AdminEmail}
 	admin := api.Group("/admin", middleware.RequireAuth(d.JWTSecret), adminH.RequireAdmin)
 	{
 		admin.GET("/stats", adminH.Stats)
 		admin.GET("/users", adminH.Users)
 		admin.GET("/users/:id", adminH.UserDetail)
 		admin.POST("/users/:id/grant", adminH.Grant)
+		admin.GET("/crashes", adminH.Crashes)
 	}
 
 	return r

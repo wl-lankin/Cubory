@@ -124,6 +124,10 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   }
 
+  mainWindow.webContents.on('render-process-gone', (_e, details) => {
+    reportCrash('renderer', `render-process-gone: ${details.reason}`, '');
+  });
+
   mainWindow.webContents.on('did-finish-load', () => {
     if (pendingFile) {
       mainWindow.webContents.send('open-file', readFilePayload(pendingFile));
@@ -248,8 +252,35 @@ function wrap(fn) {
   };
 }
 
+// Crash-Reporting (opt-in): sendet anonyme Fehlerberichte an die API.
+function reportCrash(procName, message, stack) {
+  if (!appStore?.get('crash_reports')) return;
+  const API = process.env.CUBORY_API_URL || 'https://api.cubory.app';
+  fetch(`${API}/api/crashes`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      app_version: app.getVersion(),
+      platform: `${process.platform}-${process.arch}`,
+      process: procName,
+      message: String(message).slice(0, 2000),
+      stack: String(stack || '').slice(0, 16000),
+    }),
+    signal: AbortSignal.timeout(8000),
+  }).catch(() => {});
+}
+
+process.on('uncaughtException', (err) => {
+  reportCrash('main', err.message, err.stack);
+});
+
 function setupAccountIpc() {
   appStore = new SecureStore();
+  ipcMain.handle('crash:optIn', () => !!appStore.get('crash_reports'));
+  ipcMain.handle('crash:setOptIn', (_e, on) => { appStore.set('crash_reports', !!on); return !!on; });
+  ipcMain.on('crash:report', (_e, payload) => {
+    reportCrash('renderer', payload?.message, payload?.stack);
+  });
   ipcMain.handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }));
   const ALLOWED_LINKS = ['https://wolfgang-linz.de', 'https://cubory.app', 'https://github.com/wl-lankin/Cubory'];
   ipcMain.handle('app:openExternal', (_e, url) => {

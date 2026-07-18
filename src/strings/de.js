@@ -127,4 +127,5 @@ export default {
   'account.delete': 'Konto löschen',
   'account.deleteConfirm': 'Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt. Das lässt sich nicht rückgängig machen.',
   'about.terms': 'AGB & EULA',
+  'about.crash': 'Anonyme Fehlerberichte senden',
 };

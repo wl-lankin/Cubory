@@ -127,4 +127,5 @@ export default {
   'account.delete': 'Delete account',
   'account.deleteConfirm': 'Delete your account permanently? License, devices and all data will be removed. This cannot be undone.',
   'about.terms': 'Terms & EULA',
+  'about.crash': 'Send anonymous crash reports',
 };

@@ -263,7 +263,11 @@ export function initAbout() {
       <div class="account-row"><span>${escapeHtml(t('about.version'))}</span><span>${escapeHtml(info.version)}</span></div>
       <div class="account-row"><span>${escapeHtml(t('about.dev'))}</span>
         <a href="#" id="about-link" style="color:var(--accent-1);text-decoration:none">Wolfgang Linz</a></div>
-      <p class="account-hint" style="margin-top:14px">
+      <label class="account-hint" style="display:flex;align-items:center;gap:8px;justify-content:center;margin-top:14px;cursor:pointer">
+        <input type="checkbox" id="about-crash" style="accent-color:var(--accent-1)" />
+        ${escapeHtml(t('about.crash'))}
+      </label>
+      <p class="account-hint" style="margin-top:10px">
         <a href="#" id="about-imprint" style="color:var(--text-faint)">${escapeHtml(t('about.imprint'))}</a> ·
         <a href="#" id="about-privacy" style="color:var(--text-faint)">${escapeHtml(t('about.privacy'))}</a> ·
         <a href="#" id="about-terms" style="color:var(--text-faint)">${escapeHtml(t('about.terms'))}</a>
@@ -275,6 +279,9 @@ export function initAbout() {
     document.body.appendChild(overlay);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     overlay.querySelector('#about-close').addEventListener('click', () => overlay.remove());
+    const crashBox = overlay.querySelector('#about-crash');
+    window.cubory.crash.optIn().then((on) => { crashBox.checked = on; });
+    crashBox.addEventListener('change', () => window.cubory.crash.setOptIn(crashBox.checked));
     overlay.querySelector('#about-link').addEventListener('click', (e) => {
       e.preventDefault();
       window.cubory.openExternal('https://wolfgang-linz.de');

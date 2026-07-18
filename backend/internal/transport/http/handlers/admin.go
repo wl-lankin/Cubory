@@ -103,6 +103,51 @@ func (h *AdminHandler) UserDetail(c *gin.Context) {
 	})
 }
 
+// Crash-Report entgegennehmen (anonym, opt-in aus der App).
+func (h *AdminHandler) ReportCrash(c *gin.Context) {
+	var req struct {
+		AppVersion string `json:"app_version" binding:"required,max=32"`
+		Platform   string `json:"platform" binding:"required,max=32"`
+		Process    string `json:"process" binding:"required,max=16"`
+		Message    string `json:"message" binding:"required,max=2000"`
+		Stack      string `json:"stack" binding:"max=16000"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fail(c, http.StatusBadRequest, "invalid_request", "Unvollständiger Crash-Report")
+		return
+	}
+	_, _ = h.Pool.Exec(c.Request.Context(), `
+		INSERT INTO crashes (app_version, platform, process, message, stack)
+		VALUES ($1,$2,$3,$4,$5)`,
+		req.AppVersion, req.Platform, req.Process, req.Message, req.Stack)
+	c.Status(http.StatusAccepted)
+}
+
+// Crashes für das Admin-Dashboard.
+func (h *AdminHandler) Crashes(c *gin.Context) {
+	rows, err := h.Pool.Query(c.Request.Context(), `
+		SELECT app_version, platform, process, message, stack, received_at
+		FROM crashes ORDER BY received_at DESC LIMIT 100`)
+	if err != nil {
+		internal(c, err)
+		return
+	}
+	defer rows.Close()
+	out := []gin.H{}
+	for rows.Next() {
+		var v, p, pr, m string
+		var stack *string
+		var at any
+		if err := rows.Scan(&v, &p, &pr, &m, &stack, &at); err != nil {
+			internal(c, err)
+			return
+		}
+		out = append(out, gin.H{"app_version": v, "platform": p, "process": pr,
+			"message": m, "stack": stack, "received_at": at})
+	}
+	c.JSON(200, gin.H{"crashes": out})
+}
+
 // Grant: kostenloses Pro (lifetime, comp) vergeben oder entziehen.
 func (h *AdminHandler) Grant(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))

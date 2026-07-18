@@ -496,3 +496,13 @@ window.cubory.update?.onChange((state) => {
     <button class="btn btn-primary" id="update-go">${t(manual ? 'update.download' : 'update.restart')}</button>`;
   document.getElementById('update-go').addEventListener('click', () => window.cubory.update.install());
 });
+
+
+/* ── Crash-Reporting (opt-in, Durchsetzung im Main-Prozess) ─────────────── */
+
+window.addEventListener('error', (e) => {
+  window.cubory.crash?.report({ message: e.message, stack: e.error?.stack });
+});
+window.addEventListener('unhandledrejection', (e) => {
+  window.cubory.crash?.report({ message: String(e.reason?.message || e.reason), stack: e.reason?.stack });
+});

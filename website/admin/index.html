@@ -92,6 +92,10 @@ async function renderDash(q = '') {
       <div class="stat"><b>${stats.devices}</b><span>Geräte</span></div>
       <div class="stat"><b>${stats.payments}</b><span>Zahlungen</span></div>
     </div>
+    <div class="card" id="crash-card" style="display:none">
+      <h2 style="font-size:15px;margin-bottom:10px">Crashes (letzte 100)</h2>
+      <div id="crash-list" class="detail" style="max-height:220px"></div>
+    </div>
     <div class="card">
       <div class="row" style="margin-bottom:12px">
         <input id="q" placeholder="Suche Name/E-Mail…" value="${esc(q)}"/>
@@ -113,6 +117,13 @@ async function renderDash(q = '') {
         <tr id="d-${u.id}" style="display:none"><td colspan="6"><div class="detail"></div></td></tr>`).join('')}
       </table>
     </div>`);
+    api('GET', '/api/admin/crashes').then((d) => {
+      if (d?.crashes?.length) {
+        document.getElementById('crash-card').style.display = '';
+        document.getElementById('crash-list').textContent = d.crashes.map(c =>
+          `[${String(c.received_at).slice(0, 19)}] ${c.app_version} ${c.platform} ${c.process}: ${c.message}`).join('\n');
+      }
+    }).catch(() => {});
     document.getElementById('logout').onclick = logout;
     document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') renderDash(e.target.value); });
     document.querySelectorAll('[data-grant]').forEach(b => b.onclick = async () => { await api('POST', `/api/admin/users/${b.dataset.grant}/grant`, { action: 'grant' }); renderDash(q); });

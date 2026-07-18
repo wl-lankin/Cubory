@@ -39,6 +39,11 @@ contextBridge.exposeInMainWorld('cubory', {
     listDir: (dirPath) => ipcRenderer.invoke('fs:listDir', dirPath),
     recent: () => ipcRenderer.invoke('fs:recent'),
   },
+  crash: {
+    optIn: () => ipcRenderer.invoke('crash:optIn'),
+    setOptIn: (on) => ipcRenderer.invoke('crash:setOptIn', on),
+    report: (payload) => ipcRenderer.send('crash:report', payload),
+  },
   update: {
     state: () => ipcRenderer.invoke('update:state'),
     install: () => ipcRenderer.invoke('update:install'),
