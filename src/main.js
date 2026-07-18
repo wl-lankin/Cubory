@@ -13,6 +13,7 @@ import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
 import { playIntro } from './intro.js';
 import { initAccount, initAbout, can, openAccountModal } from './account.js';
 import { maybeShowNudge } from './nudge.js';
+import { initFileBrowser, openFileBrowser } from './fileBrowser.js';
 import { initProFeatures, handleProAction, resetProFeatures, updateProLocks } from './proFeatures.js';
 
 document.getElementById('app').style.setProperty('--ambient-bg', `url(${ambientUrl})`);
@@ -124,15 +125,20 @@ async function openViaDialog() {
   if (payload) await openPayload(payload);
 }
 
-document.getElementById('btn-open').addEventListener('click', openViaDialog);
-document.getElementById('btn-open-top').addEventListener('click', openViaDialog);
+initFileBrowser(async (p) => {
+  const payload = await window.cubory.readFile(p);
+  if (payload) await openPayload(payload);
+}, openViaDialog);
+
+document.getElementById('btn-open').addEventListener('click', openFileBrowser);
+document.getElementById('btn-open-top').addEventListener('click', openFileBrowser);
 
 window.cubory?.onOpenFile((payload) => openPayload(payload));
 
 window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
     e.preventDefault();
-    openViaDialog();
+    openFileBrowser();
   }
   if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey && e.target.tagName !== 'SELECT') viewer.fit();
 });

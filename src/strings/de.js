@@ -116,4 +116,12 @@ export default {
   'verify.resend': 'Neuen Code senden',
   'verify.resent': 'Neuer Code verschickt',
   'verify.pending': 'E-Mail noch nicht bestätigt',
+  'browser.title': 'Datei öffnen',
+  'browser.recent': 'Zuletzt geöffnet',
+  'browser.system': 'System-Dialog …',
+  'browser.empty': 'Keine CAD-Dateien in diesem Ordner',
+  'browser.home': 'Benutzerordner',
+  'browser.desktop': 'Schreibtisch',
+  'browser.documents': 'Dokumente',
+  'browser.downloads': 'Downloads',
 };

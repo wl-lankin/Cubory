@@ -34,6 +34,10 @@ contextBridge.exposeInMainWorld('cubory', {
   exportFile: {
     save: (payload) => ipcRenderer.invoke('export:save', payload),
   },
+  files: {
+    listDir: (dirPath) => ipcRenderer.invoke('fs:listDir', dirPath),
+    recent: () => ipcRenderer.invoke('fs:recent'),
+  },
   update: {
     state: () => ipcRenderer.invoke('update:state'),
     install: () => ipcRenderer.invoke('update:install'),

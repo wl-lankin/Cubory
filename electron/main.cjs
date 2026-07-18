@@ -114,18 +114,69 @@ ipcMain.handle('dialog:open', async () => {
     ],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
-  rememberDir(result.filePaths[0]);
+  rememberFile(result.filePaths[0]);
   return readFilePayload(result.filePaths[0]);
 });
 
-// Auch Doppelklick/„Öffnen mit" aktualisiert den Ordner
-function rememberDir(filePath) {
-  try { appStore?.set('last_open_dir', path.dirname(filePath)); } catch { /* egal */ }
+// Auch Doppelklick/„Öffnen mit" aktualisiert Ordner + Zuletzt-geöffnet-Liste
+function rememberFile(filePath) {
+  try {
+    appStore?.set('last_open_dir', path.dirname(filePath));
+    const recent = (appStore?.get('recent_files') || []).filter((r) => r.path !== filePath);
+    recent.unshift({ path: filePath, name: path.basename(filePath) });
+    appStore?.set('recent_files', recent.slice(0, 8));
+  } catch { /* egal */ }
 }
+
+// Integrierter Datei-Browser: Ordnerinhalt (nur Ordner + CAD-Dateien)
+ipcMain.handle('fs:listDir', (_event, dirPath) => {
+  try {
+    const target = path.resolve(dirPath || appStore?.get('last_open_dir') || app.getPath('home'));
+    const entries = fs.readdirSync(target, { withFileTypes: true });
+    const dirs = [];
+    const files = [];
+    for (const e of entries) {
+      if (e.name.startsWith('.')) continue;
+      const full = path.join(target, e.name);
+      if (e.isDirectory()) {
+        dirs.push({ name: e.name, path: full });
+      } else if (SUPPORTED.includes(path.extname(e.name).toLowerCase())) {
+        try {
+          const st = fs.statSync(full);
+          files.push({ name: e.name, path: full, size: st.size, mtime: st.mtimeMs,
+            ext: path.extname(e.name).slice(1).toUpperCase() });
+        } catch { /* unlesbar - überspringen */ }
+      }
+    }
+    dirs.sort((a, b) => a.name.localeCompare(b.name));
+    files.sort((a, b) => b.mtime - a.mtime);
+    const parent = path.dirname(target);
+    return { ok: true, data: {
+      path: target,
+      parent: parent !== target ? parent : null,
+      shortcuts: [
+        { key: 'home', path: app.getPath('home') },
+        { key: 'desktop', path: app.getPath('desktop') },
+        { key: 'documents', path: app.getPath('documents') },
+        { key: 'downloads', path: app.getPath('downloads') },
+      ],
+      dirs, files,
+    } };
+  } catch (err) {
+    return { ok: false, error: { code: 'fs_error', message: err.message } };
+  }
+});
+
+ipcMain.handle('fs:recent', () => {
+  const recent = (appStore?.get('recent_files') || []).filter((r) => {
+    try { fs.accessSync(r.path); return true; } catch { return false; }
+  });
+  return { ok: true, data: recent };
+});
 
 ipcMain.handle('file:read', async (_event, filePath) => {
   if (!SUPPORTED.includes(path.extname(filePath).toLowerCase())) return null;
-  rememberDir(filePath);
+  rememberFile(filePath);
   return readFilePayload(filePath);
 });
 
