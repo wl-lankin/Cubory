@@ -40,6 +40,7 @@ func NewRouter(d Deps) *gin.Engine {
 		authGroup.POST("/forgot-password", middleware.RateLimit(3), ah.ForgotPassword)
 		authGroup.POST("/reset-password", middleware.RateLimit(5), ah.ResetPassword)
 		authGroup.POST("/verify-email", middleware.RateLimit(10), ah.VerifyEmail)
+		authGroup.POST("/resend-verification", middleware.RateLimit(3), ah.ResendVerification)
 	}
 
 	lh := &handlers.LicenseHandler{Svc: d.License, PublicKeyB64: d.LicensePubKeyB64}

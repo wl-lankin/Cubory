@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('cubory', {
     devices: () => ipcRenderer.invoke('account:devices'),
     deactivateDevice: (id) => ipcRenderer.invoke('account:deactivateDevice', id),
     checkout: (plan) => ipcRenderer.invoke('account:checkout', plan),
+    verifyEmail: (code) => ipcRenderer.invoke('account:verifyEmail', code),
+    resendCode: () => ipcRenderer.invoke('account:resendCode'),
     portal: () => ipcRenderer.invoke('account:portal'),
     onChange: (callback) => {
       ipcRenderer.on('account:changed', (_event, state) => callback(state));

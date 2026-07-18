@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -30,6 +31,21 @@ func (m *captureMailer) Send(_ context.Context, to, subject, body string) error 
 	defer m.mu.Unlock()
 	m.mails = append(m.mails, struct{ To, Subject, Body string }{to, subject, body})
 	return nil
+}
+
+func (m *captureMailer) lastCode(t *testing.T) string {
+	t.Helper()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if len(m.mails) == 0 {
+		t.Fatal("keine Mail versendet")
+	}
+	re := regexp.MustCompile(`\b(\d{6})\b`)
+	match := re.FindStringSubmatch(m.mails[len(m.mails)-1].Body)
+	if match == nil {
+		t.Fatalf("kein Code in Mail: %q", m.mails[len(m.mails)-1].Body)
+	}
+	return match[1]
 }
 
 func (m *captureMailer) lastToken(t *testing.T) string {
@@ -179,14 +195,18 @@ func TestVerifyEmailAndPasswordReset(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Verify-Mail wurde bei Registrierung verschickt
-	verifyToken := mailer.lastToken(t)
-	if err := svc.VerifyEmail(ctx, verifyToken); err != nil {
+	// Verify-Mail mit Code wurde bei Registrierung verschickt
+	code := mailer.lastCode(t)
+	// falscher Code zählt als Versuch
+	if err := svc.VerifyEmailCode(ctx, user.Email, "000000"); err == nil {
+		t.Fatal("falscher Code darf nicht funktionieren")
+	}
+	if err := svc.VerifyEmailCode(ctx, user.Email, code); err != nil {
 		t.Fatalf("verify: %v", err)
 	}
-	// Token ist single-use
-	if err := svc.VerifyEmail(ctx, verifyToken); err == nil {
-		t.Fatal("Verify-Token darf nicht zweimal funktionieren")
+	// idempotent nach Verifizierung
+	if err := svc.VerifyEmailCode(ctx, user.Email, "000000"); err != nil {
+		t.Fatal("nach Verifizierung muss der Aufruf idempotent sein")
 	}
 
 	// Passwort-Reset
@@ -204,3 +224,25 @@ func TestVerifyEmailAndPasswordReset(t *testing.T) {
 }
 
 var _ = slog.Logger{} // vermeidet unused-import bei Build-Varianten
+
+func TestVerifyCodeAttemptLimit(t *testing.T) {
+	svc, mailer, _ := setup(t)
+	ctx := context.Background()
+	user, _, err := svc.Register(ctx, "W", "limitcode@test.de", "sehr-sicher-123", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	code := mailer.lastCode(t)
+	for i := 0; i < 5; i++ {
+		_ = svc.VerifyEmailCode(ctx, user.Email, "999999")
+	}
+	// 6. Versuch: selbst der richtige Code ist jetzt gesperrt
+	if err := svc.VerifyEmailCode(ctx, user.Email, code); err == nil {
+		t.Fatal("Code muss nach 5 Fehlversuchen gesperrt sein")
+	}
+	// neuer Code funktioniert
+	svc.ResendVerifyCode(ctx, user.Email)
+	if err := svc.VerifyEmailCode(ctx, user.Email, mailer.lastCode(t)); err != nil {
+		t.Fatalf("neuer Code: %v", err)
+	}
+}

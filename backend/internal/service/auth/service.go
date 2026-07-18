@@ -4,6 +4,8 @@ package auth
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -89,9 +91,7 @@ func (s *Service) Register(ctx context.Context, name, email, password, ip string
 	s.audit.Write(ctx, domain.AuditEntry{UserID: &u.ID, Actor: "system", Action: "trial_started",
 		Detail: map[string]any{"ends_at": trialEnd}})
 
-	if err := s.sendEmailToken(ctx, u, domain.PurposeVerifyEmail,
-		"Bestätige deine E-Mail-Adresse",
-		"Willkommen bei Cubory! Bestätige deine E-Mail:"); err != nil {
+	if err := s.sendVerifyCode(ctx, u); err != nil {
 		return nil, nil, err
 	}
 
@@ -208,16 +208,75 @@ func (s *Service) ResetPassword(ctx context.Context, token, newPassword string) 
 	return nil
 }
 
-func (s *Service) VerifyEmail(ctx context.Context, token string) error {
-	t, err := s.consumeEmailToken(ctx, token, domain.PurposeVerifyEmail)
+// VerifyEmailCode prüft den 6-stelligen Code. Max. 5 Versuche pro Code,
+// danach (und bei Ablauf) muss ein neuer Code angefordert werden.
+func (s *Service) VerifyEmailCode(ctx context.Context, email, code string) error {
+	u, err := s.users.ByEmail(ctx, email)
+	if err != nil {
+		return domain.ErrTokenInvalid
+	}
+	if u.EmailVerifiedAt != nil {
+		return nil // idempotent
+	}
+	t, err := s.emails.LatestActiveByUser(ctx, u.ID, domain.PurposeVerifyEmail)
+	if err != nil {
+		return domain.ErrTokenInvalid
+	}
+	if s.now().After(t.ExpiresAt) {
+		return domain.ErrTokenExpired
+	}
+	attempts, err := s.emails.IncrementAttempts(ctx, t.ID)
 	if err != nil {
 		return err
 	}
-	if err := s.users.SetEmailVerified(ctx, t.UserID, s.now()); err != nil {
+	if attempts > 5 {
+		return domain.ErrTokenInvalid
+	}
+	if HashToken(code) != t.TokenHash {
+		return domain.ErrTokenInvalid
+	}
+	if err := s.emails.MarkUsed(ctx, t.ID, s.now()); err != nil {
 		return err
 	}
-	s.audit.Write(ctx, domain.AuditEntry{UserID: &t.UserID, Actor: "user", Action: "email_verified"})
+	if err := s.users.SetEmailVerified(ctx, u.ID, s.now()); err != nil {
+		return err
+	}
+	s.audit.Write(ctx, domain.AuditEntry{UserID: &u.ID, Actor: "user", Action: "email_verified"})
 	return nil
+}
+
+// ResendVerifyCode: neuer Code; antwortet nach außen immer gleich.
+func (s *Service) ResendVerifyCode(ctx context.Context, email string) {
+	u, err := s.users.ByEmail(ctx, email)
+	if err != nil || u.EmailVerifiedAt != nil {
+		return
+	}
+	_ = s.sendVerifyCode(ctx, u)
+}
+
+// NewVerifyCode erzeugt einen 6-stelligen Zufallscode.
+func NewVerifyCode() (string, error) {
+	b := make([]byte, 4)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	n := binary.BigEndian.Uint32(b) % 1000000
+	return fmt.Sprintf("%06d", n), nil
+}
+
+func (s *Service) sendVerifyCode(ctx context.Context, u *domain.User) error {
+	code, err := NewVerifyCode()
+	if err != nil {
+		return err
+	}
+	if err := s.emails.Create(ctx, &domain.EmailToken{
+		ID: uuid.New(), UserID: u.ID, Purpose: domain.PurposeVerifyEmail,
+		TokenHash: HashToken(code), ExpiresAt: s.now().Add(30 * time.Minute),
+	}); err != nil {
+		return err
+	}
+	return s.mailer.Send(ctx, u.Email, "Dein Cubory-Bestätigungscode",
+		fmt.Sprintf("Hallo %s,\n\nwillkommen bei Cubory! Dein Bestätigungscode lautet:\n\n    %s\n\nGib ihn in der App ein. Der Code ist 30 Minuten gültig.\n\nFalls du dich nicht registriert hast, ignoriere diese E-Mail.", u.Name, code))
 }
 
 /* ── intern ──────────────────────────────────────────────────────────────── */

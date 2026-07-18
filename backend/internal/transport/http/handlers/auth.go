@@ -131,17 +131,34 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 
 func (h *AuthHandler) VerifyEmail(c *gin.Context) {
 	var req struct {
-		Token string `json:"token" binding:"required"`
+		Email string `json:"email" binding:"required,email"`
+		Code  string `json:"code" binding:"required,len=6,numeric"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		fail(c, http.StatusBadRequest, "invalid_request", "Token erforderlich")
+		fail(c, http.StatusBadRequest, "invalid_request", "E-Mail und 6-stelliger Code erforderlich")
 		return
 	}
-	if err := h.Svc.VerifyEmail(c.Request.Context(), req.Token); err != nil {
-		fail(c, http.StatusBadRequest, "token_invalid", "Link ungültig oder abgelaufen")
+	if err := h.Svc.VerifyEmailCode(c.Request.Context(), req.Email, req.Code); err != nil {
+		if errors.Is(err, domain.ErrTokenExpired) {
+			fail(c, http.StatusBadRequest, "code_expired", "Code abgelaufen - fordere einen neuen an")
+			return
+		}
+		fail(c, http.StatusBadRequest, "code_invalid", "Code ungültig")
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *AuthHandler) ResendVerification(c *gin.Context) {
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fail(c, http.StatusBadRequest, "invalid_request", "E-Mail erforderlich")
+		return
+	}
+	h.Svc.ResendVerifyCode(c.Request.Context(), req.Email)
+	c.Status(http.StatusAccepted)
 }
 
 /* ── Helfer ──────────────────────────────────────────────────────────────── */

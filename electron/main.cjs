@@ -159,6 +159,8 @@ function setupAccountIpc() {
   ipcMain.handle('account:logout', wrap(() => account.logout()));
   ipcMain.handle('account:devices', wrap(() => account.devices()));
   ipcMain.handle('account:deactivateDevice', wrap((id) => account.deactivateDevice(id)));
+  ipcMain.handle('account:verifyEmail', wrap((code) => account.verifyEmail(code)));
+  ipcMain.handle('account:resendCode', wrap(() => account.resendVerifyCode()));
   ipcMain.handle('license:can', (_e, key) => account.can(key));
   ipcMain.handle('account:checkout', wrap(async (plan) => {
     const url = await account.createCheckout(plan);

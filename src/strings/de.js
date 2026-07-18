@@ -109,4 +109,11 @@ export default {
   'update.restart': 'Jetzt neu starten',
   'update.available': 'Version {v} verfügbar',
   'update.download': 'Herunterladen',
+  'verify.title': 'E-Mail bestätigen',
+  'verify.sent': 'Wir haben einen 6-stelligen Code an {email} geschickt.',
+  'verify.code': 'Code',
+  'verify.submit': 'Bestätigen',
+  'verify.resend': 'Neuen Code senden',
+  'verify.resent': 'Neuer Code verschickt',
+  'verify.pending': 'E-Mail noch nicht bestätigt',
 };

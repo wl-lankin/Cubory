@@ -110,13 +110,34 @@ func (r *EmailTokenRepo) Create(ctx context.Context, t *domain.EmailToken) error
 func (r *EmailTokenRepo) ByHash(ctx context.Context, hash string) (*domain.EmailToken, error) {
 	var t domain.EmailToken
 	err := r.pool.QueryRow(ctx, `
-		SELECT id, user_id, purpose, token_hash, expires_at, used_at
+		SELECT id, user_id, purpose, token_hash, expires_at, used_at, attempts
 		FROM email_tokens WHERE token_hash = $1`, hash).
-		Scan(&t.ID, &t.UserID, &t.Purpose, &t.TokenHash, &t.ExpiresAt, &t.UsedAt)
+		Scan(&t.ID, &t.UserID, &t.Purpose, &t.TokenHash, &t.ExpiresAt, &t.UsedAt, &t.Attempts)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, domain.ErrNotFound
 	}
 	return &t, err
+}
+
+func (r *EmailTokenRepo) LatestActiveByUser(ctx context.Context, userID uuid.UUID, purpose domain.EmailTokenPurpose) (*domain.EmailToken, error) {
+	var t domain.EmailToken
+	err := r.pool.QueryRow(ctx, `
+		SELECT id, user_id, purpose, token_hash, expires_at, used_at, attempts
+		FROM email_tokens
+		WHERE user_id = $1 AND purpose = $2 AND used_at IS NULL
+		ORDER BY expires_at DESC LIMIT 1`, userID, purpose).
+		Scan(&t.ID, &t.UserID, &t.Purpose, &t.TokenHash, &t.ExpiresAt, &t.UsedAt, &t.Attempts)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, domain.ErrNotFound
+	}
+	return &t, err
+}
+
+func (r *EmailTokenRepo) IncrementAttempts(ctx context.Context, id uuid.UUID) (int, error) {
+	var n int
+	err := r.pool.QueryRow(ctx,
+		`UPDATE email_tokens SET attempts = attempts + 1 WHERE id = $1 RETURNING attempts`, id).Scan(&n)
+	return n, err
 }
 
 func (r *EmailTokenRepo) MarkUsed(ctx context.Context, id uuid.UUID, at time.Time) error {

@@ -109,4 +109,11 @@ export default {
   'update.restart': 'Restart now',
   'update.available': 'Version {v} available',
   'update.download': 'Download',
+  'verify.title': 'Confirm your email',
+  'verify.sent': 'We sent a 6-digit code to {email}.',
+  'verify.code': 'Code',
+  'verify.submit': 'Confirm',
+  'verify.resend': 'Send new code',
+  'verify.resent': 'New code sent',
+  'verify.pending': 'Email not confirmed yet',
 };

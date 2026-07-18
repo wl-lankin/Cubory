@@ -104,6 +104,7 @@ type EmailToken struct {
 	TokenHash string
 	ExpiresAt time.Time
 	UsedAt    *time.Time
+	Attempts  int
 }
 
 type AuditEntry struct {

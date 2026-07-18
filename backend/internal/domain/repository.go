@@ -51,6 +51,9 @@ type RefreshTokenRepo interface {
 type EmailTokenRepo interface {
 	Create(ctx context.Context, t *EmailToken) error
 	ByHash(ctx context.Context, hash string) (*EmailToken, error)
+	// LatestActiveByUser: jüngstes unbenutztes Token eines Users für einen Zweck.
+	LatestActiveByUser(ctx context.Context, userID uuid.UUID, purpose EmailTokenPurpose) (*EmailToken, error)
+	IncrementAttempts(ctx context.Context, id uuid.UUID) (int, error)
 	MarkUsed(ctx context.Context, id uuid.UUID, at time.Time) error
 }
 

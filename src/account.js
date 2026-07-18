@@ -110,6 +110,21 @@ function authView(tab = 'login') {
     </form>`;
 }
 
+function verifySection() {
+  if (state.user?.email_verified) return '';
+  return `
+    <h3 class="account-subtitle">${escapeHtml(t('verify.title'))}</h3>
+    <p class="account-hint" style="margin-bottom:8px">${escapeHtml(t('verify.sent', { email: state.user?.email || '' }))}</p>
+    <form id="verify-form" style="display:flex;gap:8px">
+      <input class="account-input verify-code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+        placeholder="${escapeHtml(t('verify.code'))}" required style="flex:1;text-align:center;letter-spacing:.4em;font-family:ui-monospace,Menlo,monospace" />
+      <button class="btn btn-primary" style="padding:9px 18px">${escapeHtml(t('verify.submit'))}</button>
+    </form>
+    <p class="account-error" id="verify-error" hidden></p>
+    <p class="account-hint" style="margin-top:8px"><a href="#" id="verify-resend" style="color:var(--accent-1)">${escapeHtml(t('verify.resend'))}</a>
+      <span id="verify-resent" hidden> · ${escapeHtml(t('verify.resent'))}</span></p>`;
+}
+
 function accountView() {
   const expires = state.licenseExpiresAt
     ? new Date(state.licenseExpiresAt).toLocaleDateString()
@@ -121,6 +136,7 @@ function accountView() {
     <div class="account-row"><span>${escapeHtml(t('account.license'))}</span>
       <span class="account-badge big">${escapeHtml(planLabel())}</span></div>
     ${state.trialDaysLeft != null ? `<div class="account-row"><span></span><span>${escapeHtml(t('account.trialDaysLeft', { n: state.trialDaysLeft }))}</span></div>` : ''}
+    ${verifySection()}
     ${expires ? `<div class="account-row"><span>${escapeHtml(t('account.expires'))}</span><span>${escapeHtml(expires)}</span></div>` : ''}
     ${state.entitlements.length === 0 ? `
     <h3 class="account-subtitle">${escapeHtml(t('account.upgradeTitle'))}</h3>
@@ -164,6 +180,28 @@ function wireModal() {
       state = res.data;
       renderButton();
       renderModal();
+    });
+  }
+
+  const verifyForm = modal.querySelector('#verify-form');
+  if (verifyForm) {
+    verifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = modal.querySelector('#verify-error');
+      errEl.hidden = true;
+      const res = await window.cubory.account.verifyEmail(new FormData(verifyForm).get('code'));
+      if (!res.ok) {
+        errEl.textContent = res.error.message;
+        errEl.hidden = false;
+        return;
+      }
+      state = res.data;
+      renderModal();
+    });
+    modal.querySelector('#verify-resend')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await window.cubory.account.resendCode();
+      modal.querySelector('#verify-resent').hidden = false;
     });
   }
 

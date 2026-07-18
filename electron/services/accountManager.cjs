@@ -141,6 +141,22 @@ class AccountManager {
     }
   }
 
+  async verifyEmail(code) {
+    const email = this.store.get('user')?.email;
+    if (!email) throw new Error('Nicht angemeldet');
+    await this.http.post('/api/auth/verify-email', { email, code }, { auth: false });
+    const user = this.store.get('user');
+    user.email_verified = true;
+    this.store.set('user', user);
+    this._emit();
+    return this.state();
+  }
+
+  async resendVerifyCode() {
+    const email = this.store.get('user')?.email;
+    if (email) await this.http.post('/api/auth/resend-verification', { email }, { auth: false });
+  }
+
   /* ── Lizenz ──────────────────────────────────────────────────────────── */
 
   async _activate() {
