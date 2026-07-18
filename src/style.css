@@ -886,8 +886,8 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   gap: 6px;
   padding: 8px 14px;
   overflow-x: auto;
-  background: rgba(7, 11, 34, 0.55);
-  border-bottom: 1px solid rgba(160, 170, 255, 0.12);
+  background: rgba(7, 11, 34, 0.28);
+  border-bottom: 1px solid rgba(160, 170, 255, 0.1);
 }
 #tabbar::before {
   content: 'DATEIEN';
