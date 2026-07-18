@@ -32,7 +32,9 @@ padding:13px 28px;text-decoration:none;transition:.15s}
 .btn-ghost{border:1px solid rgba(160,170,255,.25);color:var(--muted)}
 .btn-ghost:hover{color:var(--text);border-color:rgba(160,170,255,.5)}
 header{min-height:92vh;display:flex;flex-direction:column}
-.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 80px}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 80px;position:relative;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-8% -18%;z-index:-1;
+background:radial-gradient(55% 62% at 50% 48%,rgba(7,11,34,.8),rgba(7,11,34,.35) 60%,transparent 78%)}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-bottom:20px}
 h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(44px,7vw,76px);line-height:1.04;letter-spacing:-.015em;margin-bottom:20px}
 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}

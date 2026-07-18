@@ -70,13 +70,13 @@ if (!reduced) {
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
   const pts = new THREE.Points(geo, new THREE.PointsMaterial({
-    size: .22, map: dot, vertexColors: true, transparent: true,
+    size: .17, opacity: .55, map: dot, vertexColors: true, transparent: true,
     depthWrite: false, blending: THREE.AdditiveBlending,
   }));
   scene.add(pts);
 
   // Kristall rechts neben dem Hero-Text positionieren
-  pts.position.x = 8;
+  pts.position.set(13, 1, -6);
 
   let mx = 0, my = 0;
   addEventListener('pointermove', (e) => {
@@ -101,10 +101,10 @@ if (!reduced) {
     attr.needsUpdate = true;
     pts.rotation.y = t * .25;
     pts.rotation.x = Math.sin(t * .4) * .1;
-    pts.material.opacity = 1 - f * .85;
+    pts.material.opacity = .55 * (1 - f * .9);
     camera.position.x = mx * 2.2;
     camera.position.y = -my * 1.6;
-    camera.lookAt(8 * (1 - f * .5), 0, 0);
+    camera.lookAt(0, 0, 0);
     renderer.render(scene, camera);
   });
 }
