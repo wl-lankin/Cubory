@@ -150,7 +150,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   font-weight: 500;
   color: var(--text-muted);
   background: transparent;
-  border: 1px solid rgba(160, 170, 255, 0.25);
+  border: none;
   border-radius: 999px;
   padding: 6px 26px 6px 14px;
   cursor: pointer;
@@ -158,7 +158,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   background-repeat: no-repeat;
   background-position: right 11px center;
 }
-.lang-select:hover { color: var(--text); border-color: rgba(160, 170, 255, 0.45); background-color: rgba(160, 170, 255, 0.1); }
+.lang-select:hover { color: var(--text); background-color: rgba(160, 170, 255, 0.12); }
 .lang-select option { background: #131a44; color: var(--text); }
 
 /* ── Account ─────────────────────────────────────────────────────────────── */
@@ -426,10 +426,10 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 
 .btn-ghost {
   background: transparent;
-  border: 1px solid rgba(160, 170, 255, 0.25);
+  border: none;
   padding: 7px 16px;
 }
-.btn-ghost:hover { background: rgba(160, 170, 255, 0.1); border-color: rgba(160, 170, 255, 0.45); }
+.btn-ghost:hover { background: rgba(160, 170, 255, 0.12); }
 
 /* ── Workspace ───────────────────────────────────────────────────────────── */
 
