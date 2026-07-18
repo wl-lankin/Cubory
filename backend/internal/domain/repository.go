@@ -14,6 +14,8 @@ type UserRepo interface {
 	SetEmailVerified(ctx context.Context, id uuid.UUID, at time.Time) error
 	SetPasswordHash(ctx context.Context, id uuid.UUID, hash string) error
 	SetLastLogin(ctx context.Context, id uuid.UUID, at time.Time) error
+	// Anonymize: DSGVO-Löschung - Soft-Delete + personenbezogene Felder überschreiben.
+	Anonymize(ctx context.Context, id uuid.UUID) error
 }
 
 type LicenseRepo interface {

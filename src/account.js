@@ -147,7 +147,8 @@ function accountView() {
     </div>` : ''}
     <h3 class="account-subtitle">${escapeHtml(t('account.devices'))}</h3>
     <ul class="account-devices" id="account-devices"><li class="account-hint">…</li></ul>
-    <div class="account-actions">
+    <div class="account-actions" style="justify-content:space-between">
+      <button class="btn btn-ghost account-danger" id="account-delete">${escapeHtml(t('account.delete'))}</button>
       <button class="btn btn-ghost" id="account-logout">${escapeHtml(t('account.logout'))}</button>
     </div>`;
 }
@@ -207,6 +208,12 @@ function wireModal() {
 
   modal.querySelectorAll('.account-plan').forEach((btn) => {
     btn.addEventListener('click', () => window.cubory.account.checkout(btn.dataset.plan));
+  });
+
+  modal.querySelector('#account-delete')?.addEventListener('click', async () => {
+    if (!confirm(t('account.deleteConfirm'))) return;
+    await window.cubory.account.deleteAccount();
+    closeModal();
   });
 
   modal.querySelector('#account-logout')?.addEventListener('click', async () => {

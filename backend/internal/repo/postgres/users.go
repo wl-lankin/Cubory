@@ -61,3 +61,12 @@ func (r *UserRepo) SetLastLogin(ctx context.Context, id uuid.UUID, at time.Time)
 	_, err := r.pool.Exec(ctx, `UPDATE users SET last_login_at = $2 WHERE id = $1`, id, at)
 	return err
 }
+
+func (r *UserRepo) Anonymize(ctx context.Context, id uuid.UUID) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE users SET deleted_at = now(),
+			email = 'deleted-' || id || '@deleted.invalid',
+			name = 'Gelöschtes Konto', password_hash = '!'
+		WHERE id = $1`, id)
+	return err
+}

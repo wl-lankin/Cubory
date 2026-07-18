@@ -166,7 +166,9 @@ async function renderDashboard() {
             <span class="n">${esc(d.name)}</span><span class="m">${esc(d.os)} · zuletzt ${new Date(d.last_seen_at).toLocaleDateString('de-DE')}</span>
             <button class="ghost" data-dev="${d.id}">Deaktivieren</button>
           </div>`).join('') || '<p class="m" style="color:var(--faint);font-size:13px">Keine aktiven Geräte</p>'}
-        <div class="actions"><button class="ghost" id="logout">Abmelden</button></div>
+        <div class="actions" style="justify-content:space-between;display:flex;width:100%">
+          <button class="ghost" id="delete" style="border-color:rgba(255,110,130,.4);color:#ff8ba0">Konto löschen</button>
+          <button class="ghost" id="logout">Abmelden</button></div>
       </div>`);
 
     document.querySelectorAll('[data-plan]').forEach(b => b.onclick = async () => {
@@ -189,6 +191,11 @@ async function renderDashboard() {
       location.href = portal_url;
     });
     document.getElementById('logout').onclick = logout;
+    document.getElementById('delete').onclick = async () => {
+      if (!confirm('Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt.')) return;
+      await api('DELETE', '/api/account');
+      logout();
+    };
   } catch (e) {
     el(`<div class="card"><p class="error">${esc(e.message)}</p>
       <button class="ghost" onclick="localStorage.removeItem('cubory-portal-tokens');location.reload()">Neu anmelden</button></div>`);

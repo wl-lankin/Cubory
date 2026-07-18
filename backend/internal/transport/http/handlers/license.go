@@ -24,6 +24,11 @@ func userID(c *gin.Context) uuid.UUID {
 func (h *LicenseHandler) Status(c *gin.Context) {
 	st, _, err := h.Svc.Effective(c.Request.Context(), userID(c))
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			// z.B. gelöschtes Konto mit noch gültigem Access-Token
+			fail(c, http.StatusNotFound, "no_license", "Keine aktive Lizenz")
+			return
+		}
 		internal(c, err)
 		return
 	}
@@ -42,6 +47,10 @@ func (h *LicenseHandler) Activate(c *gin.Context) {
 	}
 	resp, err := h.Svc.Activate(c.Request.Context(), userID(c), info)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			fail(c, http.StatusNotFound, "no_license", "Keine aktive Lizenz")
+			return
+		}
 		if errors.Is(err, domain.ErrDeviceLimit) {
 			fail(c, http.StatusConflict, "device_limit_reached",
 				"Geräte-Limit erreicht - deaktiviere zuerst ein anderes Gerät")

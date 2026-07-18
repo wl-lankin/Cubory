@@ -53,7 +53,7 @@
     'macOS · Apple Silicon · 107 MB': 'macOS · Apple Silicon · 107 MB',
     'macOS · Intel · 111 MB': 'macOS · Intel · 111 MB',
     'Windows · 64-bit · 86 MB': 'Windows · 64-bit · 86 MB',
-    'Linux · bald verfügbar': 'Linux · coming soon',
+    'Linux · x64 · 116 MB': 'Linux · x64 · 116 MB',
     '© 2026 Cubory · The modern CAD viewer': '© 2026 Cubory · The modern CAD viewer',
     'Entwickelt von': 'Built by', 'Impressum': 'Legal notice', 'Datenschutz': 'Privacy',
     // Error-Pages

@@ -279,6 +279,29 @@ func (s *Service) sendVerifyCode(ctx context.Context, u *domain.User) error {
 		fmt.Sprintf("Hallo %s,\n\nwillkommen bei Cubory! Dein Bestätigungscode lautet:\n\n    %s\n\nGib ihn in der App ein. Der Code ist 30 Minuten gültig.\n\nFalls du dich nicht registriert hast, ignoriere diese E-Mail.", u.Name, code))
 }
 
+// DeleteAccount: DSGVO-Löschung - Sessions beenden, Geräte deaktivieren,
+// aktive Lizenz schließen, Nutzerdaten anonymisieren.
+func (s *Service) DeleteAccount(ctx context.Context, userID uuid.UUID) error {
+	if err := s.sessions.RevokeAllForUser(ctx, userID); err != nil {
+		return err
+	}
+	devices, err := s.devices.ActiveByUser(ctx, userID)
+	if err == nil {
+		for _, d := range devices {
+			_ = s.devices.Deactivate(ctx, d.ID)
+		}
+	}
+	if lic, err := s.licenses.ActiveByUser(ctx, userID); err == nil {
+		lic.Status = domain.LicenseExpired
+		_ = s.licenses.Update(ctx, lic)
+	}
+	if err := s.users.Anonymize(ctx, userID); err != nil {
+		return err
+	}
+	s.audit.Write(ctx, domain.AuditEntry{UserID: &userID, Actor: "user", Action: "account_deleted"})
+	return nil
+}
+
 /* ── intern ──────────────────────────────────────────────────────────────── */
 
 func (s *Service) issueSession(ctx context.Context, u *domain.User, deviceID *uuid.UUID, ip, userAgent string) (*Tokens, error) {
@@ -326,7 +349,7 @@ func (s *Service) sendEmailToken(ctx context.Context, u *domain.User, purpose do
 
 func purposePath(p domain.EmailTokenPurpose) string {
 	if p == domain.PurposeResetPassword {
-		return "reset-password"
+		return "reset-password.html"
 	}
 	return "verify-email"
 }

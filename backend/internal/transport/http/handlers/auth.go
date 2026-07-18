@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	"cubory/api/internal/domain"
 	"cubory/api/internal/service/auth"
@@ -159,6 +160,14 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 	}
 	h.Svc.ResendVerifyCode(c.Request.Context(), req.Email)
 	c.Status(http.StatusAccepted)
+}
+
+func (h *AuthHandler) DeleteAccount(c *gin.Context) {
+	if err := h.Svc.DeleteAccount(c.Request.Context(), c.MustGet(middleware.CtxUserID).(uuid.UUID)); err != nil {
+		internal(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 /* ── Helfer ──────────────────────────────────────────────────────────────── */

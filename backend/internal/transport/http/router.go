@@ -52,6 +52,7 @@ func NewRouter(d Deps) *gin.Engine {
 		authed.POST("/license/activate", middleware.RateLimit(20), lh.Activate)
 		authed.POST("/license/deactivate", lh.Deactivate)
 		authed.POST("/license/heartbeat", middleware.RateLimit(30), lh.Heartbeat)
+		authed.DELETE("/account", ah.DeleteAccount)
 		authed.GET("/devices", lh.Devices)
 		authed.DELETE("/devices/:id", lh.DeleteDevice)
 	}

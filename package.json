@@ -10,11 +10,12 @@
     "dev": "vite",
     "start": "npm run build:renderer && electron .",
     "build:renderer": "vite build",
-    "dist": "npm run build:renderer && electron-builder --mac --win",
+    "dist": "npm run build:renderer && electron-builder --mac --win --linux",
     "dist:mac": "npm run build:renderer && electron-builder --mac",
     "dist:win": "npm run build:renderer && electron-builder --win",
     "release:publish": "node scripts/publish-release.mjs",
-    "dev:app": "node scripts/dev.mjs"
+    "dev:app": "node scripts/dev.mjs",
+    "dist:linux": "npm run build:renderer && electron-builder --linux"
   },
   "build": {
     "appId": "de.wolfganglinz.cubory",
@@ -99,7 +100,18 @@
         "provider": "generic",
         "url": "https://cubory.app/downloads"
       }
-    ]
+    ],
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Graphics"
+    }
   },
   "dependencies": {
     "dxf": "^4.7.0",

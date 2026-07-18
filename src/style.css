@@ -300,6 +300,8 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .device-remove:hover { color: #ff7b9c; border-color: #ff7b9c; }
 
 .account-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+.account-danger { color: #ff8ba0; }
+.account-danger:hover { background: rgba(255, 110, 130, 0.12); }
 
 /* ── Upgrade-Nudge ───────────────────────────────────────────────────────── */
 

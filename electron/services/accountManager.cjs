@@ -152,6 +152,13 @@ class AccountManager {
     return this.state();
   }
 
+  async deleteAccount() {
+    await this.http.del('/api/account');
+    this.stopHeartbeat();
+    this.store.clear();
+    this._emit();
+  }
+
   async resendVerifyCode() {
     const email = this.store.get('user')?.email;
     if (email) await this.http.post('/api/auth/resend-verification', { email }, { auth: false });

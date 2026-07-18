@@ -25,7 +25,7 @@ func FromEnv() (*Config, error) {
 		AccessTokenTTL:  15 * time.Minute,
 		RefreshTokenTTL: 30 * 24 * time.Hour,
 		TrialDays:       7,
-		AppBaseURL:      getenv("CUBORY_APP_BASE_URL", "http://localhost:5199"),
+		AppBaseURL:      getenv("CUBORY_APP_BASE_URL", "http://cubory.test"),
 		Env:             getenv("CUBORY_ENV", "dev"),
 	}
 	if len(c.JWTSecret) == 0 {
