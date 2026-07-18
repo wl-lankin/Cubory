@@ -189,6 +189,81 @@ let current = null;
 // Sichtbarkeits-Zustand der Listen, überlebt einen Sprachwechsel
 let uiState = { layerVis: {}, partVis: {}, isolated: null };
 
+/* ── Tabs: jede Datei bleibt geparst im Speicher ─────────────────────────── */
+
+const tabs = [];
+let activeTabId = 0;
+let nextTabId = 1;
+
+function renderTabbar() {
+  const bar = document.getElementById('tabbar');
+  bar.hidden = tabs.length === 0;
+  bar.innerHTML = tabs.map((tab) => `
+    <div class="tab${tab.id === activeTabId ? ' on' : ''}" data-tab="${tab.id}" title="${escapeHtml(tab.path || tab.name)}">
+      <span class="tab-name">${escapeHtml(tab.name)}</span>
+      <button class="tab-close" data-close="${tab.id}">×</button>
+    </div>`).join('');
+  bar.querySelectorAll('[data-tab]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      if (e.target.dataset.close) return;
+      activateTab(Number(el.dataset.tab));
+    });
+  });
+  bar.querySelectorAll('[data-close]').forEach((el) => {
+    el.addEventListener('click', () => closeTab(Number(el.dataset.close)));
+  });
+}
+
+function saveActiveTabState() {
+  const tab = tabs.find((x) => x.id === activeTabId);
+  if (!tab) return;
+  tab.cam = viewer.saveCamera();
+  tab.uiState = uiState;
+}
+
+function activateTab(id) {
+  if (id === activeTabId) return;
+  const tab = tabs.find((x) => x.id === id);
+  if (!tab) return;
+  saveActiveTabState();
+  activeTabId = id;
+  current = tab.data;
+  uiState = tab.uiState || { layerVis: {}, partVis: {}, isolated: null };
+  resetProFeatures();
+  viewer.setModel(tab.data.object, tab.data.mode);
+  if (tab.cam) viewer.restoreCamera(tab.cam);
+  renderModelUi(false);
+  renderTabbar();
+}
+
+function closeTab(id) {
+  const idx = tabs.findIndex((x) => x.id === id);
+  if (idx < 0) return;
+  const [tab] = tabs.splice(idx, 1);
+  viewer.disposeObject(tab.data.object);
+  if (id === activeTabId) {
+    const neighbor = tabs[idx] || tabs[idx - 1];
+    if (neighbor) {
+      activeTabId = 0; // erzwingt Aktivierung
+      activateTab(neighbor.id);
+    } else {
+      activeTabId = 0;
+      current = null;
+      resetProFeatures();
+      viewer.clear();
+      showEmptyState();
+    }
+  }
+  renderTabbar();
+}
+
+function showEmptyState() {
+  el.dropzone.style.display = '';
+  el.toolbar.hidden = true;
+  el.sidebar.hidden = true;
+  el.statusbar.hidden = true;
+}
+
 async function openPayload(payload) {
   // Kommt eine Datei per Doppelklick/Drop während des Intros: sofort beenden
   intro?.finish();
@@ -199,12 +274,31 @@ async function openPayload(payload) {
 
   try {
     if (payload.error) throw new Error(payload.error);
+    // Bereits geöffnet? Dann nur aktivieren.
+    const existing = payload.path && tabs.find((x) => x.path === payload.path);
+    if (existing) {
+      activateTab(existing.id);
+      el.loading.hidden = true;
+      return;
+    }
     const result = await loadCadFile(payload.name, payload.data, payload.loadAs);
-    current = { ...result, name: payload.name, size: payload.size };
-    uiState = { layerVis: {}, partVis: {}, isolated: null };
+    saveActiveTabState();
+    const tab = {
+      id: nextTabId++,
+      name: payload.name,
+      path: payload.path || null,
+      data: { ...result, name: payload.name, size: payload.size },
+      uiState: { layerVis: {}, partVis: {}, isolated: null },
+      cam: null,
+    };
+    tabs.push(tab);
+    activeTabId = tab.id;
+    current = tab.data;
+    uiState = tab.uiState;
     resetProFeatures();
     viewer.setModel(result.object, result.mode);
     renderModelUi(true);
+    renderTabbar();
   } catch (err) {
     console.error(err);
     alert(`${t('error.open', { name: payload.name })}\n\n${err.message}`);

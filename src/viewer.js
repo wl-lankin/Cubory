@@ -70,14 +70,11 @@ export class Viewer {
     this.camera.updateProjectionMatrix();
   }
 
+  // Entfernt das aktuelle Modell aus der Szene, ohne es freizugeben -
+  // Tabs halten ihre Modelle im Speicher. Freigabe: disposeObject().
   clear() {
     for (const child of [...this.modelGroup.children]) {
       this.modelGroup.remove(child);
-      child.traverse?.((o) => {
-        o.geometry?.dispose?.();
-        if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose());
-        else o.material?.dispose?.();
-      });
     }
     if (this.grid) {
       this.scene.remove(this.grid);
@@ -85,6 +82,30 @@ export class Viewer {
       this.grid.material.dispose();
       this.grid = null;
     }
+  }
+
+  /** Gibt die GPU-Ressourcen eines (geschlossenen) Modells frei. */
+  disposeObject(root) {
+    root?.traverse?.((o) => {
+      o.geometry?.dispose?.();
+      if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose());
+      else o.material?.dispose?.();
+    });
+  }
+
+  /** Kamerazustand für Tab-Wechsel sichern/wiederherstellen. */
+  saveCamera() {
+    return { pos: this.camera.position.clone(), target: this.controls.target.clone(),
+      near: this.camera.near, far: this.camera.far };
+  }
+
+  restoreCamera(cam) {
+    this.camera.position.copy(cam.pos);
+    this.camera.near = cam.near;
+    this.camera.far = cam.far;
+    this.camera.updateProjectionMatrix();
+    this.controls.target.copy(cam.target);
+    this.controls.update();
   }
 
   /** Modell (THREE.Object3D) anzeigen; mode: '2d' | '3d' */

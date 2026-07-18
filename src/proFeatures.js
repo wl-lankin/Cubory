@@ -72,6 +72,9 @@ export function handleProAction(action, btn) {
 
 /** Beim Laden eines neuen Modells: alles zurücksetzen. */
 export function resetProFeatures() {
+  viewer?.setExplode(0);
+  viewer?.setSection(null);
+  viewer?.clearMeasurements();
   measuring = false;
   sectionOn = false;
   explodeOn = false;
