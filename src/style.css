@@ -125,6 +125,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 
 .brand { display: flex; align-items: center; gap: 9px; }
 .brand-mark { width: 21px; height: 21px; }
+.brand-wordmark { height: 15px; width: auto; display: block; }
 .brand-name {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
