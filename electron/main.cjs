@@ -8,6 +8,7 @@ const { UpdateManager } = require('./services/updateManager.cjs');
 let updates = null; // UpdateManager
 
 let account = null; // AccountManager, initialisiert in app.whenReady
+let appStore = null; // SecureStore - merkt sich u.a. den zuletzt genutzten Ordner
 
 const DEV_URL = process.env.VITE_DEV_SERVER_URL;
 
@@ -105,6 +106,7 @@ if (!gotLock) {
 
 ipcMain.handle('dialog:open', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
+    defaultPath: appStore?.get('last_open_dir') || undefined,
     properties: ['openFile'],
     filters: [
       { name: 'CAD-Dateien', extensions: ['dxf', 'step', 'stp', 'iges', 'igs', 'brep', 'stl', 'obj'] },
@@ -112,11 +114,18 @@ ipcMain.handle('dialog:open', async () => {
     ],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
+  rememberDir(result.filePaths[0]);
   return readFilePayload(result.filePaths[0]);
 });
 
+// Auch Doppelklick/„Öffnen mit" aktualisiert den Ordner
+function rememberDir(filePath) {
+  try { appStore?.set('last_open_dir', path.dirname(filePath)); } catch { /* egal */ }
+}
+
 ipcMain.handle('file:read', async (_event, filePath) => {
   if (!SUPPORTED.includes(path.extname(filePath).toLowerCase())) return null;
+  rememberDir(filePath);
   return readFilePayload(filePath);
 });
 
@@ -132,14 +141,14 @@ function wrap(fn) {
 }
 
 function setupAccountIpc() {
+  appStore = new SecureStore();
   ipcMain.handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }));
   const ALLOWED_LINKS = ['https://wolfgang-linz.de', 'https://cubory.app', 'https://github.com/wl-lankin/Cubory'];
   ipcMain.handle('app:openExternal', (_e, url) => {
     if (ALLOWED_LINKS.some((a) => url === a || url.startsWith(a + '/'))) shell.openExternal(url);
   });
 
-  const store = new SecureStore();
-  account = new AccountManager(store, app.getVersion(), (state) => {
+  account = new AccountManager(appStore, app.getVersion(), (state) => {
     for (const win of BrowserWindow.getAllWindows()) {
       win.webContents.send('account:changed', state);
     }
