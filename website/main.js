@@ -116,3 +116,27 @@ document.querySelectorAll('.bom-row[data-pos]').forEach((row) => {
   row.addEventListener('mouseenter', () => balloon?.classList.add('hl'));
   row.addEventListener('mouseleave', () => balloon?.classList.remove('hl'));
 });
+
+
+// App-Screenshot: echte Explosions-Frames aus Cubory, gescrubbt per Scroll
+const scrub = document.getElementById('scrub');
+if (scrub) {
+  const FR = 16;
+  const imgs = [];
+  let loaded = 0;
+  const cx = scrub.getContext('2d');
+  const draw = (i) => { const im = imgs[i]; if (im?.complete) cx.drawImage(im, 0, 0, scrub.width, scrub.height); };
+  for (let i = 0; i < FR; i++) {
+    const im = new Image();
+    im.src = `assets/explode/f${String(i).padStart(2, '0')}.jpg`;
+    im.onload = () => { if (++loaded === 1) { scrub.width = im.naturalWidth; scrub.height = im.naturalHeight; draw(0); } };
+    imgs.push(im);
+  }
+  const section = document.getElementById('app');
+  addEventListener('scroll', () => {
+    const r = section.getBoundingClientRect();
+    const total = r.height - innerHeight;
+    const p = Math.min(Math.max(-r.top / total, 0), 1);
+    draw(Math.min(FR - 1, Math.round(p * (FR - 1))));
+  }, { passive: true });
+}

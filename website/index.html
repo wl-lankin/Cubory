@@ -44,6 +44,9 @@ h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(44px,7vw,76px);li
 section{padding:90px 0}
 h2{font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;margin-bottom:14px;text-align:center}
 .lead{text-align:center;color:var(--muted);max-width:540px;margin:0 auto 48px;line-height:1.7}
+#app{height:260vh;padding:0}
+.shot-sticky{position:sticky;top:6vh;padding:20px 0}
+#scrub{display:block;width:100%;height:auto;border-radius:18px}
 .shot{border-radius:18px;border:1px solid var(--border);box-shadow:0 40px 120px rgba(124,92,255,.25),0 12px 40px rgba(3,5,20,.6);overflow:hidden;
 transform:perspective(1200px) rotateX(4deg);transition:transform .6s}
 .shot:hover{transform:perspective(1200px) rotateX(0)}
@@ -164,8 +167,11 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
   </div>
 </header>
 
-<section id="app" class="reveal">
-  <div class="shot"><img src="assets/screenshot.png" alt="Cubory mit geladener STEP-Baugruppe" /></div>
+<section id="app">
+  <div class="shot-sticky">
+    <p class="dim">POS 5 · EXPLOSION · SCROLLEN</p>
+    <div class="shot"><canvas id="scrub" width="1440" height="900"></canvas></div>
+  </div>
 </section>
 
 <section id="features">
