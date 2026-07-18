@@ -39,6 +39,15 @@ contextBridge.exposeInMainWorld('cubory', {
     listDir: (dirPath) => ipcRenderer.invoke('fs:listDir', dirPath),
     recent: () => ipcRenderer.invoke('fs:recent'),
   },
+  settings: {
+    get: () => ipcRenderer.invoke('settings:get'),
+    set: (key, value) => ipcRenderer.invoke('settings:set', key, value),
+    openDefaultApps: () => ipcRenderer.invoke('settings:openDefaultApps'),
+  },
+  session: {
+    saveTabs: (paths) => ipcRenderer.send('session:tabs', paths),
+    onRestore: (callback) => ipcRenderer.on('restore-session', (_e, paths) => callback(paths)),
+  },
   crash: {
     optIn: () => ipcRenderer.invoke('crash:optIn'),
     setOptIn: (on) => ipcRenderer.invoke('crash:setOptIn', on),

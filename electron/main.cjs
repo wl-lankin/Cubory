@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, shell, Tray, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { SecureStore } = require('./services/secureStore.cjs');
@@ -9,6 +9,44 @@ let updates = null; // UpdateManager
 
 let account = null; // AccountManager, initialisiert in app.whenReady
 let appStore = null; // SecureStore - merkt sich u.a. den zuletzt genutzten Ordner
+let tray = null;
+let isQuitting = false;
+
+const SETTINGS_DEFAULTS = {
+  autostart: false,
+  restore_tabs: true,
+  close_to_tray: false,
+  intro: true,
+};
+
+function getSetting(key) {
+  const v = appStore?.get('opt_' + key);
+  return v === undefined ? SETTINGS_DEFAULTS[key] : v;
+}
+
+function applyAutostart(on) {
+  try {
+    app.setLoginItemSettings({ openAtLogin: !!on });
+  } catch { /* Linux ohne Desktop-Integration */ }
+}
+
+function createTray() {
+  if (tray) return;
+  const icon = nativeImage.createFromPath(path.join(__dirname, 'tray.png'));
+  tray = new Tray(icon.resize({ width: 18, height: 18 }));
+  tray.setToolTip('Cubory');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'Cubory öffnen', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { type: 'separator' },
+    { label: 'Beenden', click: () => { isQuitting = true; app.quit(); } },
+  ]));
+  tray.on('click', () => { mainWindow?.show(); mainWindow?.focus(); });
+}
+
+function destroyTray() {
+  tray?.destroy();
+  tray = null;
+}
 
 const DEV_URL = process.env.VITE_DEV_SERVER_URL;
 
@@ -124,6 +162,13 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   }
 
+  mainWindow.on('close', (e) => {
+    if (getSetting('close_to_tray') && !isQuitting && process.platform !== 'darwin') {
+      e.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
   mainWindow.webContents.on('render-process-gone', (_e, details) => {
     reportCrash('renderer', `render-process-gone: ${details.reason}`, '');
   });
@@ -132,6 +177,13 @@ function createWindow() {
     if (pendingFile) {
       mainWindow.webContents.send('open-file', readFilePayload(pendingFile));
       pendingFile = null;
+      return;
+    }
+    if (getSetting('restore_tabs')) {
+      const paths = (appStore?.get('session_tabs') || []).filter((p) => {
+        try { fs.accessSync(p); return true; } catch { return false; }
+      });
+      if (paths.length) mainWindow.webContents.send('restore-session', paths);
     }
   });
 }
@@ -276,6 +328,37 @@ process.on('uncaughtException', (err) => {
 
 function setupAccountIpc() {
   appStore = new SecureStore();
+  // Optionen
+  ipcMain.handle('settings:get', () => ({
+    autostart: getSetting('autostart'),
+    restore_tabs: getSetting('restore_tabs'),
+    close_to_tray: getSetting('close_to_tray'),
+    intro: getSetting('intro'),
+    crash_reports: !!appStore.get('crash_reports'),
+    platform: process.platform,
+  }));
+  ipcMain.handle('settings:set', (_e, key, value) => {
+    if (key === 'crash_reports') {
+      appStore.set('crash_reports', !!value);
+      return true;
+    }
+    if (!(key in SETTINGS_DEFAULTS)) return false;
+    appStore.set('opt_' + key, !!value);
+    if (key === 'autostart') applyAutostart(value);
+    if (key === 'close_to_tray') { value ? createTray() : destroyTray(); }
+    return true;
+  });
+  ipcMain.handle('settings:openDefaultApps', () => {
+    if (process.platform === 'win32') {
+      shell.openExternal('ms-settings:defaultapps');
+      return true;
+    }
+    return false; // macOS/Linux: Hinweistext im Dialog
+  });
+  ipcMain.on('session:tabs', (_e, paths) => {
+    appStore.set('session_tabs', Array.isArray(paths) ? paths.slice(0, 20) : []);
+  });
+
   ipcMain.handle('crash:optIn', () => !!appStore.get('crash_reports'));
   ipcMain.handle('crash:setOptIn', (_e, on) => { appStore.set('crash_reports', !!on); return !!on; });
   ipcMain.on('crash:report', (_e, payload) => {
@@ -359,6 +442,8 @@ function setupAccountIpc() {
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
   setupAccountIpc();
+  applyAutostart(getSetting('autostart'));
+  if (getSetting('close_to_tray') && process.platform !== 'darwin') createTray();
   const file = fileFromArgv(process.argv);
   if (file) pendingFile = file;
   createWindow();
@@ -368,6 +453,8 @@ app.whenReady().then(() => {
   });
 });
 
+app.on('before-quit', () => { isQuitting = true; });
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin' && !tray) app.quit();
 });

@@ -14,6 +14,7 @@ import { playIntro } from './intro.js';
 import { initAccount, initAbout, can, openAccountModal } from './account.js';
 import { maybeShowNudge } from './nudge.js';
 import { initFileBrowser, openFileBrowser } from './fileBrowser.js';
+import { initSettings } from './settings.js';
 import { initProFeatures, handleProAction, resetProFeatures, updateProLocks } from './proFeatures.js';
 
 document.getElementById('app').style.setProperty('--ambient-bg', `url(${ambientUrl})`);
@@ -24,7 +25,7 @@ if (window.cubory?.platform === 'win32') document.body.classList.add('platform-w
 // Start-Animation: Partikel-Vortex → Kristall → Schockwelle; danach UI-Einflug.
 // Bei reduzierter Bewegung oder direktem Dateistart wird sie übersprungen.
 let intro = null;
-if (location.hostname === 'localhost' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+if (location.hostname === 'localhost' || localStorage.getItem('cubory-intro') === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.body.classList.add('intro-done');
 } else {
   document.body.classList.add('intro-playing');
@@ -51,8 +52,6 @@ const el = {
   statusEntities: document.getElementById('status-entities'),
   statusSize: document.getElementById('status-size'),
   statusHint: document.getElementById('status-hint'),
-  langBtn: document.getElementById('lang-btn'),
-  langList: document.getElementById('lang-list'),
 };
 
 const viewer = new Viewer(document.getElementById('viewport'));
@@ -70,46 +69,10 @@ function applyStatic() {
   });
 }
 
-function buildLangMenu() {
-  const stored = storedLang();
-  const label = stored === 'system'
-    ? t('lang.system')
-    : (LOCALES.find(([c]) => c === stored)?.[1] ?? stored);
-  el.langBtn.innerHTML = `${escapeHtml(label)}<span class="lang-chev">▾</span>`;
-
-  const entries = [['system', t('lang.system')], ...LOCALES];
-  el.langList.innerHTML = entries.map(([code, name]) =>
-    `<button class="lang-item${code === stored ? ' on' : ''}" data-lang="${code}">
-      <span>${escapeHtml(name)}</span>${code === stored ? '<span class="lang-check">✓</span>' : ''}
-    </button>`).join('');
-  el.langList.querySelectorAll('.lang-item').forEach((item) => {
-    item.addEventListener('click', () => {
-      setLang(item.dataset.lang);
-      closeLangMenu();
-      applyStatic();
-      buildLangMenu();
-      if (current) renderModelUi(false);
-    });
-  });
-}
-
-function closeLangMenu() {
-  el.langList.hidden = true;
-}
-
-el.langBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  el.langList.hidden = !el.langList.hidden;
-  if (!el.langList.hidden) {
-    el.langList.querySelector('.lang-item.on')?.scrollIntoView({ block: 'center' });
-  }
+initSettings(() => {
+  applyStatic();
+  if (current) renderModelUi(false);
 });
-document.addEventListener('click', (e) => {
-  if (!el.langList.hidden && !el.langList.contains(e.target)) closeLangMenu();
-});
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLangMenu(); });
-
-buildLangMenu();
 applyStatic();
 
 // Pro-Features spiegeln den Lizenzzustand: gesperrte Tools bekommen ein Schloss
@@ -153,6 +116,15 @@ document.getElementById('btn-open-top').addEventListener('click', openFileBrowse
 
 window.cubory?.onOpenFile((payload) => openPayload(payload));
 
+// Letzte Sitzung wiederherstellen (Option, Default an)
+window.cubory?.session?.onRestore(async (paths) => {
+  intro?.finish();
+  for (const p of paths) {
+    const payload = await window.cubory.readFile(p);
+    if (payload) await openPayload(payload);
+  }
+});
+
 window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
     e.preventDefault();
@@ -195,7 +167,12 @@ const tabs = [];
 let activeTabId = 0;
 let nextTabId = 1;
 
+function persistSession() {
+  window.cubory.session?.saveTabs(tabs.map((x) => x.path).filter(Boolean));
+}
+
 function renderTabbar() {
+  persistSession();
   const bar = document.getElementById('tabbar');
   bar.hidden = tabs.length === 0;
   bar.innerHTML = tabs.map((tab) => `

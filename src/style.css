@@ -907,7 +907,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   background: transparent;
   border: none;
   border-radius: 999px;
-  padding: 6px 8px 6px 14px;
+  padding: 9px 10px 9px 15px;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.13s;
@@ -930,3 +930,41 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   cursor: pointer;
 }
 .tab-close:hover { color: var(--text); background: rgba(255, 61, 138, 0.25); }
+
+/* ── Optionen-Dialog ─────────────────────────────────────────────────────── */
+
+.set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 13px;
+  padding: 9px 0;
+  cursor: pointer;
+}
+.set-toggle {
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(160, 170, 255, 0.18);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex: 0 0 auto;
+}
+.set-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.15s, background 0.15s;
+}
+.set-toggle:checked { background: linear-gradient(92deg, var(--accent-1), var(--accent-2)); }
+.set-toggle:checked::after { transform: translateX(16px); background: #fff; }
+select.account-input { width: 100%; cursor: pointer; }
+select.account-input option { background: #131a44; }
