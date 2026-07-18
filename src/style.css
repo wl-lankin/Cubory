@@ -262,7 +262,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .account-tab {
   flex: 1;
   font: 600 12.5px 'Inter', sans-serif;
-  color: var(--accent-light);
+  color: var(--text-muted);
   background: transparent;
   border: 1px solid rgba(160, 170, 255, 0.18);
   border-radius: 999px;
@@ -314,7 +314,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .device-meta { color: var(--text-faint); font-size: 11px; }
 .device-remove {
   font: 600 11px 'Inter', sans-serif;
-  color: var(--accent-light);
+  color: var(--text-muted);
   background: transparent;
   border: 1px solid rgba(160, 170, 255, 0.25);
   border-radius: 999px;
@@ -813,7 +813,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .fb-shortcuts { display: flex; gap: 4px; flex-wrap: wrap; }
 .fb-sc {
   font: 600 11px 'Inter', sans-serif;
-  color: var(--accent-light);
+  color: var(--text-muted);
   background: transparent;
   border: none;
   border-radius: 999px;
@@ -842,7 +842,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .fb-crumbs { display: flex; align-items: center; gap: 2px; margin-bottom: 8px; flex-wrap: wrap; }
 .fb-crumb {
   font: 500 12px ui-monospace, Menlo, monospace;
-  color: var(--accent-light);
+  color: var(--text-muted);
   background: transparent;
   border: none;
   padding: 3px 6px;
