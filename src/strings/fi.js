@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Poista tili',
   'account.deleteConfirm': 'Haluatko poistaa tilisi pysyvästi? Lisenssi, laitteet ja kaikki tiedot poistetaan. Tästä ei voi peruuttaa.',
   'about.terms': 'Ehdot & EULA',
+  'about.crash': 'Lähetä anonyymi kaatumisraportti',
 };

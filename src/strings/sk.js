@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Zmazať účet',
   'account.deleteConfirm': 'Trvalo zmazať svoj účet? Odstránia sa licencia, zariadenia a všetky údaje. To nie je možné vrátiť späť.',
   'about.terms': 'Podmienky & EULA',
+  'about.crash': 'Posielaj anonymné hlášky o chybách',
 };

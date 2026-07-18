@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Supprimer le compte',
   'account.deleteConfirm': 'Supprimer ton compte définitivement ? La licence, les appareils et toutes les données seront supprimés. Cela ne peut pas être annulé.',
   'about.terms': 'Conditions & CLUF',
+  'about.crash': 'Envoyer des rapports de plantage anonymes',
 };

@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Obriši račun',
   'account.deleteConfirm': 'Trajno obriši svoj račun? Licenca, uređaji i svi podaci će biti uklonjeni. Ovo se ne može poništiti.',
   'about.terms': 'Uvjeti & EULA',
+  'about.crash': 'Pošalji anonimne izvještaje o greškama',
 };

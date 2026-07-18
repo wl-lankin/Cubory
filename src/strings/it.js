@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Elimina account',
   'account.deleteConfirm': 'Vuoi eliminare definitivamente il tuo account? La licenza, i dispositivi e tutti i dati verranno rimossi. Questa operazione non può essere annullata.',
   'about.terms': 'Termini & EULA',
+  'about.crash': 'Invia report anonimi sugli arresti anomali.',
 };

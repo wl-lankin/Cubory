@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Verwijder account',
   'account.deleteConfirm': 'Wil je je account definitief verwijderen? Licentie, apparaten en alle gegevens worden verwijderd. Dit kan niet ongedaan gemaakt worden.',
   'about.terms': 'Voorwaarden & EULA',
+  'about.crash': 'Stuur anonieme crashrapporten',
 };

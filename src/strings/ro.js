@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Șterge contul',
   'account.deleteConfirm': 'Șterge contul permanent? Licența, dispozitivele și toate datele vor fi șterse. Acest lucru nu poate fi anulat.',
   'about.terms': 'Termeni & EULA',
+  'about.crash': 'Trimite rapoarte anonime de defectare',
 };

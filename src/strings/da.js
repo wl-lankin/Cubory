@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Slet konto',
   'account.deleteConfirm': 'Slet din konto permanent? Licens, enheder og alle data vil blive fjernet. Dette kan ikke fortrydes.',
   'about.terms': 'Vilkår & EULA',
+  'about.crash': 'Send anonyme krakrapport',
 };

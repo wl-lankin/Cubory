@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Ta bort konto',
   'account.deleteConfirm': 'Radera ditt konto permanent? Licens, enheter och alla data kommer att tas bort. Detta kan inte ångras.',
   'about.terms': 'Villkor & EULA',
+  'about.crash': 'Skicka anonyma kraschrapporter',
 };

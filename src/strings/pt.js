@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Eliminar conta',
   'account.deleteConfirm': 'Queres eliminar a tua conta permanentemente? A licença, os dispositivos e todos os dados serão removidos. Isto não pode ser desfeito.',
   'about.terms': 'Termos & EULA',
+  'about.crash': 'Enviar relatórios de falhas anónimos.',
 };

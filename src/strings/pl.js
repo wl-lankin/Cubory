@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Usuń konto',
   'account.deleteConfirm': 'Czy na pewno chcesz usunąć swoje konto na stałe? Usunięte zostaną licencja, urządzenia i wszystkie dane. Nie da się tego cofnąć.',
   'about.terms': 'Warunki & EULA',
+  'about.crash': 'Wyślij anonimowe raporty awarii.',
 };

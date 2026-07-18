@@ -128,4 +128,5 @@ export default {
   'account.delete': 'Fiók törlése',
   'account.deleteConfirm': 'Töröld véglegesen a fiókod? A licensz, eszközök és az összes adat eltűnik. Ezt nem lehet visszafordítani.',
   'about.terms': 'Felhasználási feltételek & EULA',
+  'about.crash': 'Küldj anonym crash jelentéseket',
 };
