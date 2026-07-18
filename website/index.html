@@ -73,6 +73,68 @@ border-radius:14px;padding:18px 24px;text-decoration:none;color:var(--text);back
 .dl b{font-family:'Space Grotesk';font-size:15px}
 .dl span{font-size:12px;color:var(--faint)}
 footer{border-top:1px solid var(--border);padding:34px 0;font-size:12.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+/* ── Technische-Zeichnung-Ästhetik ── */
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
+.dim{display:flex;align-items:center;gap:14px;justify-content:center;color:var(--faint);
+font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.18em;margin-bottom:18px}
+.dim::before,.dim::after{content:"";flex:0 0 90px;height:1px;background:rgba(160,170,255,.3)}
+.dim::before{background:linear-gradient(90deg,transparent,rgba(160,170,255,.4))}
+.dim::after{background:linear-gradient(90deg,rgba(160,170,255,.4),transparent)}
+.sheet{position:relative;border:1px solid rgba(160,170,255,.28);background:
+repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.05) 39px 40px),
+repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.05) 39px 40px),
+rgba(10,14,42,.5);padding:44px 40px 0}
+.sheet::before,.sheet::after{content:"";position:absolute;width:14px;height:14px;border:1px solid rgba(160,170,255,.5)}
+.sheet::before{top:-7px;left:-7px;border-width:0 1px 1px 0}
+.sheet::after{bottom:-7px;right:-7px;border-width:1px 0 0 1px}
+.sheet-label{position:absolute;top:-9px;left:24px;background:var(--bg1);padding:0 10px;
+font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.2em;color:var(--faint)}
+.bom{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
+.bom svg{width:100%;height:auto}
+.bom-table{border:1px solid rgba(160,170,255,.25);font-size:13px}
+.bom-row{display:grid;grid-template-columns:52px 1fr 92px;align-items:center;
+border-bottom:1px solid rgba(160,170,255,.14);padding:13px 16px;gap:14px;transition:background .15s;cursor:default}
+.bom-row:last-child{border-bottom:none}
+.bom-row.head{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+.bom-row:not(.head):hover,.bom-row.hl{background:rgba(255,61,138,.08)}
+.pos{width:26px;height:26px;border:1px solid rgba(160,170,255,.5);border-radius:50%;display:flex;
+align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}
+.bom-row:hover .pos,.bom-row.hl .pos{border-color:var(--a1);color:var(--text);box-shadow:0 0 10px rgba(255,61,138,.4)}
+.bom-row b{display:block;font-size:13.5px;font-weight:600}
+.bom-row small{color:var(--muted);font-size:12px;line-height:1.5}
+.lic{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;text-align:center;
+padding:4px 0;border:1px solid rgba(160,170,255,.3);color:var(--muted)}
+.lic.pro{border:none;background:var(--grad);color:#fff;font-weight:700}
+.balloon{opacity:.85;transition:.2s}
+.balloon.hl circle{stroke:#ff3d8a;fill:rgba(255,61,138,.18)}
+.balloon.hl text{fill:#fff}
+.tblock{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid rgba(160,170,255,.28);border-bottom:none;
+margin:44px -40px 0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--faint)}
+.tblock div{padding:9px 14px;border-right:1px solid rgba(160,170,255,.18);border-top:1px solid rgba(160,170,255,.18)}
+.tblock div:nth-child(3n){border-right:none}
+.tblock b{color:var(--muted);font-weight:600}
+.spec{border:1px solid rgba(160,170,255,.28);overflow-x:auto}
+.spec table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+.spec th,.spec td{padding:14px 18px;text-align:center;border:1px solid rgba(160,170,255,.14)}
+.spec th{font-family:'Space Grotesk';font-size:14.5px}
+.spec th.rec{padding-top:34px}
+.spec td:first-child,.spec th:first-child{text-align:left;font-family:ui-monospace,Menlo,monospace;
+font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+.spec .price-cell{font-family:'Space Grotesk';font-weight:700;font-size:26px}
+.spec .rec{position:relative;background:rgba(255,61,138,.07)}
+.spec .stamp{position:absolute;top:7px;left:50%;transform:translateX(-50%) rotate(-4deg);background:var(--grad);
+font-size:9.5px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:3px;text-transform:uppercase;font-family:Inter}
+.spec .ok{color:var(--a1);font-weight:700}
+.spec .no{color:var(--faint)}
+.plot{border:1px solid rgba(160,170,255,.28);font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.plot a{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 22px;
+color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255,.2);transition:background .15s}
+.plot a:last-child{border-bottom:none}
+.plot a:hover{background:rgba(255,61,138,.07)}
+.plot .file{color:var(--text)}
+.plot .meta{color:var(--faint);font-size:11.5px;flex:1;text-align:right}
+.plot .arrow{color:var(--a1);font-weight:700}
+@media(max-width:860px){.bom{grid-template-columns:1fr}.tblock{grid-template-columns:1fr 1fr}.tblock div:nth-child(3n){border-right:1px solid rgba(160,170,255,.18)}}
 .reveal{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s cubic-bezier(.2,.7,.2,1)}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.reveal{opacity:1;transform:none}}
@@ -107,47 +169,78 @@ footer{border-top:1px solid var(--border);padding:34px 0;font-size:12.5px;color:
 </section>
 
 <section id="features">
-  <h2 class="reveal">Ein Viewer, der <span class="grad">alles kann</span></h2>
-  <p class="lead reveal">Gebaut für Konstrukteure, Fertiger und alle, die täglich CAD-Daten öffnen -
-  ohne CAD-Lizenz, ohne Cloud-Zwang.</p>
-  <div class="grid">
-    <div class="card reveal"><span class="ic">📐</span><h3>Alle Formate</h3><p>DXF, STEP, STP, IGES, BREP, STL und OBJ - mit echtem OpenCascade-Kern direkt in der App. Baugruppen mit Teilenamen, Ebenen mit Originalfarben.</p></div>
-    <div class="card reveal"><span class="ic">📏</span><h3>Messen mit Snapping</h3><p>Punkt-zu-Punkt-Distanzen in mm, die Messpunkte rasten auf Ecken und Kanten ein. <b>Pro</b></p></div>
-    <div class="card reveal"><span class="ic">🪞</span><h3>Schnittansichten</h3><p>Clipping-Ebene entlang X, Y oder Z mit stufenlosem Regler - für den Blick ins Innere. <b>Pro</b></p></div>
-    <div class="card reveal"><span class="ic">💥</span><h3>Explosionsansichten</h3><p>Baugruppen stufenlos auseinanderziehen und jedes Teil isolieren. <b>Pro</b></p></div>
-    <div class="card reveal"><span class="ic">📤</span><h3>Export</h3><p>3D-Modelle als STL, Zeichnungen als maßhaltiges SVG, Screenshots in HD. <b>Pro</b></p></div>
-    <div class="card reveal"><span class="ic">🌍</span><h3>20 Sprachen &amp; offline</h3><p>Komplett lokal, ohne Internetzwang - Pro-Lizenzen funktionieren bis zu 30 Tage offline.</p></div>
+  <p class="dim reveal">POS 1-7 · WERKZEUGE</p>
+  <h2 class="reveal">Ein Viewer wie eine <span class="grad">Baugruppenzeichnung</span></h2>
+  <p class="lead reveal">Jede Funktion hat ihre Position - wie auf dem Zeichnungsblatt.
+  Fahre über die Stückliste.</p>
+  <div class="sheet reveal">
+    <span class="sheet-label">CUBORY · BLATT 1/1</span>
+    <div class="bom">
+      <svg viewBox="0 0 420 360" fill="none" aria-hidden="true">
+        <g stroke="#5d668f" stroke-width="1">
+          <path d="M210 60 330 120v120L210 300 90 240V120Z"/>
+          <path d="M210 60v120M210 180l120-60M210 180 90 120M210 180v120M330 240 210 180M90 240l120-60" opacity=".55"/>
+          <path d="M150 90 270 150M270 90 150 150" opacity=".3"/>
+        </g>
+        <g stroke="#7c5cff" stroke-width=".8" opacity=".6">
+          <path d="M80 250 80 130M76 130h8M76 250h8"/>
+          <text x="62" y="195" fill="#9aa3d0" font-size="10" font-family="monospace" transform="rotate(-90 62 195)">120 mm</text>
+        </g>
+        <g id="balloons" font-family="monospace" font-size="11">
+          <g class="balloon" data-pos="1"><line x1="210" y1="60" x2="250" y2="28" stroke="#5d668f" stroke-width=".8"/><circle cx="262" cy="24" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="262" y="28" fill="#9aa3d0" text-anchor="middle">1</text></g>
+          <g class="balloon" data-pos="2"><line x1="330" y1="120" x2="374" y2="100" stroke="#5d668f" stroke-width=".8"/><circle cx="386" cy="96" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="386" y="100" fill="#9aa3d0" text-anchor="middle">2</text></g>
+          <g class="balloon" data-pos="3"><line x1="210" y1="180" x2="280" y2="210" stroke="#5d668f" stroke-width=".8"/><circle cx="292" cy="214" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="292" y="218" fill="#9aa3d0" text-anchor="middle">3</text></g>
+          <g class="balloon" data-pos="4"><line x1="90" y1="120" x2="48" y2="96" stroke="#5d668f" stroke-width=".8"/><circle cx="36" cy="92" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="36" y="96" fill="#9aa3d0" text-anchor="middle">4</text></g>
+          <g class="balloon" data-pos="5"><line x1="330" y1="240" x2="372" y2="270" stroke="#5d668f" stroke-width=".8"/><circle cx="384" cy="274" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="384" y="278" fill="#9aa3d0" text-anchor="middle">5</text></g>
+          <g class="balloon" data-pos="6"><line x1="210" y1="300" x2="252" y2="330" stroke="#5d668f" stroke-width=".8"/><circle cx="264" cy="334" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="264" y="338" fill="#9aa3d0" text-anchor="middle">6</text></g>
+          <g class="balloon" data-pos="7"><line x1="90" y1="240" x2="50" y2="272" stroke="#5d668f" stroke-width=".8"/><circle cx="38" cy="276" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"/><text x="38" y="280" fill="#9aa3d0" text-anchor="middle">7</text></g>
+        </g>
+      </svg>
+      <div class="bom-table">
+        <div class="bom-row head"><span>Pos.</span><span>Bezeichnung</span><span style="text-align:center">Lizenz</span></div>
+        <div class="bom-row" data-pos="1"><span class="pos">1</span><span><b>Alle Formate</b><small>DXF, STEP, STP, IGES, BREP, STL, OBJ - echter OpenCascade-Kern</small></span><span class="lic">FREE</span></div>
+        <div class="bom-row" data-pos="2"><span class="pos">2</span><span><b>Baugruppen &amp; Ebenen</b><small>Teilenamen, Isolation, Originalfarben</small></span><span class="lic">FREE</span></div>
+        <div class="bom-row" data-pos="3"><span class="pos">3</span><span><b>Messen mit Snapping</b><small>mm-genau, rastet auf Ecken und Kanten</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="4"><span class="pos">4</span><span><b>Schnittansichten</b><small>Clipping entlang X/Y/Z, stufenlos</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="5"><span class="pos">5</span><span><b>Explosionsansichten</b><small>Baugruppen stufenlos auseinanderziehen</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="6"><span class="pos">6</span><span><b>Export &amp; HD-Shots</b><small>STL, maßhaltiges SVG, HD-Screenshots</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="7"><span class="pos">7</span><span><b>20 Sprachen · offline</b><small>komplett lokal, Pro bis 30 Tage offline</small></span><span class="lic">FREE</span></div>
+      </div>
+    </div>
+    <div class="tblock">
+      <div><b>CUBORY</b> · The modern CAD viewer</div><div>Maßstab <b>1:1</b></div><div>Blatt <b>1/1</b></div>
+      <div>Gezeichnet <b>2026-07-18</b></div><div>Geprüft <b>✓ bestanden</b></div><div>Werkstoff <b>Electron · three.js</b></div>
+    </div>
   </div>
 </section>
 
 <section id="pricing">
-  <h2 class="reveal">Ehrliche <span class="grad">Preise</span></h2>
-  <p class="lead reveal">Free bleibt für immer voll benutzbar. Pro schaltet die Profi-Werkzeuge frei -
-  monatlich, jährlich oder einmal für immer.</p>
-  <div class="plans">
-    <div class="plan reveal"><h3>Free</h3><div class="price">0 €</div><div class="per">für immer</div>
-      <ul><li>Alle Formate öffnen</li><li>Baugruppen &amp; Ebenen</li><li>Dark &amp; Light Mode</li><li>Kein Zeitlimit</li></ul>
-      <a class="btn btn-ghost" href="#download">Herunterladen</a></div>
-    <div class="plan hot reveal"><span class="tag">Beliebt</span><h3>Pro Jährlich</h3><div class="price">79 €</div><div class="per">pro Jahr · 2 Monate geschenkt</div>
-      <ul><li>Alles aus Free</li><li>Messen mit Snapping</li><li>Schnitt &amp; Explosion</li><li>Export &amp; HD-Screenshots</li><li>Kommerzielle Nutzung</li></ul>
-      <a class="btn btn-primary" href="#download">7 Tage gratis testen</a></div>
-    <div class="plan reveal"><h3>Pro Monatlich</h3><div class="price">9 €</div><div class="per">pro Monat, jederzeit kündbar</div>
-      <ul><li>Alle Pro-Features</li><li>3 Geräte</li><li>Jederzeit kündbar</li></ul>
-      <a class="btn btn-ghost" href="#download">7 Tage gratis testen</a></div>
-    <div class="plan reveal"><h3>Lifetime</h3><div class="price">199 €</div><div class="per">einmal zahlen, für immer</div>
-      <ul><li>Alle Pro-Features</li><li>Alle künftigen Updates</li><li>Keine Abo-Verwaltung</li></ul>
-      <a class="btn btn-ghost" href="#download">Einmal kaufen</a></div>
+  <p class="dim reveal">TABELLE A · KONDITIONEN</p>
+  <h2 class="reveal">Preise wie im <span class="grad">Datenblatt</span></h2>
+  <p class="lead reveal">Free bleibt für immer voll benutzbar. Pro schaltet die Positionen 3-6 frei.</p>
+  <div class="spec reveal">
+    <table>
+      <tr><th></th><th>Free</th><th class="rec"><span class="stamp">Empfohlen</span>Pro Jährlich</th><th>Pro Monatlich</th><th>Lifetime</th></tr>
+      <tr><td>Preis</td><td class="price-cell">0 €</td><td class="price-cell rec">79 €</td><td class="price-cell">9 €</td><td class="price-cell">199 €</td></tr>
+      <tr><td>Abrechnung</td><td>-</td><td class="rec">pro Jahr</td><td>pro Monat</td><td>einmalig</td></tr>
+      <tr><td>Pos. 1-2, 7</td><td class="ok">✓</td><td class="rec ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+      <tr><td>Pos. 3-6 (Pro)</td><td class="no">-</td><td class="rec ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+      <tr><td>Geräte</td><td>2</td><td class="rec">3</td><td>3</td><td>3</td></tr>
+      <tr><td>Testphase</td><td>-</td><td class="rec">7 Tage gratis</td><td>7 Tage gratis</td><td>-</td></tr>
+      <tr><td></td><td><a class="btn btn-ghost" href="#download">Laden</a></td><td class="rec"><a class="btn btn-primary" href="#download">Testen</a></td><td><a class="btn btn-ghost" href="#download">Testen</a></td><td><a class="btn btn-ghost" href="#download">Kaufen</a></td></tr>
+    </table>
   </div>
 </section>
 
 <section id="download">
+  <p class="dim reveal">AUSGABE · PLOT</p>
   <h2 class="reveal">Cubory <span class="grad">laden</span></h2>
-  <p class="lead reveal">Version 1.0.0 · kostenlos, Free-Funktionen ohne Konto</p>
-  <div class="dl">
-    <a class="reveal" href="https://github.com/wl-lankin/Cubory/releases"><b> macOS</b><span>Apple Silicon · .dmg</span></a>
-    <a class="reveal" href="https://github.com/wl-lankin/Cubory/releases"><b> macOS</b><span>Intel · .dmg</span></a>
-    <a class="reveal" href="https://github.com/wl-lankin/Cubory/releases"><b>⊞ Windows</b><span>64-bit · Setup.exe</span></a>
-    <a class="reveal" href="https://github.com/wl-lankin/Cubory/releases"><b>🐧 Linux</b><span>bald verfügbar</span></a>
+  <p class="lead reveal">Version 1.0.0 · Free-Funktionen ohne Konto</p>
+  <div class="plot reveal">
+    <a href="https://github.com/wl-lankin/Cubory/releases"><span class="file">cubory-1.0.0-arm64.dmg</span><span class="meta">macOS · Apple Silicon · 107 MB</span><span class="arrow">↓</span></a>
+    <a href="https://github.com/wl-lankin/Cubory/releases"><span class="file">cubory-1.0.0.dmg</span><span class="meta">macOS · Intel · 111 MB</span><span class="arrow">↓</span></a>
+    <a href="https://github.com/wl-lankin/Cubory/releases"><span class="file">cubory-setup-1.0.0.exe</span><span class="meta">Windows · 64-bit · 86 MB</span><span class="arrow">↓</span></a>
+    <a href="https://github.com/wl-lankin/Cubory/releases"><span class="file">cubory-1.0.0.AppImage</span><span class="meta">Linux · bald verfügbar</span><span class="arrow">·</span></a>
   </div>
 </section>
 

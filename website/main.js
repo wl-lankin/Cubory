@@ -108,3 +108,11 @@ if (!reduced) {
     renderer.render(scene, camera);
   });
 }
+
+
+// Stückliste ↔ Positions-Ballons synchron hervorheben
+document.querySelectorAll('.bom-row[data-pos]').forEach((row) => {
+  const balloon = document.querySelector(`.balloon[data-pos="${row.dataset.pos}"]`);
+  row.addEventListener('mouseenter', () => balloon?.classList.add('hl'));
+  row.addEventListener('mouseleave', () => balloon?.classList.remove('hl'));
+});
