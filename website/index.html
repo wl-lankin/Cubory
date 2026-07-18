@@ -19,7 +19,7 @@ radial-gradient(1000px 700px at -10% 40%,rgba(124,92,255,.14),transparent 60%),
 linear-gradient(180deg,var(--bg0),var(--bg1) 40%,#0d1233);overflow-x:hidden}
 #hero-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px}
-nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0}
+nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0;position:relative;z-index:5}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:19px}
 .brand img{width:30px;height:30px;border-radius:8px}
 nav .links{display:flex;gap:26px;font-size:13.5px;color:var(--muted)}
@@ -33,7 +33,7 @@ padding:13px 28px;text-decoration:none;transition:.15s}
 .btn-ghost:hover{color:var(--text);border-color:rgba(160,170,255,.5)}
 header{min-height:92vh;display:flex;flex-direction:column}
 .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 80px;position:relative;isolation:isolate}
-.hero::before{content:"";position:absolute;inset:-8% -18%;z-index:-1;
+.hero::before{content:"";position:absolute;inset:-8% -18%;z-index:-1;pointer-events:none;
 background:radial-gradient(55% 62% at 50% 48%,rgba(7,11,34,.8),rgba(7,11,34,.35) 60%,transparent 78%)}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-bottom:20px}
 h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(44px,7vw,76px);line-height:1.04;letter-spacing:-.015em;margin-bottom:20px}
@@ -41,7 +41,7 @@ h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(44px,7vw,76px);li
 .sub{font-size:17px;line-height:1.7;color:var(--muted);max-width:560px;margin-bottom:36px}
 .cta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center}
 .hint{font-size:13px;color:var(--faint)}
-section{padding:90px 0}
+section{padding:90px 0;scroll-margin-top:20px}
 h2{font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;margin-bottom:14px;text-align:center}
 .lead{text-align:center;color:var(--muted);max-width:540px;margin:0 auto 48px;line-height:1.7}
 #app{height:170vh;padding:0}
