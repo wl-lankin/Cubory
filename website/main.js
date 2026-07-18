@@ -70,3 +70,15 @@ document.querySelectorAll('.bom-row[data-pos]').forEach((row) => {
   row.addEventListener('mouseenter', () => balloon?.classList.add('hl'));
   row.addEventListener('mouseleave', () => balloon?.classList.remove('hl'));
 });
+
+
+// Pro: Monatlich/Jährlich-Switch in der Preistabelle
+const T = (s) => (window.__t ? window.__t(s) : s);
+document.querySelectorAll('.bill-toggle button').forEach((b) => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.bill-toggle button').forEach((x) => x.classList.toggle('on', x === b));
+    const yearly = b.dataset.b === 'yearly';
+    document.getElementById('pro-price').textContent = yearly ? '79 €' : '9 €';
+    document.getElementById('pro-per').textContent = yearly ? T('pro Jahr · 2 Monate geschenkt') : T('pro Monat');
+  });
+});

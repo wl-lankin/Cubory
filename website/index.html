@@ -149,6 +149,10 @@ margin:44px -40px 0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;co
 font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
 .spec .price-cell{font-family:'Space Grotesk';font-weight:700;font-size:26px}
 .spec .rec{position:relative;background:rgba(255,61,138,.07)}
+.bill-toggle{display:flex;gap:3px;justify-content:center;margin-top:8px}
+.bill-toggle button{font:600 10.5px Inter,sans-serif;color:var(--muted);background:transparent;
+border:1px solid rgba(160,170,255,.25);border-radius:999px;padding:4px 12px;cursor:pointer}
+.bill-toggle button.on{color:#fff;background:var(--grad);border-color:transparent}
 .spec .stamp{position:absolute;top:-13px;z-index:2;left:50%;transform:translateX(-50%) rotate(-4deg);background:var(--grad);
 font-size:9.5px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:3px;text-transform:uppercase;font-family:Inter}
 .spec .ok{color:var(--a1);font-weight:700}
@@ -283,14 +287,15 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
   <p class="lead reveal">Free bleibt für immer voll benutzbar. Pro schaltet die Positionen 3-6 frei.</p>
   <div class="spec reveal">
     <table>
-      <tr><th></th><th>Free</th><th class="rec"><span class="stamp">Empfohlen</span>Pro Jährlich</th><th>Pro Monatlich</th><th>Lifetime</th></tr>
-      <tr><td>Preis</td><td class="price-cell">0 €</td><td class="price-cell rec">79 €</td><td class="price-cell">9 €</td><td class="price-cell">199 €</td></tr>
-      <tr><td>Abrechnung</td><td>-</td><td class="rec">pro Jahr</td><td>pro Monat</td><td>einmalig</td></tr>
-      <tr><td>Pos. 1-2, 7</td><td class="ok">✓</td><td class="rec ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
-      <tr><td>Pos. 3-6 (Pro)</td><td class="no">-</td><td class="rec ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
-      <tr><td>Geräte</td><td>2</td><td class="rec">3</td><td>3</td><td>3</td></tr>
-      <tr><td>Testphase</td><td>-</td><td class="rec">7 Tage gratis</td><td>7 Tage gratis</td><td>-</td></tr>
-      <tr><td></td><td><a class="btn btn-ghost" href="#download">Laden</a></td><td class="rec"><a class="btn btn-primary" href="#download">Testen</a></td><td><a class="btn btn-ghost" href="#download">Testen</a></td><td><a class="btn btn-ghost" href="#download">Kaufen</a></td></tr>
+      <tr><th></th><th>Free</th><th class="rec"><span class="stamp">Empfohlen</span>Pro
+        <div class="bill-toggle"><button type="button" data-b="monthly">Monatlich</button><button type="button" class="on" data-b="yearly">Jährlich</button></div></th><th>Lifetime</th></tr>
+      <tr><td>Preis</td><td class="price-cell">0 €</td><td class="price-cell rec" id="pro-price">79 €</td><td class="price-cell">199 €</td></tr>
+      <tr><td>Abrechnung</td><td>-</td><td class="rec" id="pro-per">pro Jahr · 2 Monate geschenkt</td><td>einmalig</td></tr>
+      <tr><td>Pos. 1-2, 7</td><td class="ok">✓</td><td class="rec ok">✓</td><td class="ok">✓</td></tr>
+      <tr><td>Pos. 3-6 (Pro)</td><td class="no">-</td><td class="rec ok">✓</td><td class="ok">✓</td></tr>
+      <tr><td>Geräte</td><td>2</td><td class="rec">3</td><td>3</td></tr>
+      <tr><td>Testphase</td><td>-</td><td class="rec">7 Tage gratis</td><td>-</td></tr>
+      <tr><td></td><td><a class="btn btn-ghost" href="#download">Laden</a></td><td class="rec"><a class="btn btn-primary" href="#download">Testen</a></td><td><a class="btn btn-ghost" href="#download">Kaufen</a></td></tr>
     </table>
   </div>
 </section>

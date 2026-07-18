@@ -5,6 +5,7 @@
 (function () {
   const params = new URLSearchParams(location.search);
   const lang = (params.get('lang') || navigator.language || 'de').slice(0, 2).toLowerCase();
+  window.__t = (s) => s;
   if (lang === 'de') return;
   document.documentElement.lang = 'en';
 
@@ -44,7 +45,7 @@
     'Free bleibt für immer voll benutzbar. Pro schaltet die Positionen 3-6 frei.': 'Free stays fully usable forever. Pro unlocks positions 3-6.',
     'Preis': 'Price', 'Abrechnung': 'Billing', 'Geräte': 'Devices', 'Testphase': 'Trial',
     'Pro Jährlich': 'Pro Yearly', 'Pro Monatlich': 'Pro Monthly', 'Empfohlen': 'Recommended',
-    'pro Jahr': 'per year', 'pro Monat': 'per month', 'einmalig': 'one-time',
+    'pro Jahr': 'per year', 'pro Jahr · 2 Monate geschenkt': 'per year · 2 months free', 'Monatlich': 'Monthly', 'Jährlich': 'Yearly', 'pro Monat': 'per month', 'einmalig': 'one-time',
     '7 Tage gratis': '7 days free', 'Laden': 'Download', 'Testen': 'Try', 'Kaufen': 'Buy',
     'AUSGABE · PLOT': 'OUTPUT · PLOT',
     'Cubory': 'Cubory', 'laden': 'download',
@@ -70,6 +71,7 @@
   const lookup = {};
   for (const [k, v] of Object.entries(D)) lookup[norm(k)] = v;
 
+  window.__t = (s) => lookup[norm(s)] || s;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
