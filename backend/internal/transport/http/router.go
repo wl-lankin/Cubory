@@ -3,6 +3,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"cubory/api/internal/service/auth"
 	"cubory/api/internal/service/billing"
@@ -12,6 +13,8 @@ import (
 )
 
 type Deps struct {
+	Pool             *pgxpool.Pool
+	AdminEmail       string
 	JWTSecret        []byte
 	Auth             *auth.Service
 	License          *license.Service
@@ -61,6 +64,15 @@ func NewRouter(d Deps) *gin.Engine {
 		authed.GET("/billing/portal", bh.Portal)
 	}
 	api.POST("/webhooks/stripe", middleware.RateLimit(120), bh.Webhook)
+
+	adminH := &handlers.AdminHandler{Pool: d.Pool, AdminEmail: d.AdminEmail}
+	admin := api.Group("/admin", middleware.RequireAuth(d.JWTSecret), adminH.RequireAdmin)
+	{
+		admin.GET("/stats", adminH.Stats)
+		admin.GET("/users", adminH.Users)
+		admin.GET("/users/:id", adminH.UserDetail)
+		admin.POST("/users/:id/grant", adminH.Grant)
+	}
 
 	return r
 }

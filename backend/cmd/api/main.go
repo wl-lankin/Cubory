@@ -132,6 +132,8 @@ func main() {
 		postgres.NewWebhookRepo(pool), audit)
 
 	router := transporthttp.NewRouter(transporthttp.Deps{
+		Pool:             pool,
+		AdminEmail:       getenvDefault("CUBORY_ADMIN_EMAIL", "info@wolfgang-linz.de"),
 		JWTSecret:        cfg.JWTSecret,
 		Auth:             authSvc,
 		License:          licenseSvc,

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cubory Admin</title>
+<link rel="icon" href="../assets/icon.png" />
+<style>
+:root{--bg:#0a0e2a;--panel:rgba(19,25,66,.55);--border:rgba(160,170,255,.14);--text:#eef0ff;
+--muted:#9aa3d0;--faint:#5d668f;--a1:#ff3d8a;--a2:#7c5cff;--grad:linear-gradient(92deg,var(--a1),var(--a2))}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh;padding:34px 22px;
+background:radial-gradient(900px 500px at 85% -10%,rgba(255,61,138,.13),transparent 60%),linear-gradient(180deg,#070b22,var(--bg))}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:19px;display:flex;align-items:center;gap:10px;margin-bottom:22px}
+h1 img{width:26px;height:26px;border-radius:7px}
+h1 span{font-size:10px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;backdrop-filter:blur(16px)}
+input,button{font:500 13.5px Inter,sans-serif;color:var(--text);border-radius:10px;padding:10px 14px;border:1px solid rgba(160,170,255,.2)}
+input{background:rgba(10,14,42,.6);outline:none;width:100%;max-width:320px}
+input:focus{border-color:var(--a1)}
+button{background:var(--grad);border:none;cursor:pointer;font-weight:600}
+button.ghost{background:transparent;border:1px solid rgba(160,170,255,.25);color:var(--muted)}
+button.danger{background:transparent;border:1px solid rgba(255,110,130,.4);color:#ff8ba0}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{flex:1;min-width:130px;text-align:center}
+.stat b{display:block;font-size:26px;font-family:ui-monospace,Menlo,monospace}
+.stat span{font-size:10.5px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid rgba(160,170,255,.1)}
+th{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
+tr:hover td{background:rgba(160,170,255,.05)}
+.badge{background:var(--grad);color:#fff;font-weight:700;font-size:9px;letter-spacing:.06em;padding:2px 8px;border-radius:999px;text-transform:uppercase}
+.badge.dim{background:none;border:1px solid rgba(160,170,255,.3);color:var(--muted)}
+.err{color:#ff8ba0;font-size:13px;margin-top:10px}
+.detail{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);white-space:pre-wrap;max-height:300px;overflow:auto;margin-top:10px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body><div class="wrap">
+<h1><img src="../assets/icon.png" alt=""/>Cubory <span>Admin</span></h1>
+<div id="app"></div>
+<script>
+const API = localStorage.getItem('cubory-api') || 'http://localhost:8880';
+let tokens = JSON.parse(localStorage.getItem('cubory-admin-tokens') || 'null');
+
+async function api(method, path, body, retry = true) {
+  const headers = { 'content-type': 'application/json' };
+  if (tokens) headers.authorization = 'Bearer ' + tokens.access_token;
+  const res = await fetch(API + path, { method, headers, body: body && JSON.stringify(body) });
+  if (res.status === 401 && retry && tokens) {
+    const r = await fetch(API + '/api/auth/refresh', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ refresh_token: tokens.refresh_token }) });
+    if (r.ok) { tokens = (await r.json()).tokens; localStorage.setItem('cubory-admin-tokens', JSON.stringify(tokens)); return api(method, path, body, false); }
+    logout(); return null;
+  }
+  if (res.status === 204) return {};
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error?.message || res.status);
+  return data;
+}
+const el = (h) => document.getElementById('app').innerHTML = h;
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function logout() { localStorage.removeItem('cubory-admin-tokens'); tokens = null; render(); }
+
+function renderLogin(error = '') {
+  el(`<div class="card"><div class="row">
+    <input id="email" type="email" placeholder="Admin-E-Mail" value="info@wolfgang-linz.de"/>
+    <input id="password" type="password" placeholder="Passwort"/>
+    <button id="go">Anmelden</button></div>
+    ${error ? `<p class="err">${esc(error)}</p>` : ''}</div>`);
+  document.getElementById('go').onclick = async () => {
+    try {
+      const d = await api('POST', '/api/auth/login', { email: email.value, password: password.value });
+      tokens = d.tokens; localStorage.setItem('cubory-admin-tokens', JSON.stringify(tokens));
+      await api('GET', '/api/admin/stats'); // Admin-Check
+      render();
+    } catch (e) { localStorage.removeItem('cubory-admin-tokens'); tokens = null; renderLogin(e.message); }
+  };
+}
+
+async function renderDash(q = '') {
+  try {
+    const [stats, users] = await Promise.all([
+      api('GET', '/api/admin/stats'),
+      api('GET', '/api/admin/users?q=' + encodeURIComponent(q)),
+    ]);
+    if (!stats) return;
+    el(`
+    <div class="card stats">
+      <div class="stat"><b>${stats.users}</b><span>Nutzer</span></div>
+      <div class="stat"><b>${stats.pro}</b><span>Pro aktiv</span></div>
+      <div class="stat"><b>${stats.trial}</b><span>Im Trial</span></div>
+      <div class="stat"><b>${stats.devices}</b><span>Geräte</span></div>
+      <div class="stat"><b>${stats.payments}</b><span>Zahlungen</span></div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <input id="q" placeholder="Suche Name/E-Mail…" value="${esc(q)}"/>
+        <button class="ghost" id="logout">Abmelden</button>
+      </div>
+      <table><tr><th>Nutzer</th><th>Lizenz</th><th>Läuft ab</th><th>Geräte</th><th>Registriert</th><th></th></tr>
+      ${users.users.map(u => `<tr>
+        <td><b>${esc(u.name)}</b><br><span style="color:var(--faint)">${esc(u.email)}${u.verified ? ' ✓' : ''}</span></td>
+        <td><span class="badge ${['monthly','yearly','lifetime','enterprise','trial'].includes(u.kind) ? '' : 'dim'}">${esc(u.kind)}</span></td>
+        <td>${u.expires_at ? esc(u.expires_at.slice(0, 10)) : '-'}</td>
+        <td>${u.devices}</td>
+        <td>${esc(String(u.created_at).slice(0, 10))}</td>
+        <td class="row">
+          <button class="ghost" data-detail="${u.id}">Details</button>
+          ${['monthly','yearly','lifetime','enterprise'].includes(u.kind)
+            ? `<button class="danger" data-revoke="${u.id}">Pro entziehen</button>`
+            : `<button data-grant="${u.id}">Pro schenken</button>`}
+        </td></tr>
+        <tr id="d-${u.id}" style="display:none"><td colspan="6"><div class="detail"></div></td></tr>`).join('')}
+      </table>
+    </div>`);
+    document.getElementById('logout').onclick = logout;
+    document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') renderDash(e.target.value); });
+    document.querySelectorAll('[data-grant]').forEach(b => b.onclick = async () => { await api('POST', `/api/admin/users/${b.dataset.grant}/grant`, { action: 'grant' }); renderDash(q); });
+    document.querySelectorAll('[data-revoke]').forEach(b => b.onclick = async () => { await api('POST', `/api/admin/users/${b.dataset.revoke}/grant`, { action: 'revoke' }); renderDash(q); });
+    document.querySelectorAll('[data-detail]').forEach(b => b.onclick = async () => {
+      const row = document.getElementById('d-' + b.dataset.detail);
+      if (row.style.display !== 'none') { row.style.display = 'none'; return; }
+      const d = await api('GET', `/api/admin/users/${b.dataset.detail}`);
+      row.querySelector('.detail').textContent = JSON.stringify(d, null, 1);
+      row.style.display = '';
+    });
+  } catch (e) {
+    el(`<div class="card"><p class="err">${esc(e.message)}</p><button class="ghost" onclick="localStorage.removeItem('cubory-admin-tokens');location.reload()">Neu anmelden</button></div>`);
+  }
+}
+function render() { tokens ? renderDash() : renderLogin(); }
+render();
+</script>
+</div></body>
+</html>
