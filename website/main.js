@@ -80,5 +80,6 @@ document.querySelectorAll('.bill-toggle button').forEach((b) => {
     const yearly = b.dataset.b === 'yearly';
     document.getElementById('pro-price').textContent = yearly ? '79 €' : '9 €';
     document.getElementById('pro-per').textContent = yearly ? T('pro Jahr · 2 Monate geschenkt') : T('pro Monat');
+    document.getElementById('buy-pro')?.setAttribute('href', yearly ? '/portal/?plan=yearly' : '/portal/?plan=monthly');
   });
 });

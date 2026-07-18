@@ -68,7 +68,10 @@
   <div id="app"></div>
 
 <script>
-const API = localStorage.getItem('cubory-api') || 'http://localhost:8880';
+const API = localStorage.getItem('cubory-api') ||
+  (location.hostname.endsWith('.test') || location.hostname === 'localhost'
+    ? 'http://localhost:8880' : 'https://api.cubory.app');
+const wantedPlan = new URLSearchParams(location.search).get('plan');
 let tokens = JSON.parse(localStorage.getItem('cubory-portal-tokens') || 'null');
 
 async function api(method, path, body, retry = true) {
@@ -101,29 +104,51 @@ function logout() {
 const el = (html) => { document.getElementById('app').innerHTML = html; };
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-function renderLogin(error = '') {
+function renderLogin(error = '', mode = 'login') {
+  const reg = mode === 'register';
   el(`<div class="card">
-    <h2>Anmelden</h2>
+    <h2>${reg ? 'Konto erstellen' : 'Anmelden'}</h2>
+    ${wantedPlan ? `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">Nach der Anmeldung geht es direkt zum Checkout (${esc(wantedPlan)}).</p>` : ''}
     ${error ? `<p class="error">${esc(error)}</p>` : ''}
-    <input id="email" type="email" placeholder="E-Mail" />
-    <input id="password" type="password" placeholder="Passwort" />
-    <button id="login">Anmelden</button>
+    ${reg ? '<input id="name" placeholder="Name" style="margin-bottom:10px" />' : ''}
+    <input id="email" type="email" placeholder="E-Mail" style="margin-bottom:10px" />
+    <input id="password" type="password" placeholder="Passwort${reg ? ' (min. 10 Zeichen)' : ''}" style="margin-bottom:14px" />
+    <div class="row">
+      <button id="go">${reg ? 'Registrieren' : 'Anmelden'}</button>
+      <button class="ghost" id="switch">${reg ? 'Ich habe ein Konto' : 'Neues Konto erstellen'}</button>
+    </div>
+    ${reg ? '<p style="font-size:12px;color:var(--faint);margin-top:12px">Neue Konten erhalten 7 Tage Cubory Pro gratis.</p>' : ''}
   </div>`);
-  document.getElementById('login').onclick = async () => {
+  document.getElementById('switch').onclick = () => renderLogin('', reg ? 'login' : 'register');
+  document.getElementById('go').onclick = async () => {
     try {
-      const data = await api('POST', '/api/auth/login', {
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-      });
+      const body = { email: document.getElementById('email').value, password: document.getElementById('password').value };
+      let data;
+      if (reg) {
+        data = await api('POST', '/api/auth/register', { name: document.getElementById('name').value, ...body });
+      } else {
+        data = await api('POST', '/api/auth/login', body);
+      }
       tokens = data.tokens;
       localStorage.setItem('cubory-portal-tokens', JSON.stringify(tokens));
       render();
-    } catch (e) { renderLogin(e.message); }
+    } catch (e) { renderLogin(e.message, mode); }
   };
 }
 
 async function renderDashboard() {
   el('<div class="card">Lade …</div>');
+  // Deep-Link von der Landing: direkt in den Checkout
+  if (wantedPlan && ['monthly', 'yearly', 'lifetime'].includes(wantedPlan)) {
+    try {
+      const { checkout_url } = await api('POST', '/api/subscription/create', { plan: wantedPlan });
+      history.replaceState(null, '', location.pathname); // Plan-Param verbrauchen
+      location.href = checkout_url;
+      return;
+    } catch (e) {
+      history.replaceState(null, '', location.pathname);
+    }
+  }
   try {
     const [status, devices, sub] = await Promise.all([
       api('GET', '/api/license/status'),
