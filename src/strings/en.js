@@ -103,4 +103,6 @@ export default {
   'about.version': 'Version',
   'about.dev': 'Developed by',
   'about.close': 'Close',
+  'about.imprint': 'Legal notice',
+  'about.privacy': 'Privacy policy',
 };

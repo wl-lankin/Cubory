@@ -103,4 +103,6 @@ export default {
   'about.version': 'Version',
   'about.dev': 'Entwickelt von',
   'about.close': 'Schließen',
+  'about.imprint': 'Impressum',
+  'about.privacy': 'Datenschutz',
 };

@@ -218,6 +218,10 @@ export function initAbout() {
       <div class="account-row"><span>${escapeHtml(t('about.version'))}</span><span>${escapeHtml(info.version)}</span></div>
       <div class="account-row"><span>${escapeHtml(t('about.dev'))}</span>
         <a href="#" id="about-link" style="color:var(--accent-1);text-decoration:none">Wolfgang Linz</a></div>
+      <p class="account-hint" style="margin-top:14px">
+        <a href="#" id="about-imprint" style="color:var(--text-faint)">${escapeHtml(t('about.imprint'))}</a> ·
+        <a href="#" id="about-privacy" style="color:var(--text-faint)">${escapeHtml(t('about.privacy'))}</a>
+      </p>
       <div class="account-actions" style="justify-content:center">
         <button class="btn btn-ghost" id="about-close">${escapeHtml(t('about.close'))}</button>
       </div>
@@ -228,6 +232,14 @@ export function initAbout() {
     overlay.querySelector('#about-link').addEventListener('click', (e) => {
       e.preventDefault();
       window.cubory.openExternal('https://wolfgang-linz.de');
+    });
+    overlay.querySelector('#about-imprint').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.cubory.openExternal('https://cubory.app/impressum.html');
+    });
+    overlay.querySelector('#about-privacy').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.cubory.openExternal('https://cubory.app/datenschutz.html');
     });
   });
 }
