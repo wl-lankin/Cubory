@@ -11,6 +11,7 @@ Desktop-Viewer für CAD-Dateien - für macOS und Windows. Öffnet 2D-Zeichnungen
 | Format | Typ | Parser |
 |---|---|---|
 | DXF | 2D-Zeichnung | `dxf` (JS) - Splines, Bögen, Bulge-Polylinien, Blöcke/INSERT |
+| DWG | 2D-Zeichnung | LibreDWG (`dwg2dxf`, System-Installation) → DXF-Pipeline |
 | STEP / STP | 3D-Volumenmodell | OpenCascade als WebAssembly (`occt-import-js`) |
 | IGES / IGS | 3D | OpenCascade (WASM) |
 | BREP | 3D | OpenCascade (WASM) |

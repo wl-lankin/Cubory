@@ -24,7 +24,7 @@
     'CUBORY · BLATT 1/1': 'CUBORY · SHEET 1/1',
     'Pos.': 'Pos.', 'Bezeichnung': 'Description', 'Lizenz': 'License',
     'Alle Formate': 'All formats',
-    'DXF, STEP, STP, IGES, BREP, STL, OBJ - echter OpenCascade-Kern': 'DXF, STEP, STP, IGES, BREP, STL, OBJ - a real OpenCascade core',
+    'DXF, DWG, STEP, STP, IGES, BREP, STL, OBJ - echter OpenCascade-Kern': 'DXF, DWG, STEP, STP, IGES, BREP, STL, OBJ - a real OpenCascade core',
     'Baugruppen & Ebenen': 'Assemblies & layers',
     'Teilenamen, Isolation, Originalfarben': 'Part names, isolation, original colors',
     'Messen mit Snapping': 'Measure with snapping',
