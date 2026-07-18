@@ -87,7 +87,7 @@ function closeModal() {
 
 function renderModal() {
   if (!modal) return;
-  modal.innerHTML = `<div class="account-card glass">${
+  modal.innerHTML = `<div class="account-card glass sheet sheet-corners">${
     state.signedIn ? accountView() : authView()
   }</div>`;
   wireModal();
@@ -256,7 +256,7 @@ export function initAbout() {
     const info = await window.cubory.appInfo();
     const overlay = document.createElement('div');
     overlay.id = 'account-modal';
-    overlay.innerHTML = `<div class="account-card glass" style="text-align:center">
+    overlay.innerHTML = `<div class="account-card glass sheet sheet-corners" style="text-align:center">
             <img src="${appiconUrl}" alt="" style="width:64px;height:64px;margin-bottom:12px" />
       <img src="${wordmarkUrl}" alt="Cubory" style="height:24px;width:auto;margin:0 auto 6px;display:block" />
       <p class="account-hint" style="margin-bottom:14px">The modern CAD viewer</p>

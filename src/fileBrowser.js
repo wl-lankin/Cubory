@@ -46,7 +46,7 @@ async function render(dirPath) {
   const recent = recentRes.ok ? recentRes.data : [];
   const crumbs = breadcrumbs(d.path);
 
-  modal.innerHTML = `<div class="fb-card glass">
+  modal.innerHTML = `<div class="fb-card glass sheet sheet-corners">
     <div class="fb-head">
       <h2>${esc(t('browser.title'))}</h2>
       <div class="fb-shortcuts">

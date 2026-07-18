@@ -19,7 +19,7 @@ function show(onUpgrade) {
   const overlay = document.createElement('div');
   overlay.id = 'nudge-overlay';
   overlay.innerHTML = `
-    <div class="nudge-card glass">
+    <div class="nudge-card glass sheet sheet-corners">
       <h2 class="nudge-title">${esc(t('nudge.title'))}</h2>
       <p class="nudge-body">${esc(t('nudge.body'))}</p>
       <ul class="nudge-list">
