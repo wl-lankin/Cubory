@@ -11,7 +11,6 @@
   --text-faint: #5d668f;
   --accent-1: #ff3d8a;
   --accent-2: #7c5cff;
-  --accent-light: #ffa9cf;
   --grad: linear-gradient(92deg, var(--accent-1), var(--accent-2));
   --radius: 14px;
   --titlebar-h: 44px;
@@ -473,9 +472,8 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   background: transparent;
   border: none;
   padding: 7px 16px;
-  color: var(--accent-light);
 }
-.btn-ghost:hover { background: rgba(255, 61, 138, 0.12); color: #fff; }
+.btn-ghost:hover { background: rgba(160, 170, 255, 0.12); }
 
 /* ── Workspace ───────────────────────────────────────────────────────────── */
 
