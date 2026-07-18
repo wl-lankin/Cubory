@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>404 - Cubory</title>
+<link rel="icon" href="/assets/icon.png" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+<style>
+:root{--text:#eef0ff;--muted:#9aa3d0;--faint:#5d668f;--a1:#ff3d8a;--a2:#7c5cff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh;overflow:hidden;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center;
+background:radial-gradient(900px 600px at 85% -10%,rgba(255,61,138,.14),transparent 60%),
+radial-gradient(1000px 700px at -10% 110%,rgba(124,92,255,.16),transparent 60%),
+linear-gradient(180deg,#070b22,#0a0e2a 40%,#0d1233)}
+canvas{position:fixed;inset:0;z-index:0}
+.ui{position:relative;z-index:1;margin-top:42vh}
+.dim{display:flex;align-items:center;gap:14px;justify-content:center;color:var(--faint);
+font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.18em;margin-bottom:14px}
+.dim::before,.dim::after{content:"";width:70px;height:1px;background:rgba(160,170,255,.35)}
+h1{font-family:'Space Grotesk';font-size:24px;margin-bottom:8px}
+p{color:var(--muted);font-size:14px;max-width:420px;margin:0 auto 24px;line-height:1.7}
+a{display:inline-block;font-weight:600;font-size:14px;color:var(--text);text-decoration:none;
+background:linear-gradient(92deg,var(--a1),var(--a2));border-radius:999px;padding:13px 28px;
+box-shadow:0 6px 24px rgba(255,61,138,.35);transition:.15s}
+a:hover{transform:translateY(-1px)}
+.hint{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--faint);letter-spacing:.14em;margin-top:16px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="ui">
+  <p class="dim">FEHLER · BLATT NICHT IM ZEICHNUNGSSATZ</p>
+  <h1>Dieses Blatt existiert nicht</h1>
+  <p>Die angeforderte Seite wurde im Zeichnungssatz nicht gefunden -
+  vielleicht wurde sie nie gezeichnet, vielleicht ist sie explodiert.</p>
+  <a href="/">Zurück zur Übersicht&nbsp;&nbsp;→</a>
+  <p class="hint">TIPP: BEWEGE DIE MAUS DURCH DIE ZAHL</p>
+</div>
+<script>
+// Die Fehlernummer besteht aus Partikeln, die vor dem Mauszeiger fliehen
+// und danach an ihre Position zurückfedern.
+const CODE = '404';
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const DPR = Math.min(devicePixelRatio, 2);
+let W, H, pts = [];
+const PINK = [255, 61, 138], VIOLET = [124, 92, 255];
+
+function build() {
+  W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR;
+  const off = document.createElement('canvas');
+  const s = Math.min(W * 0.72, H * 0.66);
+  off.width = W; off.height = H;
+  const c2 = off.getContext('2d');
+  c2.fillStyle = '#fff';
+  c2.font = `700 ${s * 0.62}px 'Space Grotesk', sans-serif`;
+  c2.textAlign = 'center'; c2.textBaseline = 'middle';
+  c2.fillText(CODE, W / 2, H * 0.34);
+  const data = c2.getImageData(0, 0, W, H).data;
+  pts = [];
+  const step = Math.max(5, Math.round(W / 240)) * 2;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      if (data[(y * W + x) * 4 + 3] > 128) {
+        const m = Math.random();
+        const col = m < .1 ? [255, 255, 255] : PINK.map((p, i) => Math.round(p + (VIOLET[i] - p) * m));
+        pts.push({ tx: x, ty: y, x: Math.random() * W, y: Math.random() * H, vx: 0, vy: 0, col, r: (Math.random() * 1.4 + 1) * DPR });
+      }
+    }
+  }
+}
+build();
+addEventListener('resize', build);
+
+let mx = -1e4, my = -1e4;
+addEventListener('pointermove', (e) => { mx = e.clientX * DPR; my = e.clientY * DPR; });
+addEventListener('pointerleave', () => { mx = my = -1e4; });
+
+const R = () => 90 * DPR;
+(function tick() {
+  ctx.clearRect(0, 0, W, H);
+  for (const p of pts) {
+    const dx = p.x - mx, dy = p.y - my;
+    const d2 = dx * dx + dy * dy, r = R();
+    if (d2 < r * r) {
+      const d = Math.sqrt(d2) || 1, f = (r - d) / r * 3.2 * DPR;
+      p.vx += dx / d * f; p.vy += dy / d * f;
+    }
+    p.vx += (p.tx - p.x) * 0.012; p.vy += (p.ty - p.y) * 0.012;
+    p.vx *= 0.9; p.vy *= 0.9;
+    p.x += p.vx; p.y += p.vy;
+    ctx.fillStyle = `rgb(${p.col})`;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

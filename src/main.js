@@ -6,6 +6,7 @@ import '@fontsource/space-grotesk/700.css';
 import './style.css';
 import ambientUrl from './assets/ambient.jpg';
 import wordmarkUrl from './assets/wordmark.png';
+import appiconUrl from './assets/appicon.png';
 import { Viewer } from './viewer.js';
 import { loadCadFile } from './loaders.js';
 import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
@@ -16,6 +17,7 @@ import { initProFeatures, handleProAction, resetProFeatures, updateProLocks } fr
 
 document.getElementById('app').style.setProperty('--ambient-bg', `url(${ambientUrl})`);
 document.getElementById('brand-wordmark').src = wordmarkUrl;
+document.getElementById('brand-icon').src = appiconUrl;
 if (window.cubory?.platform === 'win32') document.body.classList.add('platform-win');
 
 // Start-Animation: Partikel-Vortex → Kristall → Schockwelle; danach UI-Einflug.

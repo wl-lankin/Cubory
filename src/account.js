@@ -1,6 +1,8 @@
 // Account-UI: Titelleisten-Button, Konto-Modal (Login/Registrierung bzw.
 // Kontoübersicht mit Geräten) und der Offline-Verifikations-Banner.
 import { t } from './i18n.js';
+import appiconUrl from './assets/appicon.png';
+import wordmarkUrl from './assets/wordmark.png';
 
 let state = { signedIn: false, kind: 'anonymous', entitlements: [] };
 let modal = null;
@@ -210,13 +212,8 @@ export function initAbout() {
     const overlay = document.createElement('div');
     overlay.id = 'account-modal';
     overlay.innerHTML = `<div class="account-card glass" style="text-align:center">
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" style="margin-bottom:10px">
-        <defs><linearGradient id="ag" x1="0" y1="0" x2="24" y2="24">
-          <stop offset="0" stop-color="#ff3d8a"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs>
-        <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" stroke="url(#ag)" stroke-width="1.6" stroke-linejoin="round"/>
-        <path d="M12 2v20M3 7l9 5 9-5" stroke="url(#ag)" stroke-width="1.2" opacity=".7"/>
-      </svg>
-      <h2 class="account-title" style="margin-bottom:4px">Cubory</h2>
+            <img src="${appiconUrl}" alt="" style="width:64px;height:64px;margin-bottom:12px" />
+      <img src="${wordmarkUrl}" alt="Cubory" style="height:24px;width:auto;margin:0 auto 6px;display:block" />
       <p class="account-hint" style="margin-bottom:14px">The modern CAD viewer</p>
       <div class="account-row"><span>${escapeHtml(t('about.version'))}</span><span>${escapeHtml(info.version)}</span></div>
       <div class="account-row"><span>${escapeHtml(t('about.dev'))}</span>
