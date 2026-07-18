@@ -99,4 +99,8 @@ export default {
   'measure.hint': 'Click two points to measure',
   'section.off': 'Off',
   'explode.na': 'This model has only one part',
+  'about.title': 'About Cubory',
+  'about.version': 'Version',
+  'about.dev': 'Developed by',
+  'about.close': 'Close',
 };

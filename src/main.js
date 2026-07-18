@@ -9,7 +9,7 @@ import { Viewer } from './viewer.js';
 import { loadCadFile } from './loaders.js';
 import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
 import { playIntro } from './intro.js';
-import { initAccount, can, openAccountModal } from './account.js';
+import { initAccount, initAbout, can, openAccountModal } from './account.js';
 import { maybeShowNudge } from './nudge.js';
 import { initProFeatures, handleProAction, resetProFeatures, updateProLocks } from './proFeatures.js';
 
@@ -106,6 +106,7 @@ function checkNudge(state) {
   maybeShowNudge(state, { onUpgrade: () => openAccountModal() });
 }
 
+initAbout();
 initAccount((state) => {
   updateProUi();
   checkNudge(state);

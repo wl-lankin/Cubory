@@ -116,16 +116,17 @@ margin:44px -40px 0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;co
 .tblock div{padding:9px 14px;border-right:1px solid rgba(160,170,255,.18);border-top:1px solid rgba(160,170,255,.18)}
 .tblock div:nth-child(3n){border-right:none}
 .tblock b{color:var(--muted);font-weight:600}
-.spec{border:1px solid rgba(160,170,255,.28);overflow-x:auto}
+.spec{border:1px solid rgba(160,170,255,.28);overflow:visible}
+@media(max-width:700px){.spec{overflow-x:auto}}
 .spec table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
 .spec th,.spec td{padding:14px 18px;text-align:center;border:1px solid rgba(160,170,255,.14)}
 .spec th{font-family:'Space Grotesk';font-size:14.5px}
-.spec th.rec{padding-top:34px}
+.spec th.rec{padding-top:22px}
 .spec td:first-child,.spec th:first-child{text-align:left;font-family:ui-monospace,Menlo,monospace;
 font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
 .spec .price-cell{font-family:'Space Grotesk';font-weight:700;font-size:26px}
 .spec .rec{position:relative;background:rgba(255,61,138,.07)}
-.spec .stamp{position:absolute;top:7px;left:50%;transform:translateX(-50%) rotate(-4deg);background:var(--grad);
+.spec .stamp{position:absolute;top:-13px;z-index:2;left:50%;transform:translateX(-50%) rotate(-4deg);background:var(--grad);
 font-size:9.5px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:3px;text-transform:uppercase;font-family:Inter}
 .spec .ok{color:var(--a1);font-weight:700}
 .spec .no{color:var(--faint)}
@@ -252,7 +253,7 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
 
 <footer>
   <span>© 2026 Cubory · The modern CAD viewer</span>
-  <span><a href="https://github.com/wl-lankin/Cubory" style="color:inherit">GitHub</a></span>
+  <span>Entwickelt von <a href="https://wolfgang-linz.de" style="color:var(--muted)">Wolfgang Linz</a></span>
 </footer>
 </div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>

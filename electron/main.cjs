@@ -126,6 +126,12 @@ function wrap(fn) {
 }
 
 function setupAccountIpc() {
+  ipcMain.handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }));
+  const ALLOWED_LINKS = ['https://wolfgang-linz.de', 'https://cubory.app', 'https://github.com/wl-lankin/Cubory'];
+  ipcMain.handle('app:openExternal', (_e, url) => {
+    if (ALLOWED_LINKS.some((a) => url === a || url.startsWith(a + '/'))) shell.openExternal(url);
+  });
+
   const store = new SecureStore();
   account = new AccountManager(store, app.getVersion(), (state) => {
     for (const win of BrowserWindow.getAllWindows()) {

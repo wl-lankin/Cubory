@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('cubory', {
     ipcRenderer.on('open-file', (_event, payload) => callback(payload));
   },
   platform: process.platform,
+  appInfo: () => ipcRenderer.invoke('app:info'),
+  openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
 
   account: {
     state: () => ipcRenderer.invoke('account:state'),
