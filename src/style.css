@@ -383,7 +383,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 
 #feature-panel {
   position: absolute;
-  top: 64px;
+  top: 50px;
   left: 16px;
   right: 16px;
   margin: 0 auto;
@@ -660,7 +660,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
    ganze Boxen statt einzelner Buttons - keine hängenden Trenner. */
 #toolbar {
   position: absolute;
-  top: 14px;
+  top: 0;
   left: 16px;
   right: 16px;
   margin: 0 auto;
