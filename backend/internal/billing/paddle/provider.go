@@ -246,6 +246,10 @@ func (p *Provider) ParseWebhook(payload []byte, signatureHeader string) (*domain
 			}
 		}
 		ev.PeriodEnd = parseEnd("current_billing_period", "ends_at")
+		if ev.PeriodEnd == nil {
+			// Bei Trial-Abos liefert Paddle die Periode teils nur unter trial_dates
+			ev.PeriodEnd = parseEnd("trial_dates", "ends_at")
+		}
 
 	case "subscription.updated":
 		ev.Type = domain.EvSubscriptionUpdated

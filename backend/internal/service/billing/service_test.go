@@ -172,3 +172,26 @@ func TestWebhookIdempotency(t *testing.T) {
 		t.Errorf("kind = %s, want yearly", st.Kind)
 	}
 }
+
+func TestSubscriptionWithoutPeriodEnd(t *testing.T) {
+	billingSvc, licSvc, user, _ := setup(t)
+	ctx := context.Background()
+	// Provider-Event ohne PeriodEnd (z.B. Trial-Abo mit unvollständigen Daten)
+	webhook(t, billingSvc, domain.BillingEvent{
+		Type: domain.EvSubscriptionCreated, UserID: user.ID, CustomerID: "cus_np",
+		SubscriptionID: "sub_np", Interval: domain.BillingMonthly,
+	})
+	st, _, err := licSvc.Effective(ctx, user.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Kind != "monthly" {
+		t.Fatalf("kind = %s, want monthly", st.Kind)
+	}
+	if st.ExpiresAt == nil {
+		t.Fatal("Abo ohne Periodenende darf keine unbefristete Lizenz werden")
+	}
+	if d := time.Until(*st.ExpiresAt); d > 40*24*time.Hour {
+		t.Errorf("Fallback zu großzügig: %v", d)
+	}
+}

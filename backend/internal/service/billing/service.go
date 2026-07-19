@@ -132,9 +132,20 @@ func (s *Service) Apply(ctx context.Context, ev *domain.BillingEvent) error {
 			kind = domain.KindYearly
 		}
 		now := s.now()
+		// Sicherung: Ohne Periodenende (unvollständiges Provider-Event) würde
+		// ExpiresAt=nil eine unbefristete Lizenz erzeugen. Konservativ begrenzen -
+		// die nächste Zahlung/Aktualisierung schreibt den echten Wert.
+		expires := ev.PeriodEnd
+		if expires == nil {
+			fallback := now.Add(35 * 24 * time.Hour)
+			expires = &fallback
+			s.audit.Write(ctx, domain.AuditEntry{UserID: &ev.UserID, Actor: "system",
+				Action: "subscription_without_period_end",
+				Detail: map[string]any{"fallback_until": fallback}})
+		}
 		lic := &domain.License{
 			ID: uuid.New(), UserID: ev.UserID, PlanID: "pro", Kind: kind,
-			Status: domain.LicenseActive, StartsAt: now, ExpiresAt: ev.PeriodEnd,
+			Status: domain.LicenseActive, StartsAt: now, ExpiresAt: expires,
 			CreatedAt: now, UpdatedAt: now,
 		}
 		if err := s.licenses.Create(ctx, lic); err != nil {
@@ -144,7 +155,7 @@ func (s *Service) Apply(ctx context.Context, ev *domain.BillingEvent) error {
 			ID: uuid.New(), UserID: ev.UserID, LicenseID: lic.ID, Provider: "stripe",
 			ProviderCustomerID: ev.CustomerID, ProviderSubscriptionID: ev.SubscriptionID,
 			Interval: string(ev.Interval), Status: "active",
-			CurrentPeriodEnd: ev.PeriodEnd, CreatedAt: now, UpdatedAt: now,
+			CurrentPeriodEnd: expires, CreatedAt: now, UpdatedAt: now,
 		}); err != nil {
 			return err
 		}
