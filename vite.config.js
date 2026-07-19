@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -10,6 +11,11 @@ export default defineConfig({
   test: {
     // happy-dom liefert DOMParser, den der 3MF-Loader braucht.
     environment: 'happy-dom',
+    alias: {
+      // Siehe test/occt-wasm-path.js
+      'occt-import-js/dist/occt-import-js.wasm?url':
+        fileURLToPath(new URL('./test/occt-wasm-path.js', import.meta.url)),
+    },
     environmentOptions: {
       // Die Tests parsen HTML nur, sie führen es nicht aus - ohne das versucht
       // happy-dom, jedes <script src> und <link> tatsächlich zu laden.

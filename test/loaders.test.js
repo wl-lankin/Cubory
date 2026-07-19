@@ -3,10 +3,11 @@
 // Jeder Regressionstest hier steht für einen Fehler, den echte Dateien in
 // diesem Projekt schon einmal ausgelöst haben.
 import { describe, it, expect } from 'vitest';
+import * as THREE from 'three';
 import { loadCadFile } from '../src/loaders.js';
 import {
   dxfWithLayers, dxfWithBrokenGroupCode, plyMesh, plyPointCloud,
-  stlAscii, objCube, glbAssembly, threeMfClassic, threeMfProduction,
+  stlAscii, objCube, glbAssembly, threeMfClassic, threeMfProduction, stepBox,
 } from './fixtures.js';
 
 // Bewusst von Hand gerechnet statt über THREE.Color: dessen getHSL() liefert
@@ -192,6 +193,42 @@ describe('Schattierung', () => {
     expect(m.hatNormalen).toBe(true);
     expect(m.flach).toBe(false);
   });
+});
+
+describe('STEP über OpenCascade', () => {
+  it('vernetzt einen Quader und behält seine Maße', async () => {
+    const r = await loadCadFile('quader.step', stepBox(40, 30, 20));
+    expect(r.format).toBe('STEP');
+    expect(r.mode).toBe('3d');
+    expect(r.stats.triangles).toBe(12); // sechs Flächen zu je zwei Dreiecken
+
+    const box = new THREE.Box3().setFromObject(r.object);
+    const groesse = box.getSize(new THREE.Vector3());
+    expect(groesse.x).toBeCloseTo(40, 3);
+    expect(groesse.y).toBeCloseTo(30, 3);
+    expect(groesse.z).toBeCloseTo(20, 3);
+  }, 30000);
+
+  it('übernimmt die Normalen von OpenCascade, statt selbst zu rechnen', async () => {
+    // Bei STEP beschreiben die Normalen die tatsächliche Fläche - anders als
+    // bei Mesh-Formaten, wo sie nur die Vernetzung wiedergeben würden.
+    const r = await loadCadFile('quader.step', stepBox());
+    let geprueft = 0;
+    r.object.traverse((o) => {
+      if (!o.isMesh) return;
+      expect(o.geometry.getAttribute('normal')).toBeTruthy();
+      expect(o.material.flatShading).toBe(false);
+      geprueft++;
+    });
+    expect(geprueft).toBeGreaterThan(0);
+  }, 30000);
+
+  it('legt Kantenlinien für den CAD-Look an', async () => {
+    const r = await loadCadFile('quader.step', stepBox());
+    let kanten = 0;
+    r.object.traverse((o) => { if (o.userData.isEdgeLines) kanten++; });
+    expect(kanten).toBeGreaterThan(0);
+  }, 30000);
 });
 
 describe('Fehlerfälle', () => {
