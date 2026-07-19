@@ -7,9 +7,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	unconfiguredbilling "cubory/api/internal/billing/unconfigured"
 	"cubory/api/internal/domain"
 	"cubory/api/internal/service/billing"
 )
+
+// notConfigured meldet fehlende Zahlungsanbieter-Konfiguration als 503.
+func notConfigured(c *gin.Context, err error) bool {
+	if errors.Is(err, unconfiguredbilling.ErrNotConfigured) {
+		fail(c, http.StatusServiceUnavailable, "billing_unavailable",
+			"Käufe sind derzeit nicht verfügbar - bitte später erneut versuchen")
+		return true
+	}
+	return false
+}
 
 type BillingHandler struct{ Svc *billing.Service }
 
@@ -41,6 +52,9 @@ func (h *BillingHandler) CreateCheckout(c *gin.Context) {
 	}
 	url, err := h.Svc.CreateCheckout(c.Request.Context(), userID(c), domain.BillingPlan(req.Plan))
 	if err != nil {
+		if notConfigured(c, err) {
+			return
+		}
 		internal(c, err)
 		return
 	}
@@ -49,6 +63,9 @@ func (h *BillingHandler) CreateCheckout(c *gin.Context) {
 
 func (h *BillingHandler) Cancel(c *gin.Context) {
 	if err := h.Svc.Cancel(c.Request.Context(), userID(c)); err != nil {
+		if notConfigured(c, err) {
+			return
+		}
 		if errors.Is(err, domain.ErrNotFound) {
 			fail(c, http.StatusNotFound, "no_subscription", "Kein aktives Abo vorhanden")
 			return
@@ -61,6 +78,9 @@ func (h *BillingHandler) Cancel(c *gin.Context) {
 
 func (h *BillingHandler) Resume(c *gin.Context) {
 	if err := h.Svc.Resume(c.Request.Context(), userID(c)); err != nil {
+		if notConfigured(c, err) {
+			return
+		}
 		if errors.Is(err, domain.ErrNotFound) {
 			fail(c, http.StatusNotFound, "no_subscription", "Kein Abo vorhanden")
 			return
@@ -74,6 +94,9 @@ func (h *BillingHandler) Resume(c *gin.Context) {
 func (h *BillingHandler) Portal(c *gin.Context) {
 	url, err := h.Svc.PortalURL(c.Request.Context(), userID(c))
 	if err != nil {
+		if notConfigured(c, err) {
+			return
+		}
 		if errors.Is(err, domain.ErrNotFound) {
 			fail(c, http.StatusNotFound, "no_subscription", "Kein Abo vorhanden")
 			return
@@ -96,6 +119,9 @@ func (h *BillingHandler) Webhook(c *gin.Context) {
 		sig = c.GetHeader("Paddle-Signature")
 	}
 	if err := h.Svc.HandleWebhook(c.Request.Context(), payload, sig); err != nil {
+		if notConfigured(c, err) {
+			return
+		}
 		// 4xx → Stripe wiederholt nicht; Verarbeitungsfehler → 500, Stripe retried
 		fail(c, http.StatusInternalServerError, "webhook_failed", err.Error())
 		return

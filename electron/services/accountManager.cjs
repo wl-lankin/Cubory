@@ -8,7 +8,7 @@ const { getDeviceInfo, getFingerprint } = require('./fingerprint.cjs');
 // Dev-Key - für Produktions-Builds durch den Prod-Key ersetzen
 // (CUBORY_LICENSE_PUBKEY überschreibt für Tests).
 const LICENSE_PUBKEY_B64 =
-  process.env.CUBORY_LICENSE_PUBKEY || '2oeTumrA2bvdRqsUb3Mo0+qFhPtvv3ZWckTwjw5Menk=';
+  process.env.CUBORY_LICENSE_PUBKEY || 'NWH1G+2gyBog5d39DqKReAmkfZyUtyCPkkdAGbBmT68=';
 
 // Node erwartet SPKI-DER; für Ed25519: fester Prefix + 32 Byte Raw-Key.
 const SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');

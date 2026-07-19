@@ -13,6 +13,7 @@ import (
 	devbilling "cubory/api/internal/billing/dev"
 	paddlebilling "cubory/api/internal/billing/paddle"
 	stripebilling "cubory/api/internal/billing/stripe"
+	unconfiguredbilling "cubory/api/internal/billing/unconfigured"
 	"cubory/api/internal/config"
 	"cubory/api/internal/domain"
 	"cubory/api/internal/repo/postgres"
@@ -74,6 +75,10 @@ func main() {
 		log.Info("mailer", "provider", "smtp", "host", host)
 	} else {
 		mailer = &email.DevMailer{Log: log}
+		if cfg.Env == "prod" {
+			log.Warn("mailer", "provider", "dev",
+				"hinweis", "CUBORY_SMTP_HOST setzen, sonst kommen Bestätigungscodes nicht an")
+		}
 	}
 
 	// Trial-Ende-Erinnerung (T-48h), idempotent über audit_logs
@@ -130,11 +135,13 @@ func main() {
 			PortalReturnURL: cfg.AppBaseURL,
 		})
 		log.Info("billing", "provider", "stripe")
+	} else if cfg.Env == "prod" {
+		// Ohne Zahlungsanbieter läuft alles außer Kauf/Abo weiter; die
+		// Billing-Endpoints antworten mit 503 statt Fantasie-URLs.
+		provider = unconfiguredbilling.New()
+		log.Warn("billing", "provider", "unconfigured",
+			"hinweis", "PADDLE_API_KEY setzen, sonst sind Käufe deaktiviert")
 	} else {
-		if cfg.Env == "prod" {
-			log.Error("billing", "err", "PADDLE_API_KEY (oder STRIPE_SECRET_KEY) ist in prod Pflicht")
-			os.Exit(1)
-		}
 		provider = devbilling.New()
 		log.Info("billing", "provider", "dev")
 	}
