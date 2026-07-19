@@ -1,7 +1,7 @@
 {
   "name": "cubory",
   "productName": "Cubory",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Cubory - The modern CAD viewer",
   "author": "Wolfgang Linz",
   "license": "MIT",
@@ -15,7 +15,10 @@
     "dist:win": "npm run build:renderer && electron-builder --win",
     "release:publish": "node scripts/publish-release.mjs",
     "dev:app": "node scripts/dev.mjs",
-    "dist:linux": "npm run build:renderer && electron-builder --linux"
+    "dist:linux": "npm run build:renderer && electron-builder --linux",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "npm run build:renderer && vitest run -c vitest.e2e.config.js"
   },
   "build": {
     "appId": "de.wolfganglinz.cubory",
@@ -150,7 +153,9 @@
     "@fontsource/space-grotesk": "^5.1.0",
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
+    "happy-dom": "^20.11.0",
     "playwright-core": "^1.61.1",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "^4.1.10"
   }
 }

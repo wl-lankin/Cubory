@@ -1,16 +1,23 @@
-name: Release
+name: CI & Release
 
-# Läuft beim Merge von dev nach main. Baut die Installer für alle drei
-# Plattformen, lädt sie samt Update-Metadaten auf den Server und bringt
-# Website und API auf denselben Stand.
+# Auf dev und in Pull Requests laufen nur die Tests. Landet etwas auf main
+# (also beim Merge von dev), kommen Build und Rollout dazu.
 on:
   push:
+    branches: [main, dev]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
+# Nur Leserechte. paths-filter braucht in Pull Requests zusätzlich Zugriff auf
+# die Dateiliste des PR - die holt es über die API, nicht über den Git-Verlauf.
+permissions:
+  contents: read
+  pull-requests: read
+
 # Zwei parallele Rollouts würden sich auf dem Server gegenseitig überschreiben.
 concurrency:
-  group: release
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -20,7 +27,7 @@ env:
 
 jobs:
   # Nur bauen, was sich geändert hat - ein Website-Tippfehler soll keine
-  # 20 Minuten macOS-Buildzeit kosten.
+  # teure macOS-Buildzeit kosten.
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -29,10 +36,10 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 2
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -40,6 +47,7 @@ jobs:
               - 'src/**'
               - 'electron/**'
               - 'assets/**'
+              - 'index.html'
               - 'package.json'
               - 'package-lock.json'
               - 'vite.config.js'
@@ -50,9 +58,49 @@ jobs:
       - id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-  build:
+  test:
     needs: changes
-    if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+
+      - name: Unit-Tests
+        run: npm test
+
+      # Electron braucht auf dem Runner einen Bildschirm und ein paar
+      # Systembibliotheken, die im Standard-Image fehlen.
+      - name: Umgebung für den Rauchtest
+        if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2t64 libgtk-3-0t64 \
+            || sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2 libgtk-3-0
+
+      - name: Rauchtest der App
+        if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
+        run: xvfb-run -a npm run test:e2e
+
+      - name: Backend-Tests
+        if: needs.changes.outputs.backend == 'true'
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: go test
+        if: needs.changes.outputs.backend == 'true'
+        working-directory: backend
+        run: go test ./...
+
+  build:
+    needs: [changes, test]
+    if: |
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      && (needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch')
     strategy:
       fail-fast: false
       matrix:
@@ -65,8 +113,8 @@ jobs:
             flag: --linux
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -77,7 +125,7 @@ jobs:
         env:
           # Ohne Apple-Zertifikat würde electron-builder sonst abbrechen.
           CSC_IDENTITY_AUTO_DISCOVERY: false
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installer-${{ matrix.os }}
           if-no-files-found: error
@@ -90,11 +138,13 @@ jobs:
             release/latest*.yml
 
   deploy:
-    needs: [changes, build]
-    if: ${{ !cancelled() && needs.build.result != 'failure' }}
+    needs: [changes, test, build]
+    if: |
+      !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      && needs.test.result == 'success' && needs.build.result != 'failure'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: SSH einrichten
         run: |
@@ -114,7 +164,7 @@ jobs:
 
       - name: Installer herunterladen
         if: needs.build.result == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: installers
           pattern: installer-*
@@ -155,18 +205,17 @@ jobs:
           done
 
   api:
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    needs: [changes, test]
+    if: |
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      && needs.changes.outputs.backend == 'true' && needs.test.result == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
-      - name: Tests
-        working-directory: backend
-        run: go test ./...
       - name: Binary bauen
         working-directory: backend
         run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o cubory-api ./cmd/api

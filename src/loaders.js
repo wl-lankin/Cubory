@@ -218,13 +218,15 @@ async function loadOcct(arrayBuffer, kind) {
   result.meshes.forEach((meshData, i) => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(meshData.attributes.position.array, 3));
-    if (meshData.attributes.normal) {
-      geo.setAttribute('normal', new THREE.Float32BufferAttribute(meshData.attributes.normal.array, 3));
-    } else {
-      geo.computeVertexNormals();
-    }
+    // Index vor den Normalen: ohne ihn würde three die Dreiecke aus je drei
+    // aufeinanderfolgenden Ecken bilden und damit für eine ganz andere
+    // Aufteilung rechnen als die, die später gezeichnet wird.
     geo.setIndex(new THREE.Uint32BufferAttribute(meshData.index.array, 1));
     triangles += meshData.index.array.length / 3;
+    if (meshData.attributes.normal) {
+      geo.setAttribute('normal', new THREE.Float32BufferAttribute(meshData.attributes.normal.array, 3));
+    }
+    const flat = needsFlatShading(geo);
 
     let color = COLORS.defaultMesh;
     if (meshData.color) {
@@ -236,6 +238,7 @@ async function loadOcct(arrayBuffer, kind) {
       metalness: 0.35,
       roughness: 0.42,
       side: THREE.DoubleSide,
+      flatShading: flat,
     });
     const mesh = new THREE.Mesh(geo, mat);
     const partName = meshData.name || t('part.fallback', { n: i + 1 });
@@ -282,19 +285,43 @@ function dedupeParts(parts, meshes) {
 
 /* ── STL / OBJ ───────────────────────────────────────────────────────────── */
 
-function meshMaterial() {
+/* ── Schattierung ────────────────────────────────────────────────────────── */
+
+/** Mesh-Formate (3MF, PLY, OBJ) bringen keine Normalen mit. Solche Netze werden
+ *  flach schattiert: three leitet die Normale im Shader aus der Fläche ab, jede
+ *  Facette bekommt also ihre eigene. Kanten bleiben dadurch scharf, und es
+ *  kostet weder Speicher noch Ladezeit.
+ *
+ *  Zwei Alternativen wurden verworfen:
+ *  - computeVertexNormals() mittelt über alle Flächen an einer Ecke. An einer
+ *    90-Grad-Kante verschmiert das die Schattierung - eine Kiste mit Rippen sah
+ *    aus, als wäre sie geschmolzen.
+ *  - toCreasedNormals() trennt zwar ab 60 Grad Knickwinkel, erzeugte aber an
+ *    Ringen und Aufsätzen zackenförmige Fehlstellen rund um die Silhouette und
+ *    verdreifachte nebenbei die Eckenzahl.
+ *
+ *  Facettierte Rundungen sind der Preis - aber bei diesen Formaten ist die
+ *  Facette die tatsächliche Geometrie, und Slicer stellen sie genauso dar.
+ *  Formate mit echten Normalen (STEP/IGES über OpenCascade, STL, GLTF) behalten
+ *  ihre weiche Schattierung: dort beschreiben die Normalen die wirkliche
+ *  Krümmung und nicht nur die Vernetzung. */
+function needsFlatShading(geo) {
+  return !geo.getAttribute('normal');
+}
+
+function meshMaterial(flat = false) {
   return new THREE.MeshStandardMaterial({
     color: COLORS.defaultMesh,
     metalness: 0.35,
     roughness: 0.42,
     side: THREE.DoubleSide,
+    flatShading: flat,
   });
 }
 
 function loadStl(arrayBuffer) {
   const geo = new STLLoader().parse(arrayBuffer);
-  geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, meshMaterial());
+  const mesh = new THREE.Mesh(geo, meshMaterial(needsFlatShading(geo)));
   const group = new THREE.Group();
   group.add(mesh);
   const pos = geo.getAttribute('position');
@@ -314,7 +341,7 @@ function loadObj(arrayBuffer) {
   let triangles = 0;
   object.traverse((o) => {
     if (o.isMesh) {
-      o.material = meshMaterial();
+      o.material = meshMaterial(needsFlatShading(o.geometry));
       const pos = o.geometry.getAttribute('position');
       if (pos) triangles += (o.geometry.index ? o.geometry.index.count : pos.count) / 3;
     }
@@ -342,7 +369,7 @@ function collectParts(root, keepColors = false) {
   root.traverse((o) => {
     if (!o.isMesh) return;
     const geo = o.geometry;
-    if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+    const flat = needsFlatShading(geo);
 
     // Farben aus der Datei behalten (3MF-Mehrmaterialdruck, GLTF-Materialien),
     // sonst den einheitlichen CAD-Look verwenden.
@@ -356,8 +383,9 @@ function collectParts(root, keepColors = false) {
           metalness: 0.25,
           roughness: 0.5,
           side: THREE.DoubleSide,
+          flatShading: flat,
         })
-      : meshMaterial();
+      : meshMaterial(flat);
 
     const pos = geo.getAttribute('position');
     if (pos) triangles += (geo.index ? geo.index.count : pos.count) / 3;
@@ -443,10 +471,14 @@ function loadPly(arrayBuffer) {
     };
   }
 
-  if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+  const dreiecke = Math.round(geo.index.count / 3);
+  const flat = needsFlatShading(geo);
   const mat = vertexColors
-    ? new THREE.MeshStandardMaterial({ vertexColors, metalness: 0.25, roughness: 0.5, side: THREE.DoubleSide })
-    : meshMaterial();
+    ? new THREE.MeshStandardMaterial({
+        vertexColors, metalness: 0.25, roughness: 0.5,
+        side: THREE.DoubleSide, flatShading: flat,
+      })
+    : meshMaterial(flat);
   group.add(new THREE.Mesh(geo, mat));
   return {
     object: group,
@@ -454,7 +486,7 @@ function loadPly(arrayBuffer) {
     format: 'PLY',
     layers: null,
     parts: null,
-    stats: { triangles: Math.round(geo.index.count / 3) },
+    stats: { triangles: dreiecke },
   };
 }
 
