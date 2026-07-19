@@ -1,0 +1,66 @@
+<!doctype html>
+<!--
+  Vorlage für website/assets/og.png - das Bild, das bei geteilten Links
+  erscheint. Als Vorlage abgelegt, weil die Formatliste darin sonst veraltet,
+  ohne dass es jemandem auffällt.
+
+  Neu erzeugen (aus dem Projektverzeichnis):
+    cp scripts/og-image.html website/__og.html
+    (cd website && python3 -m http.server 8099 &)
+    node -e "const {chromium}=require('playwright-core');(async()=>{const b=await chromium.launch();\
+      const p=await b.newPage({viewport:{width:1200,height:630},deviceScaleFactor:2});\
+      await p.goto('http://127.0.0.1:8099/__og.html');await p.waitForTimeout(1500);\
+      await p.screenshot({path:'website/assets/og.png'});await b.close();})()"
+    sips -Z 1200 website/assets/og.png
+    rm website/__og.html
+-->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+  :root{--bg0:#070b22;--bg1:#0a0e2a;--border:rgba(160,170,255,.14);
+        --text:#eef0ff;--muted:#9aa3d0;--a1:#ff3d8a;--a2:#7c5cff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1200px;height:630px;overflow:hidden;background:var(--bg0);
+       font-family:'Inter',system-ui,sans-serif;position:relative}
+  /* Verlauf und Raster wie auf der Startseite */
+  .glow{position:absolute;inset:0}
+  .glow::before{content:'';position:absolute;right:-8%;top:-28%;width:70%;height:95%;
+    background:radial-gradient(closest-side,rgba(255,61,138,.30),transparent 72%)}
+  .glow::after{content:'';position:absolute;left:-14%;bottom:-42%;width:75%;height:105%;
+    background:radial-gradient(closest-side,rgba(124,92,255,.30),transparent 72%)}
+  .grid{position:absolute;inset:0;opacity:.5;
+    background-image:linear-gradient(rgba(160,170,255,.055) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(160,170,255,.055) 1px,transparent 1px);
+    background-size:60px 60px}
+  .frame{position:absolute;inset:34px;border:1px solid var(--border);border-radius:4px}
+  .inner{position:relative;height:100%;display:flex;align-items:center;
+         justify-content:space-between;padding:0 74px}
+  .wordmark{height:74px;display:block;margin-bottom:26px}
+  .claim{font-size:23px;font-weight:500;letter-spacing:.26em;color:var(--muted);
+         text-transform:uppercase;margin-bottom:34px}
+  .pills{display:flex;flex-wrap:nowrap;gap:8px}
+  .pill{font:600 13.5px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;
+        padding:8px 13px;border-radius:999px;border:1px solid var(--border);color:var(--muted);
+        white-space:nowrap}
+  .pill.on{background:linear-gradient(92deg,var(--a1),var(--a2));border-color:transparent;
+           color:#fff}
+  .iconwrap{position:relative;flex:0 0 auto}
+  .iconwrap::before{content:'';position:absolute;inset:-24%;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(124,92,255,.42),transparent 70%)}
+  .icon{position:relative;width:248px;height:248px;display:block;border-radius:58px}
+</style></head>
+<body>
+  <div class="glow"></div><div class="grid"></div><div class="frame"></div>
+  <div class="inner">
+    <div>
+      <img class="wordmark" src="/assets/wordmark.png" alt="Cubory">
+      <p class="claim">The modern CAD viewer</p>
+      <div class="pills">
+        <span class="pill on">DXF</span><span class="pill">DWG</span><span class="pill">STEP</span>
+        <span class="pill">IGES</span><span class="pill">STL</span><span class="pill">OBJ</span>
+        <span class="pill">3MF</span><span class="pill">PLY</span><span class="pill">GLTF</span>
+      </div>
+    </div>
+    <div class="iconwrap"><img class="icon" src="/assets/icon.png" alt=""></div>
+  </div>
+</body></html>
