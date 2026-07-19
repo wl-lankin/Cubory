@@ -133,3 +133,34 @@ ssh root@91.98.161.167 'bash /tmp/setup-deploy-user.sh "<öffentlicher Deploy-Sc
 Die passenden GitHub-Secrets (`DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`) sind im
 Repository hinterlegt. Der Hostschlüssel liegt fest im Secret, damit die
 Pipeline nicht blind jeden Server akzeptiert, der gerade antwortet.
+
+## Tests
+
+`npm test` läuft in unter einer Sekunde und deckt das ab, was in diesem Projekt
+schon einmal still kaputtgegangen ist:
+
+| Datei                  | Prüft                                                      |
+|------------------------|------------------------------------------------------------|
+| `test/loaders.test.js` | Jedes Format über `loadCadFile()`, inklusive der drei echten Regressionen: DXF aus LibreDWG mit fehlendem Gruppencode, 3MF mit Production Extension, aufgehelltes Blau, das nicht ins Violette kippt |
+| `test/formats.test.js` | Die fünf Stellen, an denen Formate stehen (Loader, erlaubte Endungen, Dateidialog, Dateizuordnungen, Website), stimmen überein |
+| `test/i18n.test.js`    | Alle 20 Sprachen haben dieselben Schlüssel und behalten ihre Platzhalter |
+| `test/website.test.js` | Feed-Auswertung inklusive Dateinamen mit Leerzeichen, interne Links und Sprungmarken zeigen nicht ins Leere |
+
+`npm run test:e2e` startet zusätzlich die gebaute App über Playwright, öffnet je
+eine Datei pro Format und prüft Statusanzeige, Ebenen, Teile und Reiter. Dieser
+Test fängt Dinge, die Unit-Tests nicht sehen können - etwa den Fall, dass der
+Renderer sein CSS nie bekommt und die App rohes HTML anzeigt.
+
+Testdateien liegen nicht als Binärdateien im Repo, sondern werden in
+`test/fixtures.js` erzeugt. Neben jeder steht, welchen Fehlerfall sie abbildet.
+
+### In der Pipeline
+
+`test` läuft bei jedem Push auf `dev` und `main` sowie in Pull Requests, und
+zwar **vor** Build und Rollout: schlagen Tests fehl, wird nichts gebaut und
+nichts hochgeladen. Der Rauchtest der App und die Go-Tests laufen nur, wenn sich
+`src/`, `electron/` beziehungsweise `backend/` geändert haben.
+
+Nützlich beim Ändern eines Regressionstests: einmal die zugehörige Korrektur im
+Quelltext entfernen und prüfen, dass genau dieser Test rot wird. Ein Test, der
+auch ohne den Fix besteht, schützt vor nichts.

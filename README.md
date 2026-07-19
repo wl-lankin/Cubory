@@ -1,6 +1,10 @@
 # Cubory - The modern CAD viewer
 
-Desktop-Viewer für CAD-Dateien - für macOS und Windows. Öffnet 2D-Zeichnungen (DXF) und 3D-Modelle (STEP, STP, IGES, STL, OBJ) direkt lokal, ohne Server und ohne Internetverbindung.
+Desktop-Viewer für CAD-Dateien - für macOS, Windows und Linux. Öffnet
+2D-Zeichnungen (DXF, DWG) und 3D-Modelle (STEP, IGES, STL, OBJ, 3MF, PLY, GLTF)
+direkt lokal, ohne Server und ohne Internetverbindung.
+
+Website und Downloads: [cubory.app](https://cubory.app)
 
 ![Startbildschirm](docs/screenshot-start.png)
 
@@ -17,15 +21,50 @@ Desktop-Viewer für CAD-Dateien - für macOS und Windows. Öffnet 2D-Zeichnungen
 | BREP | 3D | OpenCascade (WASM) |
 | STL | 3D-Mesh | three.js STLLoader |
 | OBJ | 3D-Mesh | three.js OBJLoader |
+| 3MF | 3D-Mesh | three.js ThreeMFLoader, inklusive Production Extension |
+| PLY | 3D-Mesh oder Punktwolke | three.js PLYLoader |
+| GLTF / GLB | 3D-Szene | three.js GLTFLoader |
+
+Zwei Eigenheiten, die in der Praxis zählen:
+
+- **3MF aus Slicern** (Bambu Studio, PrusaSlicer, Orca) legt die Geometrie über
+  die Production Extension in eigene `3D/Objects/*.model`-Dateien. three baut
+  die Wurzeldatei zuerst und findet die Verweise dann noch nicht. `prepare3mf()`
+  in `src/loaders.js` sortiert die Objektdateien im Archiv nach vorne - ohne das
+  scheitert praktisch jeder Slicer-Export.
+- **PLY ohne Flächen** stammt meist aus 3D-Scans und wird als Punktwolke
+  gezeichnet. Als Mesh gerendert bliebe das Bild leer.
+
+Nicht unterstützt sind native Formate wie SLDPRT, IPT, CATPart oder Parasolid -
+die brauchen kommerziell lizenzierte Bibliotheken.
 
 ## Funktionen
 
-- Öffnen per Dialog, Drag & Drop oder Doppelklick im Finder/Explorer (Dateiverknüpfungen sind registriert)
-- 3D: Drehen, Zoomen, Verschieben; Ansichten Iso/Oben/Vorne/Rechts; Drahtgitter, Kantenlinien, Raster
-- 2D (DXF): Ebenen mit Original-Farben ein- und ausblenden
-- Baugruppen: Teileliste mit Original-Namen; Klick auf ein Teil isoliert es (Rest wird durchsichtig, Ansicht zoomt darauf), der Punkt daneben blendet es ein/aus; doppelte Namen werden durchnummeriert
-- Modell-Info: Abmessungen in mm, Elemente bzw. Dreiecke, Dateigröße
-- 20 Sprachen, Standard ist die Systemsprache (Umschalter in der Titelleiste)
+Kostenlos und ohne Zeitlimit:
+
+- Öffnen per Dialog, Drag & Drop oder Doppelklick im Finder/Explorer
+  (Dateiverknüpfungen sind registriert)
+- 3D: Drehen, Zoomen, Verschieben; Ansichten Iso/Oben/Vorne/Rechts; Drahtgitter,
+  Kantenlinien, Raster
+- 2D (DXF): Ebenen mit Original-Farben ein- und ausblenden. Zu dunkle Farben
+  werden aufgehellt, ohne den Farbton zu verlieren - CAD-Dateien sind für weißes
+  Papier gezeichnet und wären auf dem dunklen Hintergrund sonst unlesbar
+- Baugruppen: Teileliste mit Original-Namen; Klick auf ein Teil isoliert es, der
+  Punkt daneben blendet es ein/aus; doppelte Namen werden durchnummeriert
+- Modell-Info: Abmessungen in mm, Elemente, Dreiecke oder Punkte, Dateigröße
+- 20 Sprachen, Standard ist die Systemsprache
+- Optionen: Autostart, zuletzt geöffnete Dateien wiederherstellen, Minimieren in
+  die Menüleiste, Standardprogramm für Dateitypen, Update-Prüfung
+
+Cubory Pro (7 Tage kostenlos bei jedem neuen Konto):
+
+- Messen mit Einrasten auf Ecken und Kanten
+- Schnittansichten entlang X, Y und Z
+- Explosionsansichten für Baugruppen
+- Export nach STL und SVG, HD-Screenshots
+
+Läuft die Testphase ab, wechselt die App auf Free. Alle Formate, Ansichten und
+Ebenen bleiben unbegrenzt nutzbar - gesperrt werden nur die Pro-Werkzeuge.
 
 ## Tastatur & Maus
 
@@ -39,19 +78,81 @@ Desktop-Viewer für CAD-Dateien - für macOS und Windows. Öffnet 2D-Zeichnungen
 
 ## Installation
 
-Fertige Installer liegen nach dem Build in `release/`:
+Fertige Installer liegen nach dem Build in `release/`, aktuell in Version 1.5.1:
 
-- `Cubory-1.0.0-arm64.dmg` - macOS (Apple Silicon)
-- `Cubory-1.0.0.dmg` - macOS (Intel)
-- `Cubory Setup 1.0.0.exe` - Windows (64-bit)
+- `Cubory-1.5.1-arm64.dmg` - macOS (Apple Silicon)
+- `Cubory-1.5.1.dmg` - macOS (Intel)
+- `Cubory Setup 1.5.1.exe` - Windows (64-bit)
+- `Cubory-1.5.1.AppImage` - Linux (x64)
 
-Die Builds sind nicht code-signiert: macOS-Gatekeeper bzw. Windows SmartScreen zeigen beim ersten Start eine Warnung, die sich über „Trotzdem öffnen" bestätigen lässt.
+Die Builds sind nicht code-signiert: macOS-Gatekeeper bzw. Windows SmartScreen
+zeigen beim ersten Start eine Warnung, die sich über „Trotzdem öffnen"
+bestätigen lässt. Automatische Updates laufen über electron-updater gegen
+`https://cubory.app/downloads`; auf macOS greift mangels Signatur ein manueller
+Hinweis statt der stillen Installation.
+
+## Entwicklung
+
+Voraussetzung: Node.js ≥ 22.
+
+```bash
+npm install
+npm start          # Renderer bauen + Electron starten
+npm run dev        # Vite-Devserver (Renderer im Browser, ohne Electron-APIs)
+```
+
+### Tests
+
+```bash
+npm test           # Unit-Tests, laufen in unter einer Sekunde
+npm run test:watch # dieselben Tests im Watch-Modus
+npm run test:e2e   # Rauchtest: startet die gebaute App über Playwright
+```
+
+| Datei | Prüft |
+|---|---|
+| `test/loaders.test.js` | Jedes Format über `loadCadFile()`, inklusive der Regressionen: DXF aus LibreDWG mit fehlendem Gruppencode, 3MF mit Production Extension, aufgehelltes Blau, das nicht ins Violette kippt |
+| `test/formats.test.js` | Die fünf Stellen mit Formatlisten (Loader, erlaubte Endungen, Dateidialog, Dateizuordnungen, Website) stimmen überein |
+| `test/i18n.test.js` | Alle 20 Sprachen haben dieselben Schlüssel und behalten ihre Platzhalter |
+| `test/website.test.js` | Feed-Auswertung inklusive Dateinamen mit Leerzeichen, interne Links und Sprungmarken |
+| `test/e2e/app.e2e.test.js` | App startet, Renderer bekommt sein CSS, eine Datei pro Format läuft bis zur Statusanzeige durch |
+
+Testdateien liegen nicht als Binärdateien im Repo, sondern werden in
+`test/fixtures.js` erzeugt - neben jeder steht, welchen Fehlerfall sie abbildet.
+
+Wer einen Regressionstest ändert, sollte einmal die zugehörige Korrektur im
+Quelltext entfernen und prüfen, dass genau dieser Test rot wird. Ein Test, der
+auch ohne den Fix besteht, schützt vor nichts.
+
+### Installer bauen
+
+```bash
+npm run dist       # macOS + Windows + Linux
+npm run dist:mac   # nur DMG (arm64 + x64)
+npm run dist:win   # nur NSIS-Installer (x64)
+npm run dist:linux # nur AppImage (x64)
+```
+
+### Ausliefern
+
+`dev` ist der Arbeitsbranch, `main` der Auslieferungsstand. Beim Merge nach
+`main` baut GitHub Actions die Installer, lädt sie auf den Server und bringt
+Website und API auf denselben Stand. Details und die einmalige Servereinrichtung
+stehen in [docs/deployment.md](docs/deployment.md).
+
+Ohne erhöhte Version in `package.json` bekommen bestehende Installationen kein
+Update - die Pipeline lädt trotzdem hoch und schreibt eine Warnung in die
+Job-Zusammenfassung.
 
 ## Sprachen
 
-Die UI gibt es in 20 Sprachen: en, de, fr, es, it, pt, nl, pl, sv, da, no, fi, cs, sk, hu, ro, el, bg, hr, uk (gleiche Liste wie im Nexa-Projekt). Standard ist die Systemsprache; die Auswahl wird lokal gespeichert.
+Die UI gibt es in 20 Sprachen: en, de, fr, es, it, pt, nl, pl, sv, da, no, fi,
+cs, sk, hu, ro, el, bg, hr, uk. Standard ist die Systemsprache; die Auswahl wird
+lokal gespeichert.
 
-Englisch (`src/strings/en.js`) ist die Quelle, Deutsch (`src/strings/de.js`) ist handgepflegt. Alle anderen Sprachdateien werden lokal mit Ollama und `mistral-small` generiert - gleiches Vorgehen wie in der Nexa-App:
+Englisch (`src/strings/en.js`) ist die Quelle, Deutsch (`src/strings/de.js`) ist
+handgepflegt. Alle anderen Sprachdateien werden lokal mit Ollama und
+`mistral-small` generiert:
 
 ```bash
 ollama serve                                 # falls nicht schon aktiv
@@ -60,25 +161,9 @@ node scripts/translate-locales.mjs fr        # einzelne Sprache
 node scripts/translate-locales.mjs --rework  # Review-Durchlauf über alle Übersetzungen
 ```
 
-Das Skript ist idempotent (vorhandene Übersetzungen bleiben stehen), validiert Platzhalter wie `{n}` und fällt bei fehlenden Schlüsseln auf Englisch zurück.
-
-## Entwicklung
-
-Voraussetzung: Node.js ≥ 20.
-
-```bash
-npm install
-npm start          # Renderer bauen + Electron starten
-npm run dev        # Vite-Devserver (Renderer im Browser, ohne Electron-APIs)
-```
-
-## Installer bauen
-
-```bash
-npm run dist       # macOS + Windows
-npm run dist:mac   # nur DMG (arm64 + x64)
-npm run dist:win   # nur NSIS-Installer (x64)
-```
+Das Skript ist idempotent, validiert Platzhalter wie `{n}` und fällt bei
+fehlenden Schlüsseln auf Englisch zurück. `npm test` prüft zusätzlich, dass
+keine Sprache Schlüssel oder Platzhalter verloren hat.
 
 ## Projektstruktur
 
@@ -86,40 +171,57 @@ npm run dist:win   # nur NSIS-Installer (x64)
 electron/          Hauptprozess (main.cjs) und Preload-Bridge (preload.cjs)
 src/main.js        UI-Logik, Datei öffnen, Sprachumschalter
 src/viewer.js      three.js-Szene: Kamera, Licht, Raster, Ansichten, Teil-Isolation
-src/loaders.js     DXF-, STEP/IGES/BREP-, STL- und OBJ-Import
+src/loaders.js     Import aller Formate
+src/proFeatures.js Messen, Schnitt, Explosion, Export
 src/i18n.js        Sprachauswahl und t()-Funktion
 src/strings/       en.js (Quelle), de.js (handgepflegt), Rest generiert
+backend/           Go/Gin-API: Konten, Lizenzen, Billing, E-Mail
+website/           Marketingseite, Kundenportal, Admin-Backend, Rechtstexte
+test/              Unit-Tests und Rauchtest, Fixtures im Code erzeugt
+deploy/            Servereinrichtung und API-Rollout mit Rollback
+.github/workflows/ CI und Auslieferung
 scripts/           translate-locales.mjs (Ollama-Übersetzung)
-docs/              Screenshots
+docs/              Screenshots, Deployment, Lizenz-Architektur
 release/           fertige Installer (nach npm run dist)
 ```
 
 ## Lizenz-System
 
 Architektur: [docs/licensing-architecture.md](docs/licensing-architecture.md).
-Umgesetzt: Go/Gin-Backend (`backend/`), Electron-Integration, Customer Portal (`portal/index.html`).
+Umgesetzt: Go/Gin-Backend (`backend/`), Electron-Integration, Kundenportal und
+Admin-Backend (`website/portal/`, `website/admin/`).
 
-- **Konten & Trial**: Registrierung legt serverseitig 7 Tage Cubory Pro an (nicht zurücksetzbar), danach automatisch Free - die App bleibt immer voll benutzbar
-- **Lizenzen**: Trial / Free / Pro (monthly, yearly, lifetime; Enterprise vorbereitet); Entitlements als Daten, App fragt nur `can('measurements')`
-- **Offline**: Ed25519-signierte Lizenz-Tokens mit rollierendem 30-Tage-Fenster, gerätegebunden; Schutz gegen Zurückstellen der Uhr
+- **Konten & Trial**: Registrierung mit E-Mail-Bestätigung per Code, danach
+  7 Tage Cubory Pro (nicht zurücksetzbar), anschließend automatisch Free
+- **Lizenzen**: Trial / Free / Pro (monthly, yearly, lifetime); Entitlements als
+  Daten, die App fragt nur `can('export')`
+- **Offline**: Ed25519-signierte Lizenz-Tokens mit rollierendem 30-Tage-Fenster,
+  gerätegebunden; Schutz gegen Zurückstellen der Uhr
 - **Geräte**: Limit pro Plan, Verwaltung in App und Portal
-- **Billing**: Stripe hinter `BillingProvider`-Interface (Dev-Provider ohne Keys), Webhooks idempotent
-- **Free-Dialog**: dezenter Upgrade-Hinweis, maximal einmal alle 24 h
+- **Billing**: Paddle hinter einem `BillingProvider`-Interface (Dev-Provider
+  ohne Keys, Stripe-Implementierung liegt weiterhin bei), Webhooks idempotent
+- **E-Mails**: Bestätigungscode, Willkommen, Passwort zurücksetzen, Trial-Ende -
+  als HTML im App-Design mit Textfassung im selben Versand
 
 ```bash
 cd backend
 make db-create   # PostgreSQL-Datenbanken anlegen (einmalig)
 make run         # API auf :8880 (Migrationen laufen automatisch)
-make test        # Integrationstests gegen cubory_test
+make test        # Tests gegen cubory_test
 ```
 
 Die App verbindet sich per `CUBORY_API_URL` (Default: https://api.cubory.app).
-Stripe wird über `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` und
-`STRIPE_PRICE_MONTHLY|YEARLY|LIFETIME` aktiviert; SMTP über `CUBORY_SMTP_*`.
+Paddle wird über `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET` und
+`PADDLE_PRICE_MONTHLY|YEARLY|LIFETIME` aktiviert; SMTP über `CUBORY_SMTP_*`.
 Für Produktion sind `CUBORY_JWT_SECRET` und `CUBORY_LICENSE_SIGNING_SEED`
 Pflicht; der zugehörige Public Key muss in
 `electron/services/accountManager.cjs` eingetragen werden.
 
 ## Technik
 
-Electron + Vite, three.js für die Darstellung, OpenCascade (WASM) für STEP/IGES/BREP, das `dxf`-npm-Paket für DXF. Hintergrundbild und App-Icon wurden mit Higgsfield generiert. Für automatisierte UI-Tests lädt der Hook `window.__openPath(pfad)` eine Datei; mit der Umgebungsvariable `CUBORY_TEST_USERDATA` nutzt eine Test-Instanz ein eigenes Profil und kollidiert nicht mit einer laufenden App.
+Electron + Vite, three.js für die Darstellung, OpenCascade (WASM) für
+STEP/IGES/BREP, das `dxf`-npm-Paket für DXF. Hintergrundbild und App-Icon wurden
+mit Higgsfield generiert. Für automatisierte Tests lädt der Hook
+`window.__openPath(pfad)` eine Datei; mit der Umgebungsvariable
+`CUBORY_TEST_USERDATA` nutzt eine Test-Instanz ein eigenes Profil und kollidiert
+nicht mit einer laufenden App.
