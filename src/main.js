@@ -175,7 +175,8 @@ function renderTabbar() {
   persistSession();
   const bar = document.getElementById('tabbar');
   bar.hidden = tabs.length === 0;
-  bar.innerHTML = tabs.map((tab) => `
+  bar.innerHTML = `<span class="tabbar-label mono">${escapeHtml(t('tabs.label'))}</span>`
+    + tabs.map((tab) => `
     <div class="tab${tab.id === activeTabId ? ' on' : ''}" data-tab="${tab.id}" title="${escapeHtml(tab.path || tab.name)}">
       <span class="tab-name">${escapeHtml(tab.name)}</span>
       <button class="tab-close" data-close="${tab.id}">×</button>

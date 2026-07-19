@@ -1,5 +1,6 @@
 // German UI strings - hand-written (not generated)
 export default {
+  'tabs.label': 'Dateien',
   'app.open': 'Datei öffnen',
   'app.openTip': 'Datei öffnen (Cmd/Strg+O)',
   'hero.title1': 'Jedes Modell',

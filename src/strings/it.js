@@ -1,6 +1,7 @@
 // it UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'File',
   'app.open': 'Apri file',
   'app.openTip': 'Apri file (Cmd/Ctrl+O)',
   'hero.title1': 'Ogni modello',

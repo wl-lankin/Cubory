@@ -4,7 +4,7 @@
 // nicht (die Zahl fehlt dann in der Anzeige). Beides fällt sonst erst auf,
 // wenn jemand die App in genau dieser Sprache benutzt.
 import { describe, it, expect } from 'vitest';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import en from '../src/strings/en.js';
@@ -42,5 +42,38 @@ describe('Übersetzungen', () => {
   it.each(codes)('%s: lässt keinen Text leer', (code) => {
     const leer = Object.entries(dicts[code]).filter(([, v]) => !String(v).trim());
     expect(leer.map(([k]) => k), `leere Texte in ${code}.js`).toEqual([]);
+  });
+
+  // Ein Schlüssel, den der Code benutzt, den es aber nirgends gibt, fällt den
+  // Vergleichen oben nicht auf: sie prüfen nur die Sprachen gegeneinander.
+  // Sichtbar wird er erst in der Oberfläche - dort steht dann der rohe
+  // Schlüsselname statt eines Textes.
+  it('benutzt keinen Schlüssel, den es im Englischen nicht gibt', () => {
+    const quellen = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src');
+    const dateien = [];
+    const sammeln = (ordner) => {
+      for (const eintrag of readdirSync(ordner)) {
+        const pfad = join(ordner, eintrag);
+        if (statSync(pfad).isDirectory()) {
+          if (eintrag !== 'strings') sammeln(pfad);
+        } else if (eintrag.endsWith('.js')) {
+          dateien.push(pfad);
+        }
+      }
+    };
+    sammeln(quellen);
+
+    const fehlend = [];
+    for (const datei of dateien) {
+      const text = readFileSync(datei, 'utf8');
+      // Nur vollständige Schlüssel: das abschließende , oder ) schließt
+      // zusammengesetzte Aufrufe wie t('browser.' + key) aus. Die und
+      // t(`account.plan.${kind}`) lassen sich statisch nicht auflösen und
+      // bleiben ungeprüft.
+      for (const m of text.matchAll(/\bt\(\s*'([^']+)'\s*[,)]/g)) {
+        if (!(m[1] in en)) fehlend.push(`${datei.split('/src/')[1]}: ${m[1]}`);
+      }
+    }
+    expect([...new Set(fehlend)]).toEqual([]);
   });
 });

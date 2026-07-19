@@ -1,6 +1,7 @@
 // sk UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Súbory',
   'app.open': 'Otvoriť súbor',
   'app.openTip': 'Otvoriť súbor (Cmd/Ctrl+O)',
   'hero.title1': 'Každý model',

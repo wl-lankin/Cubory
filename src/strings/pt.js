@@ -1,6 +1,7 @@
 // pt UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Ficheiros',
   'app.open': 'Abrir ficheiro',
   'app.openTip': 'Abrir ficheiro (Cmd/Ctrl+O)',
   'hero.title1': 'Todos os modelos',
