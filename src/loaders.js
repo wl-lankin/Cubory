@@ -5,6 +5,7 @@ import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { unzipSync, zipSync } from 'three/examples/jsm/libs/fflate.module.js';
+import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { parseString as parseDxf, denormalise, toPolylines, colors as dxfColors } from 'dxf';
 import occtimportjs from 'occt-import-js';
 import occtWasmUrl from 'occt-import-js/dist/occt-import-js.wasm?url';
@@ -216,15 +217,18 @@ async function loadOcct(arrayBuffer, kind) {
   let triangles = 0;
 
   result.meshes.forEach((meshData, i) => {
-    const geo = new THREE.BufferGeometry();
+    let geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(meshData.attributes.position.array, 3));
+    // Index vor den Normalen: ohne ihn würde three die Dreiecke aus je drei
+    // aufeinanderfolgenden Ecken bilden und damit für eine ganz andere
+    // Aufteilung rechnen als die, die später gezeichnet wird.
+    geo.setIndex(new THREE.Uint32BufferAttribute(meshData.index.array, 1));
+    triangles += meshData.index.array.length / 3;
     if (meshData.attributes.normal) {
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(meshData.attributes.normal.array, 3));
     } else {
-      geo.computeVertexNormals();
+      geo = ensureNormals(geo);
     }
-    geo.setIndex(new THREE.Uint32BufferAttribute(meshData.index.array, 1));
-    triangles += meshData.index.array.length / 3;
 
     let color = COLORS.defaultMesh;
     if (meshData.color) {
@@ -282,6 +286,16 @@ function dedupeParts(parts, meshes) {
 
 /* ── STL / OBJ ───────────────────────────────────────────────────────────── */
 
+/** Normalen ergänzen, wenn die Datei keine mitbringt.
+ *  Nicht mit computeVertexNormals(): das mittelt die Normale über alle
+ *  Flächen, die sich eine Ecke teilen. An einer 90-Grad-Kante verschmiert das
+ *  die Schattierung - eine Kiste mit Rippen sieht aus, als wäre sie
+ *  geschmolzen. toCreasedNormals() trennt die Ecken erst ab 60 Grad Knickwinkel
+ *  und lässt gekrümmte Flächen (Bohrungen, Rundungen) weiterhin weich. */
+function ensureNormals(geo) {
+  return geo.getAttribute('normal') ? geo : toCreasedNormals(geo);
+}
+
 function meshMaterial() {
   return new THREE.MeshStandardMaterial({
     color: COLORS.defaultMesh,
@@ -293,8 +307,7 @@ function meshMaterial() {
 
 function loadStl(arrayBuffer) {
   const geo = new STLLoader().parse(arrayBuffer);
-  geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, meshMaterial());
+  const mesh = new THREE.Mesh(ensureNormals(geo), meshMaterial());
   const group = new THREE.Group();
   group.add(mesh);
   const pos = geo.getAttribute('position');
@@ -314,6 +327,7 @@ function loadObj(arrayBuffer) {
   let triangles = 0;
   object.traverse((o) => {
     if (o.isMesh) {
+      o.geometry = ensureNormals(o.geometry);
       o.material = meshMaterial();
       const pos = o.geometry.getAttribute('position');
       if (pos) triangles += (o.geometry.index ? o.geometry.index.count : pos.count) / 3;
@@ -341,8 +355,8 @@ function collectParts(root, keepColors = false) {
 
   root.traverse((o) => {
     if (!o.isMesh) return;
-    const geo = o.geometry;
-    if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+    const geo = ensureNormals(o.geometry);
+    o.geometry = geo;
 
     // Farben aus der Datei behalten (3MF-Mehrmaterialdruck, GLTF-Materialien),
     // sonst den einheitlichen CAD-Look verwenden.
@@ -443,18 +457,19 @@ function loadPly(arrayBuffer) {
     };
   }
 
-  if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+  const dreiecke = Math.round(geo.index.count / 3);
+  const beschattet = ensureNormals(geo);
   const mat = vertexColors
     ? new THREE.MeshStandardMaterial({ vertexColors, metalness: 0.25, roughness: 0.5, side: THREE.DoubleSide })
     : meshMaterial();
-  group.add(new THREE.Mesh(geo, mat));
+  group.add(new THREE.Mesh(beschattet, mat));
   return {
     object: group,
     mode: '3d',
     format: 'PLY',
     layers: null,
     parts: null,
-    stats: { triangles: Math.round(geo.index.count / 3) },
+    stats: { triangles: dreiecke },
   };
 }
 

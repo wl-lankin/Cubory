@@ -82,6 +82,36 @@ export function plyPointCloud(count = 500) {
     + pts.join('\n') + '\n');
 }
 
+/** Zylinder mit Deckeln, als indiziertes Netz. Dient dem Gegenstück zur
+ *  Würfelprüfung: gekrümmte Flächen müssen weich schattiert bleiben. Wer die
+ *  Schattierung pauschal auf Facetten umstellt, sieht hier Kanten. */
+export function plyCylinder(segments = 24, r = 20, h = 40) {
+  const verts = [];
+  for (let i = 0; i < segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    verts.push([Math.cos(a) * r, Math.sin(a) * r, 0]);
+    verts.push([Math.cos(a) * r, Math.sin(a) * r, h]);
+  }
+  const unten = verts.length;
+  verts.push([0, 0, 0]);
+  const oben = verts.length;
+  verts.push([0, 0, h]);
+
+  const faces = [];
+  for (let i = 0; i < segments; i++) {
+    const a = i * 2;
+    const b = ((i + 1) % segments) * 2;
+    faces.push([a, b, b + 1], [a, b + 1, a + 1]); // Mantel
+    faces.push([unten, b, a], [oben, a + 1, b + 1]); // Deckel
+  }
+
+  return textBuffer(`ply\nformat ascii 1.0\nelement vertex ${verts.length}\n`
+    + 'property float x\nproperty float y\nproperty float z\n'
+    + `element face ${faces.length}\nproperty list uchar int vertex_indices\nend_header\n`
+    + verts.map((v) => v.map((n) => n.toFixed(4)).join(' ')).join('\n') + '\n'
+    + faces.map((f) => `3 ${f.join(' ')}`).join('\n') + '\n');
+}
+
 /* ── STL / OBJ ───────────────────────────────────────────────────────────── */
 
 export function stlAscii() {

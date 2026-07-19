@@ -114,7 +114,7 @@ npm run test:e2e   # Rauchtest: startet die gebaute App über Playwright
 
 | Datei | Prüft |
 |---|---|
-| `test/loaders.test.js` | Jedes Format über `loadCadFile()`, inklusive der Regressionen: DXF aus LibreDWG mit fehlendem Gruppencode, 3MF mit Production Extension, aufgehelltes Blau, das nicht ins Violette kippt |
+| `test/loaders.test.js` | Jedes Format über `loadCadFile()`, inklusive der Regressionen: DXF aus LibreDWG mit fehlendem Gruppencode, 3MF mit Production Extension, aufgehelltes Blau, das nicht ins Violette kippt, und die Schattierung (scharfe Kanten am Würfel, weiche Mantelflächen am Zylinder) |
 | `test/formats.test.js` | Die fünf Stellen mit Formatlisten (Loader, erlaubte Endungen, Dateidialog, Dateizuordnungen, Website) stimmen überein |
 | `test/i18n.test.js` | Alle 20 Sprachen haben dieselben Schlüssel und behalten ihre Platzhalter |
 | `test/website.test.js` | Feed-Auswertung inklusive Dateinamen mit Leerzeichen, interne Links und Sprungmarken |
