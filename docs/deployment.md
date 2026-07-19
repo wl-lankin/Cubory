@@ -88,3 +88,48 @@ sonst sehen Besucher nach einem Deployment veraltete Seiten. Nur `/assets/`
 
 - **Backups**: `pg_dump` per Cron einrichten.
 - **macOS-Signatur**: für Gatekeeper-freien Start und automatisches OTA.
+
+## CI/CD: Rollout beim Merge nach main
+
+`.github/workflows/release.yml` übernimmt den kompletten Rollout, sobald etwas
+auf `main` landet (also beim Merge von `dev`). Gearbeitet wird auf dem Branch
+`dev`, `main` ist der Auslieferungsstand.
+
+Die Pipeline baut nur, was sich geändert hat:
+
+| Änderung an          | Folge                                                        |
+|----------------------|--------------------------------------------------------------|
+| `src/`, `electron/`, `assets/`, `package.json` | Installer für macOS, Windows und Linux bauen und nach `/var/www/cubory/downloads/` laden |
+| `website/`           | `rsync` nach `/var/www/cubory/` (Downloads bleiben unberührt) |
+| `backend/`           | `go test`, Linux-Binary bauen, ausrollen mit Health-Prüfung   |
+
+Details, die leicht Ärger machen:
+
+- **Installer zuerst, Metadaten danach.** `latest*.yml` wird bewusst getrennt
+  hochgeladen, sonst meldet electron-updater eine Version, deren Datei noch
+  gar nicht vollständig auf dem Server liegt.
+- **Ohne Versionserhöhung kein OTA-Update.** Die Pipeline lädt trotzdem hoch,
+  schreibt aber eine Warnung in die Job-Zusammenfassung. Version steht in
+  `package.json`.
+- **Der API-Rollout rollt selbst zurück.** `/usr/local/sbin/cubory-deploy-api`
+  sichert die laufende Binary, startet neu, prüft 20 Sekunden lang `/healthz`
+  und stellt bei Fehlschlag die vorige Version wieder her.
+- **macOS-Builds sind unsigniert** (`CSC_IDENTITY_AUTO_DISCOVERY: false`).
+  Bis ein Apple-Zertifikat vorliegt, greift in der App der manuelle
+  Update-Hinweis statt der automatischen Installation.
+- **macOS-Runner kosten das Zehnfache** an Actions-Minuten. Deshalb der
+  Pfadfilter: Website-Änderungen lösen keinen App-Build aus.
+
+### Einmalige Einrichtung auf dem Server
+
+Der Rollout läuft über einen eigenen `deploy`-Nutzer, nicht über root. Er darf
+ins Webroot schreiben und genau ein Skript per sudo starten:
+
+```bash
+scp deploy/setup-deploy-user.sh deploy/cubory-deploy-api root@91.98.161.167:/tmp/
+ssh root@91.98.161.167 'bash /tmp/setup-deploy-user.sh "<öffentlicher Deploy-Schlüssel>"'
+```
+
+Die passenden GitHub-Secrets (`DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`) sind im
+Repository hinterlegt. Der Hostschlüssel liegt fest im Secret, damit die
+Pipeline nicht blind jeden Server akzeptiert, der gerade antwortet.
