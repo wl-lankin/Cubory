@@ -70,6 +70,10 @@ header:hover .xh{opacity:1}
 .hero::before{content:"";position:absolute;inset:-8% -18%;z-index:-1;pointer-events:none;
 background:radial-gradient(55% 62% at 50% 48%,rgba(7,11,34,.8),rgba(7,11,34,.35) 60%,transparent 78%)}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-bottom:20px}
+/* Formatliste: echte Flex-Liste statt Trennpunkte im Text. Bei neun Formaten
+   bricht die Zeile in der schmalen Hero-Spalte zwangsläufig um - mit
+   Trennzeichen im Text bliebe dabei ein Punkt am Zeilenende hängen. */
+.formats{display:flex;flex-wrap:wrap;gap:8px 20px;letter-spacing:.2em}
 h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,4.6vw,60px);line-height:1.04;letter-spacing:-.015em;margin-bottom:20px}
 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{font-size:17px;line-height:1.7;color:var(--muted);max-width:560px;margin-bottom:36px}
@@ -192,7 +196,7 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
   </nav>
   <div class="hero2">
     <div class="hero-l">
-      <p class="eyebrow mono">DXF · DWG · STEP · IGES · STL · OBJ · 3MF · PLY · GLTF</p>
+      <p class="eyebrow mono formats"><span>DXF</span><span>DWG</span><span>STEP</span><span>IGES</span><span>STL</span><span>OBJ</span><span>3MF</span><span>PLY</span><span>GLTF</span></p>
       <h1>Jedes Modell<br/><span class="grad" id="h2">Sofort im Blick</span></h1>
       <div class="hdim"><i></i><span class="mono" id="hdim-label">— mm</span><i></i></div>
       <p class="sub">Cubory öffnet Zeichnungen und 3D-Modelle ohne Umwege - auf Mac, Windows und Linux, komplett offline. Free für immer. Pro, wenn du mehr willst.</p>
