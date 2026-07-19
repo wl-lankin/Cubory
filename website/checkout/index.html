@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout - Cubory</title>
+<link rel="icon" href="/assets/icon.png?v=2" />
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/assets/fonts/fonts.css" />
+<style>
+:root{--text:#eef0ff;--muted:#9aa3d0;--faint:#5d668f;--a1:#ff3d8a;--a2:#7c5cff;--border:rgba(160,170,255,.24)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:40px 22px;
+background:radial-gradient(900px 600px at 85% -10%,rgba(255,61,138,.16),transparent 60%),
+radial-gradient(1000px 700px at -10% 110%,rgba(124,92,255,.18),transparent 60%),
+linear-gradient(180deg,#070b22,#0a0e2a 40%,#0d1233)}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+background:url(/assets/ambient.jpg) center/cover;opacity:.55}
+body>*{position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img.bi{width:34px;height:34px;border-radius:9px}
+.brand img.bw{height:17px}
+.sheet{position:relative;width:min(440px,92vw);border:1px solid var(--border);padding:38px 34px;text-align:center;
+background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.04) 39px 40px),
+repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.04) 39px 40px),rgba(10,14,42,.55)}
+.sheet::before,.sheet::after{content:"";position:absolute;width:12px;height:12px;border:1px solid rgba(160,170,255,.5)}
+.sheet::before{top:-6px;left:-6px;border-width:0 1px 1px 0}
+.sheet::after{bottom:-6px;right:-6px;border-width:1px 0 0 1px}
+.clabel{position:absolute;top:-8px;left:20px;background:#0a0e2a;padding:0 10px;
+font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.2em;color:var(--faint)}
+h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin-bottom:10px}
+p{font-size:14px;line-height:1.75;color:var(--muted)}
+a.btn{display:inline-block;margin-top:20px;font-weight:600;font-size:14px;color:#fff;text-decoration:none;
+background:linear-gradient(92deg,var(--a1),var(--a2));border-radius:999px;padding:12px 26px;
+box-shadow:0 6px 24px rgba(255,61,138,.35)}
+.spin{width:22px;height:22px;margin:0 auto 16px;border-radius:50%;
+border:2px solid rgba(160,170,255,.2);border-top-color:var(--a1);animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.hint{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--faint);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="brand">
+  <img class="bi" src="/assets/icon.png" alt="" />
+  <img class="bw" src="/assets/wordmark.png" alt="Cubory" />
+</div>
+<div class="sheet">
+  <span class="clabel" id="label">CHECKOUT</span>
+  <div id="body">
+    <div class="spin"></div>
+    <h1 data-de="Zahlung wird geöffnet" data-en="Opening payment">Zahlung wird geöffnet</h1>
+    <p data-de="Einen Moment - das sichere Zahlungsfenster von Paddle wird geladen."
+       data-en="One moment - Paddle's secure payment window is loading.">
+       Einen Moment - das sichere Zahlungsfenster von Paddle wird geladen.</p>
+  </div>
+</div>
+<script src="/checkout/paddle-config.js"></script>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>
+const en = (new URLSearchParams(location.search).get('lang') || navigator.language || 'de').slice(0,2) !== 'de';
+const T = (de, e) => en ? e : de;
+if (en) {
+  document.documentElement.lang = 'en';
+  document.querySelectorAll('[data-en]').forEach(n => n.textContent = n.dataset.en);
+}
+const box = document.getElementById('body');
+const show = (title, text, link) => {
+  document.getElementById('label').textContent = 'CHECKOUT';
+  box.innerHTML = `<h1>${title}</h1><p>${text}</p>` +
+    (link ? `<a class="btn" href="${link}">${T('Zum Kundenkonto', 'Go to your account')}&nbsp;&nbsp;→</a>` : '');
+};
+
+const cfg = window.CUBORY_PADDLE || {};
+const txn = new URLSearchParams(location.search).get('_ptxn');
+
+if (!cfg.token) {
+  show(T('Checkout noch nicht aktiv', 'Checkout not active yet'),
+    T('Für diese Seite fehlt noch der Paddle-Client-Token.', 'The Paddle client token is missing for this page.'));
+} else if (!txn) {
+  show(T('Kein Kauf gefunden', 'No purchase found'),
+    T('Starte den Kauf im Kundenkonto - dort öffnet sich der Checkout automatisch.',
+      'Start your purchase in your account - the checkout opens automatically there.'), '/portal/');
+} else {
+  Paddle.Environment.set(cfg.environment || 'production');
+  Paddle.Initialize({
+    token: cfg.token,
+    eventCallback: (e) => {
+      if (e.name === 'checkout.completed') {
+        show(T('Danke für deinen Kauf', 'Thank you for your purchase'),
+          T('Deine Lizenz wird in wenigen Sekunden aktiv - starte Cubory neu, wenn sie nicht sofort erscheint.',
+            'Your license activates within seconds - restart Cubory if it does not appear right away.'), '/portal/');
+      }
+      if (e.name === 'checkout.closed') {
+        show(T('Checkout abgebrochen', 'Checkout cancelled'),
+          T('Es wurde nichts abgebucht. Du kannst den Kauf jederzeit erneut starten.',
+            'Nothing was charged. You can start the purchase again anytime.'), '/portal/');
+      }
+    },
+  });
+  Paddle.Checkout.open({ transactionId: txn, settings: { theme: 'dark', locale: en ? 'en' : 'de' } });
+}
+</script>
+</body>
+</html>

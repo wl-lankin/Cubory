@@ -121,6 +121,7 @@ func main() {
 			PriceMonthly:  os.Getenv("PADDLE_PRICE_MONTHLY"),
 			PriceYearly:   os.Getenv("PADDLE_PRICE_YEARLY"),
 			PriceLifetime: os.Getenv("PADDLE_PRICE_LIFETIME"),
+			CheckoutURL:   getenvDefault("PADDLE_CHECKOUT_URL", cfg.AppBaseURL+"/checkout/"),
 		})
 		log.Info("billing", "provider", "paddle")
 	} else if key := os.Getenv("STRIPE_SECRET_KEY"); key != "" {

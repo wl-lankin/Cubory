@@ -27,6 +27,9 @@ type Config struct {
 	PriceMonthly  string
 	PriceYearly   string
 	PriceLifetime string
+	// CheckoutURL: eigene Checkout-Seite (= Default Payment Link bei Paddle).
+	// Fallback, falls die Transaktion keine checkout.url zurückgibt.
+	CheckoutURL string
 }
 
 type Provider struct {
@@ -101,6 +104,11 @@ func (p *Provider) CreateCheckout(ctx context.Context, user *domain.User, plan d
 		if u, ok := c["url"].(string); ok && u != "" {
 			return u, nil
 		}
+	}
+	// Paddle liefert die URL nur mit gesetztem Default Payment Link; sonst
+	// bauen wir sie selbst aus unserer Checkout-Seite + Transaktions-ID.
+	if id, ok := data["id"].(string); ok && p.cfg.CheckoutURL != "" {
+		return p.cfg.CheckoutURL + "?_ptxn=" + id, nil
 	}
 	return "", fmt.Errorf("paddle: keine Checkout-URL (Default Payment Link im Dashboard konfigurieren)")
 }
