@@ -81,12 +81,12 @@ Ebenen bleiben unbegrenzt nutzbar - gesperrt werden nur die Pro-Werkzeuge.
 
 ## Installation
 
-Fertige Installer liegen nach dem Build in `release/`, aktuell in Version 1.5.1:
+Fertige Installer liegen nach dem Build in `release/`, aktuell in Version 1.5.2:
 
-- `Cubory-1.5.1-arm64.dmg` - macOS (Apple Silicon)
-- `Cubory-1.5.1.dmg` - macOS (Intel)
-- `Cubory Setup 1.5.1.exe` - Windows (64-bit)
-- `Cubory-1.5.1.AppImage` - Linux (x64)
+- `Cubory-1.5.2-arm64.dmg` - macOS (Apple Silicon)
+- `Cubory-1.5.2.dmg` - macOS (Intel)
+- `Cubory Setup 1.5.2.exe` - Windows (64-bit)
+- `Cubory-1.5.2.AppImage` - Linux (x64)
 
 Die Builds sind nicht code-signiert: macOS-Gatekeeper bzw. Windows SmartScreen
 zeigen beim ersten Start eine Warnung, die sich über „Trotzdem öffnen"
