@@ -1,5 +1,6 @@
 // English UI strings - source of truth for scripts/translate-locales.mjs
 export default {
+  'tabs.label': 'Files',
   'app.open': 'Open file',
   'app.openTip': 'Open file (Cmd/Ctrl+O)',
   'hero.title1': 'Every model',

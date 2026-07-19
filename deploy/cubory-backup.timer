@@ -1,0 +1,11 @@
+[Unit]
+Description=Cubory täglich sichern
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+# Holt einen Lauf nach, wenn der Server zum geplanten Zeitpunkt aus war.
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target

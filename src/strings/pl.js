@@ -1,6 +1,7 @@
 // pl UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Pliki',
   'app.open': 'Otwórz plik',
   'app.openTip': 'Otwórz plik (Cmd/Ctrl+O)',
   'hero.title1': 'Każdy model',

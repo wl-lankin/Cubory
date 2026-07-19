@@ -1,6 +1,7 @@
 // el UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Αρχεία',
   'app.open': 'Άνοιγμα αρχείου',
   'app.openTip': 'Άνοιγμα αρχείου (Cmd/Ctrl+O)',
   'hero.title1': 'Κάθε μοντέλο',

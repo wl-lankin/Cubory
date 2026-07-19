@@ -1,6 +1,7 @@
 // no UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Filer',
   'app.open': 'Åpne fil',
   'app.openTip': 'Åpne fil (Cmd/Ctrl+O)',
   'hero.title1': 'Hver modell',

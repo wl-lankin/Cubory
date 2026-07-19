@@ -1,6 +1,7 @@
 // cs UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Soubory',
   'app.open': 'Otevři soubor',
   'app.openTip': 'Otevři soubor (Cmd/Ctrl+O)',
   'hero.title1': 'Každý model',

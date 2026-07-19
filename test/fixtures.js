@@ -230,3 +230,95 @@ export function threeMfProduction() {
     '3D/Objects/object_1.model': strToU8(external),
   }, { level: 0 }));
 }
+
+/* ── STEP ────────────────────────────────────────────────────────────────── */
+
+/** Minimaler STEP-Quader als MANIFOLD_SOLID_BREP: acht Ecken, zwölf Kanten,
+ *  sechs ebene Flächen. Von Hand erzeugt statt eine echte Konstruktionsdatei
+ *  einzuchecken - die wäre hunderte Kilobyte groß und gehörte jemandem.
+ *  OpenCascade vernetzt daraus zwölf Dreiecke und liefert eigene Normalen mit,
+ *  woran sich prüfen lässt, dass wir sie nicht überschreiben. */
+export function stepBox(L = 40, W = 30, H = 20) {
+  let n = 100;
+  const out = [];
+  const put = (s) => { n++; out.push(`#${n}=${s};`); return `#${n}`; };
+
+  const P = [
+    [0, 0, 0], [L, 0, 0], [L, W, 0], [0, W, 0],
+    [0, 0, H], [L, 0, H], [L, W, H], [0, W, H],
+  ];
+  const num = (v) => (Number.isInteger(v) ? `${v}.` : String(v));
+  const pt = (p) => put(`CARTESIAN_POINT('',(${p.map(num).join(',')}))`);
+  const dir = (d) => put(`DIRECTION('',(${d.map(num).join(',')}))`);
+
+  const punkte = P.map(pt);
+  const ecken = punkte.map((p) => put(`VERTEX_POINT('',${p})`));
+
+  // Kante als EDGE_CURVE mit LINE dazwischen
+  const kante = (a, b) => {
+    const von = P[a], bis = P[b];
+    const v = [bis[0] - von[0], bis[1] - von[1], bis[2] - von[2]];
+    const len = Math.hypot(...v);
+    const richtung = dir(v.map((k) => k / len));
+    const basis = pt(von);
+    const vektor = put(`VECTOR('',${richtung},${num(len)})`);
+    const linie = put(`LINE('',${basis},${vektor})`);
+    return put(`EDGE_CURVE('',${ecken[a]},${ecken[b]},${linie},.T.)`);
+  };
+
+  const K = {
+    1: kante(0, 1), 2: kante(1, 2), 3: kante(2, 3), 4: kante(3, 0),
+    5: kante(4, 5), 6: kante(5, 6), 7: kante(6, 7), 8: kante(7, 4),
+    9: kante(0, 4), 10: kante(1, 5), 11: kante(2, 6), 12: kante(3, 7),
+  };
+
+  // Fläche: Stützpunkt, Normale, Referenzrichtung, Kantenzug
+  const flaeche = (ort, normale, ref, zug) => {
+    const ebene = put(`PLANE('',${put(`AXIS2_PLACEMENT_3D('',${pt(ort)},${dir(normale)},${dir(ref)})`)})`);
+    const kanten = zug.map(([k, vorwaerts]) => put(`ORIENTED_EDGE('',*,*,${K[k]},${vorwaerts ? '.T.' : '.F.'})`));
+    const schleife = put(`EDGE_LOOP('',(${kanten.join(',')}))`);
+    const rand = put(`FACE_OUTER_BOUND('',${schleife},.T.)`);
+    return put(`ADVANCED_FACE('',(${rand}),${ebene},.T.)`);
+  };
+
+  const flaechen = [
+    flaeche([0, 0, 0], [0, 0, -1], [1, 0, 0], [[4, false], [3, false], [2, false], [1, false]]),
+    flaeche([0, 0, H], [0, 0, 1], [1, 0, 0], [[5, true], [6, true], [7, true], [8, true]]),
+    flaeche([0, 0, 0], [0, -1, 0], [1, 0, 0], [[1, true], [10, true], [5, false], [9, false]]),
+    flaeche([L, 0, 0], [1, 0, 0], [0, 1, 0], [[2, true], [11, true], [6, false], [10, false]]),
+    flaeche([0, W, 0], [0, 1, 0], [-1, 0, 0], [[3, true], [12, true], [7, false], [11, false]]),
+    flaeche([0, 0, 0], [-1, 0, 0], [0, -1, 0], [[4, true], [9, true], [8, false], [12, false]]),
+  ];
+
+  const schale = put(`CLOSED_SHELL('',(${flaechen.join(',')}))`);
+  const koerper = put(`MANIFOLD_SOLID_BREP('Quader',${schale})`);
+  const platz = put(`AXIS2_PLACEMENT_3D('',${pt([0, 0, 0])},${dir([0, 0, 1])},${dir([1, 0, 0])})`);
+
+  const kopf = `ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION(('Cubory Testfixture'),'2;1');
+FILE_NAME('quader.step','2026-01-01T00:00:00',('Cubory'),(''),'','','');
+FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
+ENDSEC;
+DATA;
+#1=(LENGTH_UNIT()NAMED_UNIT(*)SI_UNIT(.MILLI.,.METRE.));
+#2=(NAMED_UNIT(*)PLANE_ANGLE_UNIT()SI_UNIT($,.RADIAN.));
+#3=(NAMED_UNIT(*)SI_UNIT($,.STERADIAN.)SOLID_ANGLE_UNIT());
+#4=UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(1.E-07),#1,'distance_accuracy_value','');
+#5=(GEOMETRIC_REPRESENTATION_CONTEXT(3)GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#4))GLOBAL_UNIT_ASSIGNED_CONTEXT((#1,#2,#3))REPRESENTATION_CONTEXT('',''));
+#10=APPLICATION_CONTEXT('automotive design');
+#11=APPLICATION_PROTOCOL_DEFINITION('','automotive_design',2000,#10);
+#20=PRODUCT('Quader','Quader','',(#21));
+#21=PRODUCT_CONTEXT('',#10,'mechanical');
+#22=PRODUCT_DEFINITION_FORMATION('','',#20);
+#23=PRODUCT_DEFINITION_CONTEXT('part definition',#10,'design');
+#24=PRODUCT_DEFINITION('','',#22,#23);
+#25=PRODUCT_DEFINITION_SHAPE('','',#24);
+`;
+  const schluss = `#90=ADVANCED_BREP_SHAPE_REPRESENTATION('',(${platz},${koerper}),#5);
+#91=SHAPE_DEFINITION_REPRESENTATION(#25,#90);
+ENDSEC;
+END-ISO-10303-21;
+`;
+  return textBuffer(kopf + out.join('\n') + '\n' + schluss);
+}

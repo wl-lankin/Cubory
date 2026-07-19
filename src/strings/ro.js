@@ -1,6 +1,7 @@
 // ro UI strings - GENERATED from English by scripts/translate-locales.mjs
 // (mistral-small via Ollama). Do not edit by hand; missing keys fall back to en.
 export default {
+  'tabs.label': 'Fișiere',
   'app.open': 'Deschide fișier',
   'app.openTip': 'Deschide fișier (Cmd/Ctrl+O)',
   'hero.title1': 'Orice model',

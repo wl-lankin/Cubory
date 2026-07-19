@@ -81,12 +81,12 @@ Ebenen bleiben unbegrenzt nutzbar - gesperrt werden nur die Pro-Werkzeuge.
 
 ## Installation
 
-Fertige Installer liegen nach dem Build in `release/`, aktuell in Version 1.5.2:
+Fertige Installer liegen nach dem Build in `release/`, aktuell in Version 1.5.3:
 
-- `Cubory-1.5.2-arm64.dmg` - macOS (Apple Silicon)
-- `Cubory-1.5.2.dmg` - macOS (Intel)
-- `Cubory Setup 1.5.2.exe` - Windows (64-bit)
-- `Cubory-1.5.2.AppImage` - Linux (x64)
+- `Cubory-1.5.3-arm64.dmg` - macOS (Apple Silicon)
+- `Cubory-1.5.3.dmg` - macOS (Intel)
+- `Cubory Setup 1.5.3.exe` - Windows (64-bit)
+- `Cubory-1.5.3.AppImage` - Linux (x64)
 
 Die Builds sind nicht code-signiert: macOS-Gatekeeper bzw. Windows SmartScreen
 zeigen beim ersten Start eine Warnung, die sich über „Trotzdem öffnen"
@@ -114,7 +114,7 @@ npm run test:e2e   # Rauchtest: startet die gebaute App über Playwright
 
 | Datei | Prüft |
 |---|---|
-| `test/loaders.test.js` | Jedes Format über `loadCadFile()`, inklusive der Regressionen: DXF aus LibreDWG mit fehlendem Gruppencode, 3MF mit Production Extension, aufgehelltes Blau, das nicht ins Violette kippt, und die Schattierung (flach, wo die Datei keine Normalen mitbringt) |
+| `test/loaders.test.js` | Jedes Format über `loadCadFile()`, STEP über den echten OpenCascade-Kern, inklusive der Regressionen: DXF aus LibreDWG mit fehlendem Gruppencode, 3MF mit Production Extension, aufgehelltes Blau, das nicht ins Violette kippt, und die Schattierung (flach, wo die Datei keine Normalen mitbringt) |
 | `test/formats.test.js` | Die fünf Stellen mit Formatlisten (Loader, erlaubte Endungen, Dateidialog, Dateizuordnungen, Website) stimmen überein |
 | `test/i18n.test.js` | Alle 20 Sprachen haben dieselben Schlüssel und behalten ihre Platzhalter |
 | `test/website.test.js` | Feed-Auswertung inklusive Dateinamen mit Leerzeichen, interne Links und Sprungmarken |
