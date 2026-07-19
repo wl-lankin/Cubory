@@ -2,6 +2,7 @@
 package middleware
 
 import (
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -19,6 +20,22 @@ const (
 	CtxSessionID = "session_id"
 	CtxRequestID = "request_id"
 )
+
+// ErrorLogger schreibt über c.Error() gemeldete Fehler ins Log - ohne das
+// verschwinden 500er spurlos und Betriebsfehler sind nicht diagnostizierbar.
+func ErrorLogger(log *slog.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		for _, e := range c.Errors {
+			log.Error("request failed",
+				"method", c.Request.Method,
+				"path", c.FullPath(),
+				"status", c.Writer.Status(),
+				"request_id", c.GetString(CtxRequestID),
+				"err", e.Err.Error())
+		}
+	}
+}
 
 func RequestID() gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -83,3 +83,55 @@ document.querySelectorAll('.bill-toggle button').forEach((b) => {
     document.getElementById('buy-pro')?.setAttribute('href', yearly ? '/portal/?plan=yearly' : '/portal/?plan=monthly');
   });
 });
+
+
+/* ── Downloads: Dateien und Version aus den Update-Feeds lesen ──────────── */
+
+(async () => {
+  const list = document.getElementById('dl-list');
+  if (!list) return;
+  const feeds = { mac: 'latest-mac.yml', win: 'latest.yml', linux: 'latest-linux.yml' };
+  // Zeilenweise statt Regex über den ganzen Text: Dateinamen dürfen
+  // Leerzeichen enthalten ("Cubory Setup 1.5.0.exe").
+  const parse = (yml) => {
+    const version = /^version:\s*(\S+)/m.exec(yml)?.[1] || '';
+    const files = [];
+    let cur = null;
+    for (const line of yml.split(/\r?\n/)) {
+      const u = /^\s*-\s*url:\s*(.+?)\s*$/.exec(line);
+      if (u) { cur = { url: u[1], size: 0 }; files.push(cur); continue; }
+      const sz = /^\s*size:\s*(\d+)/.exec(line);
+      if (sz && cur) cur.size = Number(sz[1]);
+    }
+    return { version, files };
+  };
+  const mb = (b) => Math.round(b / 1048576) + ' MB';
+  const got = {};
+  await Promise.all(Object.entries(feeds).map(async ([key, file]) => {
+    try {
+      const res = await fetch(`/downloads/${file}`, { cache: 'no-cache' });
+      if (res.ok) got[key] = parse(await res.text());
+    } catch { /* Feed fehlt - Kachel bleibt beim Fallback */ }
+  }));
+
+  const version = got.mac?.version || got.win?.version || got.linux?.version;
+  if (version) {
+    const label = document.getElementById('dl-version');
+    if (label) label.textContent = (window.__t ? window.__t('Version') : 'Version') + ' ' + version;
+  }
+
+  const pick = {
+    'mac-arm64': got.mac?.files.find((f) => /arm64/.test(f.url)),
+    'mac-x64': got.mac?.files.find((f) => /\.dmg$/.test(f.url) && !/arm64/.test(f.url)),
+    win: got.win?.files.find((f) => /\.exe$/i.test(f.url)),
+    linux: got.linux?.files.find((f) => /AppImage$/i.test(f.url)),
+  };
+  for (const a of list.querySelectorAll('a[data-os]')) {
+    const f = pick[a.dataset.os];
+    const meta = a.querySelector('.meta');
+    if (!f) { meta.textContent = window.__t ? window.__t('bald verfügbar') : 'bald verfügbar'; a.style.opacity = '.55'; continue; }
+    a.href = '/downloads/' + encodeURIComponent(f.url);
+    a.setAttribute('download', '');
+    meta.textContent = f.url + ' · ' + mb(f.size);
+  }
+})();

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	paddlebilling "cubory/api/internal/billing/paddle"
 	unconfiguredbilling "cubory/api/internal/billing/unconfigured"
 	"cubory/api/internal/domain"
 	"cubory/api/internal/service/billing"
@@ -120,6 +121,11 @@ func (h *BillingHandler) Webhook(c *gin.Context) {
 	}
 	if err := h.Svc.HandleWebhook(c.Request.Context(), payload, sig); err != nil {
 		if notConfigured(c, err) {
+			return
+		}
+		if errors.Is(err, paddlebilling.ErrInvalidSignature) {
+			// 4xx: Paddle wiederholt nicht - die Zustellung war nicht authentisch
+			fail(c, http.StatusBadRequest, "invalid_signature", "Signatur ungültig")
 			return
 		}
 		// 4xx → Stripe wiederholt nicht; Verarbeitungsfehler → 500, Stripe retried

@@ -2,6 +2,8 @@
 package http
 
 import (
+	"log/slog"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -13,6 +15,7 @@ import (
 )
 
 type Deps struct {
+	Log              *slog.Logger
 	Pool             *pgxpool.Pool
 	AdminEmail       string
 	JWTSecret        []byte
@@ -24,7 +27,7 @@ type Deps struct {
 
 func NewRouter(d Deps) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Recovery(), middleware.RequestID(), middleware.CORS(), middleware.SecurityHeaders())
+	r.Use(gin.Recovery(), middleware.RequestID(), middleware.ErrorLogger(d.Log), middleware.CORS(), middleware.SecurityHeaders())
 
 	r.GET("/healthz", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
 

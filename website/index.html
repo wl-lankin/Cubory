@@ -183,7 +183,7 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
 <body>
 <div class="wrap">
 <header id="sheet0">
-  <span class="sheet-label">CUBORY · BLATT 0 · ENTWURF</span>
+  <span class="sheet-label">BLATT 0 · ENTWURF</span>
   <nav>
     <a class="brand" href="#"><img src="assets/icon.png" alt="" /><img src="assets/wordmark.png" alt="Cubory" style="height:20px;width:auto"/></a>
     <div class="links">
@@ -249,7 +249,7 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
   <p class="lead reveal">Jede Funktion hat ihre Position - wie auf dem Zeichnungsblatt.
   Fahre über die Stückliste.</p>
   <div class="sheet reveal">
-    <span class="sheet-label">CUBORY · BLATT 1/1</span>
+    <span class="sheet-label">BLATT 1/1</span>
     <div class="bom">
       <svg viewBox="0 0 420 360" fill="none" aria-hidden="true">
         <g stroke="#5d668f" stroke-width="1">
@@ -311,18 +311,18 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
 <section id="download">
   <p class="dim reveal">AUSGABE · PLOT</p>
   <h2 class="reveal">Cubory <span class="grad">laden</span></h2>
-  <p class="lead reveal">Version 1.0.0 · Free-Funktionen ohne Konto</p>
-  <div class="plot reveal">
-    <a href="/downloads/Cubory-1.0.0-arm64.dmg"><span class="file">Cubory-1.0.0-arm64.dmg</span><span class="meta">macOS · Apple Silicon · 107 MB</span><span class="arrow">↓</span></a>
-    <a href="/downloads/Cubory-1.0.0.dmg"><span class="file">Cubory-1.0.0.dmg</span><span class="meta">macOS · Intel · 111 MB</span><span class="arrow">↓</span></a>
-    <a href="/downloads/Cubory%20Setup%201.0.0.exe"><span class="file">Cubory Setup 1.0.0.exe</span><span class="meta">Windows · 64-bit · 86 MB</span><span class="arrow">↓</span></a>
-    <a href="#download"><span class="file">cubory-1.0.0.AppImage</span><span class="meta">Linux · bald verfügbar</span><span class="arrow">·</span></a>
+  <p class="lead reveal"><span id="dl-version">Version …</span> · Free-Funktionen ohne Konto</p>
+  <div class="plot reveal" id="dl-list">
+    <a href="/downloads/" data-os="mac-arm64"><span class="file">macOS · Apple Silicon</span><span class="meta">…</span><span class="arrow">↓</span></a>
+    <a href="/downloads/" data-os="mac-x64"><span class="file">macOS · Intel</span><span class="meta">…</span><span class="arrow">↓</span></a>
+    <a href="/downloads/" data-os="win"><span class="file">Windows · 64-bit</span><span class="meta">…</span><span class="arrow">↓</span></a>
+    <a href="/downloads/" data-os="linux"><span class="file">Linux · AppImage</span><span class="meta">…</span><span class="arrow">↓</span></a>
   </div>
 </section>
 
 <footer>
   <span>© 2026 Cubory · The modern CAD viewer</span>
-  <span><a href="/impressum.html" style="color:var(--faint)">Impressum</a> · <a href="/datenschutz.html" style="color:var(--faint)">Datenschutz</a> · <a href="/agb.html" style="color:var(--faint)">AGB</a> · Entwickelt von <a href="https://wolfgang-linz.de" style="color:var(--muted)">Wolfgang Linz</a></span>
+  <span><a href="/impressum.html" style="color:var(--faint)">Impressum</a> · <a href="/datenschutz.html" style="color:var(--faint)">Datenschutz</a> · <a href="/agb.html" style="color:var(--faint)">AGB</a> · <a href="/agb.html#widerruf" style="color:var(--faint)">Widerruf &amp; Erstattung</a> · Entwickelt von <a href="https://wolfgang-linz.de" style="color:var(--muted)">Wolfgang Linz</a></span>
 </footer>
 </div>
 <script type="module" src="main.js"></script>

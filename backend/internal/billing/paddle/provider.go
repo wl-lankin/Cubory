@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -185,9 +186,13 @@ func str(m map[string]any, keys ...string) string {
 	return s
 }
 
+// ErrInvalidSignature: Absender nicht verifizierbar - die HTTP-Schicht
+// antwortet damit 400, damit Paddle solche Zustellungen nicht wiederholt.
+var ErrInvalidSignature = errors.New("paddle_invalid_signature")
+
 func (p *Provider) ParseWebhook(payload []byte, signatureHeader string) (*domain.BillingEvent, error) {
 	if !p.verifySignature(payload, signatureHeader) {
-		return nil, fmt.Errorf("paddle webhook-signatur ungültig")
+		return nil, ErrInvalidSignature
 	}
 	var pe paddleEvent
 	if err := json.Unmarshal(payload, &pe); err != nil {

@@ -66,6 +66,12 @@ Versand über Strato: `smtp.strato.de:587` (STARTTLS), Absender
   (Events: transaction.completed, transaction.payment_failed,
   subscription.created/updated/canceled, adjustment.updated).
 
+## Caching (nginx)
+
+HTML, `.js` und die Update-Feeds (`.yml`) werden mit `no-cache` ausgeliefert -
+sonst sehen Besucher nach einem Deployment veraltete Seiten. Nur `/assets/`
+(Bilder, Fonts) und `/downloads/` werden lange gecacht.
+
 ## Noch offen
 
 - **Backups**: `pg_dump` per Cron einrichten.
