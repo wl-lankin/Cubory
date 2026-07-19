@@ -53,8 +53,8 @@ Kostenlos und ohne Zeitlimit:
   Punkt daneben blendet es ein/aus; doppelte Namen werden durchnummeriert
 - Modell-Info: Abmessungen in mm, Elemente, Dreiecke oder Punkte, Dateigröße
 - 20 Sprachen, Standard ist die Systemsprache
-- Optionen: Autostart, zuletzt geöffnete Dateien wiederherstellen, Minimieren in
-  die Menüleiste, Standardprogramm für Dateitypen, Update-Prüfung
+- Optionen: Autostart, zuletzt geöffnete Dateien wieder öffnen, im Hintergrund
+  weiterlaufen, Standardprogramm für Dateitypen, Update-Prüfung
 
 Cubory Pro (7 Tage kostenlos bei jedem neuen Konto):
 
