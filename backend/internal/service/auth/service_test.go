@@ -26,10 +26,10 @@ type captureMailer struct {
 	mails []struct{ To, Subject, Body string }
 }
 
-func (m *captureMailer) Send(_ context.Context, to, subject, body string) error {
+func (m *captureMailer) Send(_ context.Context, msg domain.Mail) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.mails = append(m.mails, struct{ To, Subject, Body string }{to, subject, body})
+	m.mails = append(m.mails, struct{ To, Subject, Body string }{msg.To, msg.Subject, msg.Text})
 	return nil
 }
 

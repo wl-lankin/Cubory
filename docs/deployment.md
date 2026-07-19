@@ -54,7 +54,19 @@ Backup des Seeds ist Pflicht.
 ## E-Mail (aktiv)
 
 Versand über Strato: `smtp.strato.de:587` (STARTTLS), Absender
-`Cubory <info@cubory.app>`. Zugangsdaten in `/etc/cubory/api.env`.
+`Cubory <noreply@cubory.app>`, Reply-To `info@cubory.app`.
+Zugangsdaten in `/etc/cubory/api.env`.
+
+Vier Vorlagen (HTML im App-Design + Textteil, `internal/service/email/templates.go`):
+Bestätigungscode, Willkommen (nach Verifizierung), Passwort-Reset,
+Trial-Ende-Erinnerung.
+
+Design prüfen ohne echte Registrierung:
+
+```bash
+ssh root@91.98.161.167 'set -a && . /etc/cubory/api.env && set +a && cubory-mailpreview <adresse>'
+go run ./cmd/mailpreview --html > vorschau.html   # lokal im Browser ansehen
+```
 
 ## Paddle
 

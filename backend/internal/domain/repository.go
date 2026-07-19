@@ -63,7 +63,16 @@ type AuditRepo interface {
 	Write(ctx context.Context, e AuditEntry)
 }
 
+// Mail: eine ausgehende Nachricht. HTML ist optional - fehlt es, wird nur
+// der Textteil versendet.
+type Mail struct {
+	To      string
+	Subject string
+	Text    string
+	HTML    string
+}
+
 // Mailer abstrahiert den Versand; Implementierungen: SMTP, Dev-Logger.
 type Mailer interface {
-	Send(ctx context.Context, to, subject, textBody string) error
+	Send(ctx context.Context, m Mail) error
 }

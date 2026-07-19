@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"cubory/api/internal/domain"
+	emailtpl "cubory/api/internal/service/email"
 )
 
 type Config struct {
@@ -183,9 +184,7 @@ func (s *Service) ForgotPassword(ctx context.Context, email string) {
 	if err != nil {
 		return
 	}
-	_ = s.sendEmailToken(ctx, u, domain.PurposeResetPassword,
-		"Passwort zurücksetzen",
-		"Setze dein Cubory-Passwort zurück:")
+	_ = s.sendEmailToken(ctx, u, domain.PurposeResetPassword)
 }
 
 func (s *Service) ResetPassword(ctx context.Context, token, newPassword string) error {
@@ -242,6 +241,13 @@ func (s *Service) VerifyEmailCode(ctx context.Context, email, code string) error
 		return err
 	}
 	s.audit.Write(ctx, domain.AuditEntry{UserID: &u.ID, Actor: "user", Action: "email_verified"})
+	// Willkommensmail erst jetzt - vorher hätte sie mit der Code-Mail kollidiert.
+	welcome := emailtpl.WelcomeMail(u.Name, s.cfg.TrialDays)
+	welcome.To = u.Email
+	if err := s.mailer.Send(ctx, welcome); err != nil {
+		s.audit.Write(ctx, domain.AuditEntry{UserID: &u.ID, Actor: "system",
+			Action: "welcome_mail_failed", Detail: map[string]any{"err": err.Error()}})
+	}
 	return nil
 }
 
@@ -275,8 +281,9 @@ func (s *Service) sendVerifyCode(ctx context.Context, u *domain.User) error {
 	}); err != nil {
 		return err
 	}
-	return s.mailer.Send(ctx, u.Email, "Dein Cubory-Bestätigungscode",
-		fmt.Sprintf("Hallo %s,\n\nwillkommen bei Cubory! Dein Bestätigungscode lautet:\n\n    %s\n\nGib ihn in der App ein. Der Code ist 30 Minuten gültig.\n\nFalls du dich nicht registriert hast, ignoriere diese E-Mail.", u.Name, code))
+	m := emailtpl.VerifyCodeMail(u.Name, code)
+	m.To = u.Email
+	return s.mailer.Send(ctx, m)
 }
 
 // DeleteAccount: DSGVO-Löschung - Sessions beenden, Geräte deaktivieren,
@@ -340,7 +347,7 @@ func (s *Service) issueTokens(ctx context.Context, userID, sessionID, familyID u
 		ExpiresIn: int(s.cfg.AccessTokenTTL.Seconds())}, nil
 }
 
-func (s *Service) sendEmailToken(ctx context.Context, u *domain.User, purpose domain.EmailTokenPurpose, subject, intro string) error {
+func (s *Service) sendEmailToken(ctx context.Context, u *domain.User, purpose domain.EmailTokenPurpose) error {
 	plain, hash, err := NewOpaqueToken()
 	if err != nil {
 		return err
@@ -352,7 +359,9 @@ func (s *Service) sendEmailToken(ctx context.Context, u *domain.User, purpose do
 		return err
 	}
 	link := fmt.Sprintf("%s/%s?token=%s", s.cfg.AppBaseURL, purposePath(purpose), plain)
-	return s.mailer.Send(ctx, u.Email, subject, fmt.Sprintf("Hallo %s,\n\n%s\n\n%s\n\nDer Link ist 24 Stunden gültig.", u.Name, intro, link))
+	m := emailtpl.ResetPasswordMail(u.Name, link)
+	m.To = u.Email
+	return s.mailer.Send(ctx, m)
 }
 
 func purposePath(p domain.EmailTokenPurpose) string {

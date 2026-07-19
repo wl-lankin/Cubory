@@ -2,7 +2,6 @@ package email
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -69,11 +68,9 @@ func (r *TrialReminder) runOnce(ctx context.Context) {
 		if err != nil || tag.RowsAffected() == 0 {
 			continue
 		}
-		body := fmt.Sprintf("Hallo %s,\n\ndeine Cubory-Pro-Testphase endet am %s.\n"+
-			"Danach wechselst du automatisch auf Cubory Free - alle Viewer-Funktionen bleiben erhalten.\n\n"+
-			"Wenn du Messwerkzeuge, Schnittansichten und Export behalten möchtest, "+
-			"findest du die Pro-Optionen in der App unter Konto.\n", u.name, u.endsAt.Format("02.01.2006"))
-		if err := r.Mailer.Send(ctx, u.email, "Deine Cubory-Pro-Testphase endet bald", body); err != nil {
+		m := TrialEndingMail(u.name, u.endsAt.Format("02.01.2006"))
+		m.To = u.email
+		if err := r.Mailer.Send(ctx, m); err != nil {
 			r.Log.Error("trial-reminder send", "err", err, "to", u.email)
 		}
 	}

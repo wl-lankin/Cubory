@@ -70,7 +70,8 @@ func main() {
 		mailer = &email.SMTPMailer{
 			Host: host, Port: getenvDefault("CUBORY_SMTP_PORT", "587"),
 			User: os.Getenv("CUBORY_SMTP_USER"), Pass: os.Getenv("CUBORY_SMTP_PASS"),
-			From: getenvDefault("CUBORY_SMTP_FROM", "Cubory <no-reply@cubory.app>"),
+			From:    getenvDefault("CUBORY_SMTP_FROM", "Cubory <noreply@cubory.app>"),
+			ReplyTo: getenvDefault("CUBORY_SMTP_REPLY_TO", "info@cubory.app"),
 		}
 		log.Info("mailer", "provider", "smtp", "host", host)
 	} else {

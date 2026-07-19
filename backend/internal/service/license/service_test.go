@@ -20,7 +20,7 @@ const testDBURL = "postgres://localhost:5432/cubory_test?sslmode=disable"
 
 type nullMailer struct{}
 
-func (nullMailer) Send(context.Context, string, string, string) error { return nil }
+func (nullMailer) Send(context.Context, domain.Mail) error { return nil }
 
 func setup(t *testing.T) (*license.Service, *auth.Service, *signing.Signer, *pgxpool.Pool) {
 	t.Helper()
