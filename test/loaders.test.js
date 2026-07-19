@@ -3,7 +3,8 @@
 // Jeder Regressionstest hier steht für einen Fehler, den echte Dateien in
 // diesem Projekt schon einmal ausgelöst haben.
 import { describe, it, expect } from 'vitest';
-import { loadCadFile } from '../src/loaders.js';
+import * as THREE from 'three';
+import { loadCadFile, shade, shadingMode, CREASE_LIMIT } from '../src/loaders.js';
 import {
   dxfWithLayers, dxfWithBrokenGroupCode, plyMesh, plyPointCloud,
   stlAscii, objCube, glbAssembly, threeMfClassic, threeMfProduction, plyCylinder,
@@ -204,6 +205,54 @@ describe('Schattierung', () => {
     expect(mantel, 'keine Mantelfläche gefunden - die Randnormalen sind '
       + 'vermutlich mit denen der Deckel vermischt').toBeGreaterThan(0);
     expect(weich, 'Mantelflächen sind facettiert statt weich schattiert').toBeGreaterThan(0);
+  });
+});
+
+// Bei sehr großen Netzen wäre das Umrechnen auf Knickwinkel teuer: es löst die
+// Indizierung auf und verdreifacht die Eckenzahl. Solche Modelle sind aber so
+// fein vernetzt, dass Flachschattierung praktisch gleich aussieht - und die
+// braucht weder Speicher noch Rechenzeit.
+describe('Schattierung staffelt nach Größe', () => {
+  /** Netz mit vorgegebener Dreiecksanzahl, ohne echte Geometrie aufzubauen. */
+  const netz = (dreiecke, mitNormalen = false) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(9), 3));
+    g.setIndex(new THREE.Uint32BufferAttribute(new Uint32Array(dreiecke * 3), 1));
+    if (mitNormalen) g.setAttribute('normal', new THREE.Float32BufferAttribute(new Float32Array(9), 3));
+    const m = new THREE.Mesh(g);
+    const root = new THREE.Group();
+    root.add(m);
+    return { g, root };
+  };
+
+  it('rechnet kleine Modelle auf Knickwinkel um', () => {
+    expect(shadingMode(netz(1000).root)).toBe('creased');
+  });
+
+  it('schaltet große Modelle auf Flachschattierung', () => {
+    expect(shadingMode(netz(CREASE_LIMIT + 1).root)).toBe('flat');
+  });
+
+  it('zählt nur Netze ohne eigene Normalen', () => {
+    // Was schon Normalen mitbringt, muss nicht umgerechnet werden und darf die
+    // Entscheidung für den Rest des Modells nicht kippen.
+    expect(shadingMode(netz(CREASE_LIMIT + 1, true).root)).toBe('creased');
+  });
+
+  it('lässt die Geometrie im flachen Modus unangetastet', () => {
+    const { g } = netz(10);
+    const r = shade(g, 'flat');
+    expect(r.geo).toBe(g);
+    expect(r.geo.index).not.toBeNull();
+    expect(r.flat).toBe(true);
+  });
+
+  it('entscheidet einmal fürs ganze Modell, nicht je Bauteil', () => {
+    // Sonst träfen in einer Baugruppe zwei Verfahren aufeinander und
+    // benachbarte Teile sähen unterschiedlich aus.
+    const root = new THREE.Group();
+    for (let i = 0; i < 4; i++) root.add(netz(CREASE_LIMIT / 3).root.children[0]);
+    expect(shadingMode(root)).toBe('flat');
   });
 });
 

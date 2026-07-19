@@ -224,10 +224,11 @@ async function loadOcct(arrayBuffer, kind) {
     // Aufteilung rechnen als die, die später gezeichnet wird.
     geo.setIndex(new THREE.Uint32BufferAttribute(meshData.index.array, 1));
     triangles += meshData.index.array.length / 3;
+    let flat = false;
     if (meshData.attributes.normal) {
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(meshData.attributes.normal.array, 3));
     } else {
-      geo = ensureNormals(geo);
+      ({ geo, flat } = shade(geo, triangleCount(geo) > CREASE_LIMIT ? 'flat' : 'creased'));
     }
 
     let color = COLORS.defaultMesh;
@@ -240,6 +241,7 @@ async function loadOcct(arrayBuffer, kind) {
       metalness: 0.35,
       roughness: 0.42,
       side: THREE.DoubleSide,
+      flatShading: flat,
     });
     const mesh = new THREE.Mesh(geo, mat);
     const partName = meshData.name || t('part.fallback', { n: i + 1 });
@@ -286,28 +288,66 @@ function dedupeParts(parts, meshes) {
 
 /* ── STL / OBJ ───────────────────────────────────────────────────────────── */
 
-/** Normalen ergänzen, wenn die Datei keine mitbringt.
- *  Nicht mit computeVertexNormals(): das mittelt die Normale über alle
- *  Flächen, die sich eine Ecke teilen. An einer 90-Grad-Kante verschmiert das
- *  die Schattierung - eine Kiste mit Rippen sieht aus, als wäre sie
- *  geschmolzen. toCreasedNormals() trennt die Ecken erst ab 60 Grad Knickwinkel
- *  und lässt gekrümmte Flächen (Bohrungen, Rundungen) weiterhin weich. */
-function ensureNormals(geo) {
-  return geo.getAttribute('normal') ? geo : toCreasedNormals(geo);
+/* ── Schattierung ────────────────────────────────────────────────────────── */
+
+/** Ab dieser Dreiecksanzahl je Modell wird nicht mehr auf Knickwinkel
+ *  umgerechnet. toCreasedNormals() löst die Indizierung auf und verdreifacht
+ *  damit die Eckenzahl - bei einer Million Dreiecken kostet das rund 45 MB und
+ *  gut eine Sekunde Ladezeit zusätzlich. So fein vernetzte Modelle sehen flach
+ *  schattiert ohnehin nahezu gleich aus, weil eine einzelne Facette dann kaum
+ *  größer als ein Pixel wird. */
+export const CREASE_LIMIT = 300000;
+
+function triangleCount(geo) {
+  const pos = geo.getAttribute('position');
+  if (!pos) return 0;
+  return (geo.index ? geo.index.count : pos.count) / 3;
 }
 
-function meshMaterial() {
+/** Entscheidet die Schattierung für ein ganzes Modell. Bewusst nicht je
+ *  Bauteil: sonst träfen in einer Baugruppe zwei Verfahren aufeinander und
+ *  benachbarte Teile sähen unterschiedlich aus. Gezählt werden nur Netze ohne
+ *  eigene Normalen - nur die müssen wir überhaupt umrechnen. */
+export function shadingMode(root) {
+  let tris = 0;
+  root.traverse((o) => {
+    if (o.isMesh && !o.geometry.getAttribute('normal')) tris += triangleCount(o.geometry);
+  });
+  return tris > CREASE_LIMIT ? 'flat' : 'creased';
+}
+
+/** Liefert die Geometrie mit brauchbaren Normalen und dazu, ob das Material
+ *  flach schattieren muss.
+ *
+ *  Nicht mit computeVertexNormals(): das mittelt die Normale über alle Flächen,
+ *  die sich eine Ecke teilen. An einer 90-Grad-Kante verschmiert das die
+ *  Schattierung - eine Kiste mit Rippen sieht aus, als wäre sie geschmolzen.
+ *  toCreasedNormals() trennt die Ecken erst ab 60 Grad und lässt gekrümmte
+ *  Flächen (Bohrungen, Rundungen) weich.
+ *
+ *  Bei sehr großen Netzen entfällt das: flatShading braucht keine Normalen,
+ *  three leitet sie im Shader aus der Fläche ab - das kostet weder Speicher
+ *  noch Ladezeit und hält die Kanten ebenfalls scharf. */
+export function shade(geo, mode) {
+  if (geo.getAttribute('normal')) return { geo, flat: false };
+  if (mode === 'flat') return { geo, flat: true };
+  return { geo: toCreasedNormals(geo), flat: false };
+}
+
+function meshMaterial(flat = false) {
   return new THREE.MeshStandardMaterial({
     color: COLORS.defaultMesh,
     metalness: 0.35,
     roughness: 0.42,
     side: THREE.DoubleSide,
+    flatShading: flat,
   });
 }
 
 function loadStl(arrayBuffer) {
-  const geo = new STLLoader().parse(arrayBuffer);
-  const mesh = new THREE.Mesh(ensureNormals(geo), meshMaterial());
+  const raw = new STLLoader().parse(arrayBuffer);
+  const { geo, flat } = shade(raw, triangleCount(raw) > CREASE_LIMIT ? 'flat' : 'creased');
+  const mesh = new THREE.Mesh(geo, meshMaterial(flat));
   const group = new THREE.Group();
   group.add(mesh);
   const pos = geo.getAttribute('position');
@@ -324,11 +364,13 @@ function loadStl(arrayBuffer) {
 function loadObj(arrayBuffer) {
   const text = new TextDecoder('utf-8').decode(arrayBuffer);
   const object = new OBJLoader().parse(text);
+  const mode = shadingMode(object);
   let triangles = 0;
   object.traverse((o) => {
     if (o.isMesh) {
-      o.geometry = ensureNormals(o.geometry);
-      o.material = meshMaterial();
+      const { geo, flat } = shade(o.geometry, mode);
+      o.geometry = geo;
+      o.material = meshMaterial(flat);
       const pos = o.geometry.getAttribute('position');
       if (pos) triangles += (o.geometry.index ? o.geometry.index.count : pos.count) / 3;
     }
@@ -352,10 +394,11 @@ function collectParts(root, keepColors = false) {
   const parts = [];
   const meshes = [];
   let triangles = 0;
+  const mode = shadingMode(root);
 
   root.traverse((o) => {
     if (!o.isMesh) return;
-    const geo = ensureNormals(o.geometry);
+    const { geo, flat } = shade(o.geometry, mode);
     o.geometry = geo;
 
     // Farben aus der Datei behalten (3MF-Mehrmaterialdruck, GLTF-Materialien),
@@ -370,8 +413,9 @@ function collectParts(root, keepColors = false) {
           metalness: 0.25,
           roughness: 0.5,
           side: THREE.DoubleSide,
+          flatShading: flat,
         })
-      : meshMaterial();
+      : meshMaterial(flat);
 
     const pos = geo.getAttribute('position');
     if (pos) triangles += (geo.index ? geo.index.count : pos.count) / 3;
@@ -458,10 +502,13 @@ function loadPly(arrayBuffer) {
   }
 
   const dreiecke = Math.round(geo.index.count / 3);
-  const beschattet = ensureNormals(geo);
+  const { geo: beschattet, flat } = shade(geo, dreiecke > CREASE_LIMIT ? 'flat' : 'creased');
   const mat = vertexColors
-    ? new THREE.MeshStandardMaterial({ vertexColors, metalness: 0.25, roughness: 0.5, side: THREE.DoubleSide })
-    : meshMaterial();
+    ? new THREE.MeshStandardMaterial({
+        vertexColors, metalness: 0.25, roughness: 0.5,
+        side: THREE.DoubleSide, flatShading: flat,
+      })
+    : meshMaterial(flat);
   group.add(new THREE.Mesh(beschattet, mat));
   return {
     object: group,
