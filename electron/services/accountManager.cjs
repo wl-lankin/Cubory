@@ -152,8 +152,8 @@ class AccountManager {
     return this.state();
   }
 
-  async deleteAccount() {
-    await this.http.del('/api/account');
+  async deleteAccount(password) {
+    await this.http.request('DELETE', '/api/account', { password });
     this.stopHeartbeat();
     this.store.clear();
     this._emit();

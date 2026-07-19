@@ -163,7 +163,19 @@ func (h *AuthHandler) ResendVerification(c *gin.Context) {
 }
 
 func (h *AuthHandler) DeleteAccount(c *gin.Context) {
-	if err := h.Svc.DeleteAccount(c.Request.Context(), c.MustGet(middleware.CtxUserID).(uuid.UUID)); err != nil {
+	var req struct {
+		Password string `json:"password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fail(c, http.StatusBadRequest, "invalid_request", "Passwort zur Bestätigung erforderlich")
+		return
+	}
+	err := h.Svc.DeleteAccount(c.Request.Context(), c.MustGet(middleware.CtxUserID).(uuid.UUID), req.Password)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidCredentials) {
+			fail(c, http.StatusUnauthorized, "invalid_credentials", "Passwort falsch")
+			return
+		}
 		internal(c, err)
 		return
 	}

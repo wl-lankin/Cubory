@@ -211,8 +211,13 @@ function wireModal() {
   });
 
   modal.querySelector('#account-delete')?.addEventListener('click', async () => {
-    if (!(await confirmModal(t('account.deleteConfirm'), t('account.delete')))) return;
-    await window.cubory.account.deleteAccount();
+    const password = await confirmModal(t('account.deleteConfirm'), t('account.delete'), true);
+    if (!password) return;
+    const res = await window.cubory.account.deleteAccount(password);
+    if (!res.ok) {
+      alert(res.error.message);
+      return;
+    }
     closeModal();
   });
 
@@ -244,22 +249,39 @@ async function loadDevices() {
   });
 }
 
-// Bestätigungsdialog im App-Stil (ersetzt natives confirm)
-function confirmModal(text, confirmLabel) {
+// Bestätigungsdialog im App-Stil (ersetzt natives confirm).
+// Mit `withPassword` verlangt er zusätzlich das Kontopasswort und
+// liefert dieses zurück (sonst true/false).
+function confirmModal(text, confirmLabel, withPassword = false) {
   return new Promise((resolve) => {
     const ov = document.createElement('div');
     ov.id = 'confirm-modal';
-    ov.innerHTML = `<div class="account-card glass sheet sheet-corners" style="width:380px">
-      <p style="font-size:13.5px;line-height:1.7;color:var(--text-muted);margin-bottom:20px">${escapeHtml(text)}</p>
-      <div class="account-actions" style="justify-content:flex-end;gap:10px;margin-top:0">
+    ov.innerHTML = `<div class="account-card glass sheet sheet-corners" style="width:400px">
+      <p style="font-size:13.5px;line-height:1.7;color:var(--text-muted);margin-bottom:${withPassword ? '14' : '20'}px">${escapeHtml(text)}</p>
+      ${withPassword ? `<input class="account-input" id="cm-pw" type="password"
+        placeholder="${escapeHtml(t('account.password'))}" autofocus />
+        <p class="account-error" id="cm-err" hidden></p>` : ''}
+      <div class="account-actions" style="justify-content:flex-end;gap:10px;margin-top:16px">
         <button class="btn btn-ghost" id="cm-no">${escapeHtml(t('common.cancel'))}</button>
         <button class="btn btn-ghost account-danger" id="cm-yes" style="border:1px solid rgba(255,110,130,.4)">${escapeHtml(confirmLabel)}</button>
       </div></div>`;
     document.body.appendChild(ov);
+    const pw = ov.querySelector('#cm-pw');
+    pw?.focus();
     const done = (v) => { ov.remove(); resolve(v); };
     ov.querySelector('#cm-no').addEventListener('click', () => done(false));
-    ov.querySelector('#cm-yes').addEventListener('click', () => done(true));
+    ov.querySelector('#cm-yes').addEventListener('click', () => {
+      if (!withPassword) return done(true);
+      if (!pw.value) { pw.focus(); return; }
+      done(pw.value);
+    });
+    pw?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && pw.value) done(pw.value);
+    });
     ov.addEventListener('click', (e) => { if (e.target === ov) done(false); });
+    window.addEventListener('keydown', function esc(e) {
+      if (e.key === 'Escape') { done(false); window.removeEventListener('keydown', esc); }
+    });
   });
 }
 

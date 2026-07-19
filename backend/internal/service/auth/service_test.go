@@ -246,3 +246,24 @@ func TestVerifyCodeAttemptLimit(t *testing.T) {
 		t.Fatalf("neuer Code: %v", err)
 	}
 }
+
+func TestDeleteAccountRequiresPassword(t *testing.T) {
+	svc, _, _ := setup(t)
+	ctx := context.Background()
+	user, _, err := svc.Register(ctx, "W", "del-pw@test.de", "sehr-sicher-123", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.DeleteAccount(ctx, user.ID, "falsch-falsch"); err != domain.ErrInvalidCredentials {
+		t.Fatalf("falsches Passwort: err = %v, want ErrInvalidCredentials", err)
+	}
+	if _, _, err := svc.Login(ctx, user.Email, "sehr-sicher-123", "", "", nil); err != nil {
+		t.Fatal("Konto muss nach Fehlversuch weiter existieren")
+	}
+	if err := svc.DeleteAccount(ctx, user.ID, "sehr-sicher-123"); err != nil {
+		t.Fatalf("korrektes Passwort: %v", err)
+	}
+	if _, _, err := svc.Login(ctx, user.Email, "sehr-sicher-123", "", "", nil); err == nil {
+		t.Fatal("gelöschtes Konto darf sich nicht anmelden")
+	}
+}

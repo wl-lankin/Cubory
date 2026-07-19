@@ -280,13 +280,21 @@ func (s *Service) sendVerifyCode(ctx context.Context, u *domain.User) error {
 }
 
 // DeleteAccount: DSGVO-Löschung - Sessions beenden, Geräte deaktivieren,
-// aktive Lizenz schließen, Nutzerdaten anonymisieren.
-func (s *Service) DeleteAccount(ctx context.Context, userID uuid.UUID) error {
+// aktive Lizenz schließen, Nutzerdaten anonymisieren. Verlangt zur
+// Sicherheit das Kontopasswort (Schutz vor unbeaufsichtigtem Gerät).
+func (s *Service) DeleteAccount(ctx context.Context, userID uuid.UUID, password string) error {
+	u, err := s.users.ByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if !VerifyPassword(password, u.PasswordHash) {
+		return domain.ErrInvalidCredentials
+	}
 	if err := s.sessions.RevokeAllForUser(ctx, userID); err != nil {
 		return err
 	}
-	devices, err := s.devices.ActiveByUser(ctx, userID)
-	if err == nil {
+	devices, derr := s.devices.ActiveByUser(ctx, userID)
+	if derr == nil {
 		for _, d := range devices {
 			_ = s.devices.Deactivate(ctx, d.ID)
 		}

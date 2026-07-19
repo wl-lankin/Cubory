@@ -26,10 +26,10 @@
     content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
     background:url(../assets/ambient.jpg) center/cover; opacity:.55;
   }
-  body > * { position:relative; z-index:1; }
+  body > *:not(.confirm-ov) { position:relative; z-index:1; }
   .confirm-ov { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
-    background:rgba(7,11,34,.55); backdrop-filter:blur(4px); }
-  .confirm-card { max-width:420px; }
+    background:rgba(7,11,34,.6); backdrop-filter:blur(4px); }
+  .confirm-card { width:min(420px,90vw); margin:0; }
   .brand { display:flex; align-items:center; gap:12px; margin-bottom:38px; }
   .brand .bi { width:34px; height:34px; border-radius:9px; }
   .brand .bw { height:17px; width:auto; }
@@ -115,21 +115,29 @@ async function api(method, path, body, retry = true) {
   return data;
 }
 
-function confirmDialog(text, confirmLabel) {
+function confirmDialog(text, confirmLabel, withPassword = false) {
   return new Promise((resolve) => {
     const ov = document.createElement('div');
     ov.className = 'confirm-ov';
     ov.innerHTML = `<div class="card confirm-card">
-      <span class="clabel">CUBORY · BESTÄTIGUNG</span>
-      <p style="font-size:14px;line-height:1.7;color:var(--muted);margin:8px 0 22px">${esc(text)}</p>
+      <span class="clabel">BESTÄTIGUNG</span>
+      <p style="font-size:14px;line-height:1.7;color:var(--muted);margin:8px 0 ${withPassword ? '14px' : '22px'}">${esc(text)}</p>
+      ${withPassword ? '<input id="c-pw" type="password" placeholder="Passwort" style="max-width:none;margin-bottom:14px" />' : ''}
       <div class="row" style="justify-content:flex-end;display:flex;gap:10px">
         <button class="ghost" id="c-no">Abbrechen</button>
         <button id="c-yes" style="background:transparent;border:1px solid rgba(255,110,130,.5);color:#ff8ba0">${esc(confirmLabel)}</button>
       </div></div>`;
     document.body.appendChild(ov);
+    const pw = ov.querySelector('#c-pw');
+    pw?.focus();
     const done = (v) => { ov.remove(); resolve(v); };
     ov.querySelector('#c-no').onclick = () => done(false);
-    ov.querySelector('#c-yes').onclick = () => done(true);
+    ov.querySelector('#c-yes').onclick = () => {
+      if (!withPassword) return done(true);
+      if (!pw.value) return pw.focus();
+      done(pw.value);
+    };
+    pw?.addEventListener('keydown', (e) => { if (e.key === 'Enter' && pw.value) done(pw.value); });
     ov.onclick = (e) => { if (e.target === ov) done(false); };
     window.addEventListener('keydown', function esc2(e) {
       if (e.key === 'Escape') { done(false); window.removeEventListener('keydown', esc2); }
@@ -149,7 +157,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&l
 function renderLogin(error = '', mode = 'login') {
   const reg = mode === 'register';
   el(`<div class="card">
-    <span class="clabel">CUBORY · ${reg ? 'NEUES KONTO' : 'ANMELDUNG'}</span>
+    <span class="clabel">${reg ? 'NEUES KONTO' : 'ANMELDUNG'}</span>
     <h2 style="margin-bottom:14px">${reg ? 'Konto erstellen' : 'Anmelden'}</h2>
     ${wantedPlan ? `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">Nach der Anmeldung geht es direkt zum Checkout (${esc(wantedPlan)}).</p>` : ''}
     ${error ? `<p class="error">${esc(error)}</p>` : ''}
@@ -204,7 +212,7 @@ async function renderDashboard() {
     const s = sub.subscription;
     el(`
       <div class="card">
-        <span class="clabel">CUBORY · LIZENZ · BLATT K1</span>
+        <span class="clabel">LIZENZ · BLATT K1</span>
         <h2 style="margin-bottom:12px">Lizenz</h2>
         <div class="row"><span>Status</span><span class="badge">${esc(kindLabel)}</span></div>
         ${status.trial_days_left != null ? `<div class="row"><span>Testphase</span><span>noch ${status.trial_days_left} Tage</span></div>` : ''}
@@ -262,9 +270,14 @@ async function renderDashboard() {
     });
     document.getElementById('logout').onclick = logout;
     document.getElementById('delete').onclick = async () => {
-      if (!(await confirmDialog('Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt.', 'Endgültig löschen'))) return;
-      await api('DELETE', '/api/account');
-      logout();
+      const pw = await confirmDialog('Konto endgültig löschen? Lizenz, Geräte und alle Daten werden entfernt. Bitte bestätige mit deinem Passwort.', 'Endgültig löschen', true);
+      if (!pw) return;
+      try {
+        await api('DELETE', '/api/account', { password: pw });
+        logout();
+      } catch (e) {
+        await confirmDialog(e.message, 'OK');
+      }
     };
   } catch (e) {
     el(`<div class="card"><p class="error">${esc(e.message)}</p>

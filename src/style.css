@@ -592,7 +592,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   pointer-events: none;
 }
 .dropzone::after {
-  content: 'CUBORY \00B7 BLATT 0 \00B7 ENTWURF';
+  content: 'BLATT 0 \00B7 ENTWURF';
   position: absolute;
   top: 11px;
   left: 44px;
