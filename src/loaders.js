@@ -135,16 +135,55 @@ function loadDxf(arrayBuffer) {
   };
 }
 
-/** dxf liefert rgb je nach Quelle als [r,g,b] oder Zahl - auf helle Farben mappen */
+/** DXF-Farben für dunklen Hintergrund lesbar machen.
+ *  CAD-Dateien sind für weißes Papier gezeichnet - reines Blau (#0000FF) oder
+ *  Schwarz verschwinden auf Navy. Wir heben deshalb die Helligkeit an und
+ *  behalten den Farbton: Ebenen bleiben unterscheidbar, alles bleibt lesbar. */
+const MIN_LIGHTNESS = 0.62;
+
 function normaliseRgb(rgb) {
   let value;
   if (Array.isArray(rgb)) value = (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
   else if (typeof rgb === 'number') value = rgb;
   else value = 0xffffff;
-  // Sehr dunkle Linien (schwarz für weißes Papier) auf dem dunklen UI aufhellen
-  const r = (value >> 16) & 255, g = (value >> 8) & 255, b = value & 255;
-  if (r + g + b < 90) return 0xdde2ff;
-  return value;
+
+  const r = ((value >> 16) & 255) / 255;
+  const g = ((value >> 8) & 255) / 255;
+  const b = (value & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let l = (max + min) / 2;
+  if (l >= MIN_LIGHTNESS) return value; // hell genug - Originalfarbe behalten
+
+  const d = max - min;
+  // Unbunte Farben (Schwarz, Grau, Weiß) auf den hellen UI-Ton bringen
+  if (d < 0.04) return 0xdde2ff;
+
+  let s = d / (1 - Math.abs(2 * l - 1));
+  let h;
+  if (max === r) h = ((g - b) / d) % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  h /= 6;
+  if (h < 0) h += 1;
+
+  // Reines Blau (240°) wirkt aufgehellt violett - und der Hintergrund ist
+  // selbst blauviolett. Blautöne deshalb Richtung Azur ziehen, damit sie
+  // eindeutig als Blau gelesen werden.
+  if (h > 0.60 && h < 0.72) h = 0.56 + (h - 0.60) * 0.3;
+
+  l = MIN_LIGHTNESS;
+  s = Math.min(s, 0.78);
+
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
+  const m = l - c / 2;
+  const seg = Math.floor(h * 6) % 6;
+  const [rr, gg, bb] = [
+    [c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x],
+  ][seg];
+  const to255 = (v) => Math.round((v + m) * 255);
+  return (to255(rr) << 16) | (to255(gg) << 8) | to255(bb);
 }
 
 /* ── STEP / IGES / BREP über OpenCascade (WASM) ─────────────────────────── */
