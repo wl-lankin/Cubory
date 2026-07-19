@@ -1,0 +1,184 @@
+name: Release
+
+# Läuft beim Merge von dev nach main. Baut die Installer für alle drei
+# Plattformen, lädt sie samt Update-Metadaten auf den Server und bringt
+# Website und API auf denselben Stand.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Zwei parallele Rollouts würden sich auf dem Server gegenseitig überschreiben.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  DEPLOY_HOST: 91.98.161.167
+  DEPLOY_USER: deploy
+  WEBROOT: /var/www/cubory
+
+jobs:
+  # Nur bauen, was sich geändert hat - ein Website-Tippfehler soll keine
+  # 20 Minuten macOS-Buildzeit kosten.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      website: ${{ steps.filter.outputs.website }}
+      backend: ${{ steps.filter.outputs.backend }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'src/**'
+              - 'electron/**'
+              - 'assets/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'vite.config.js'
+            website:
+              - 'website/**'
+            backend:
+              - 'backend/**'
+      - id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            flag: --mac
+          - os: windows-latest
+            flag: --win
+          - os: ubuntu-latest
+            flag: --linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx vite build
+      - name: Installer bauen
+        run: npx electron-builder ${{ matrix.flag }} --publish never
+        env:
+          # Ohne Apple-Zertifikat würde electron-builder sonst abbrechen.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            release/*.dmg
+            release/*.exe
+            release/*.AppImage
+            release/*.blockmap
+            release/latest*.yml
+
+  deploy:
+    needs: [changes, build]
+    if: ${{ !cancelled() && needs.build.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH einrichten
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Hostschlüssel fest hinterlegt statt per keyscan - sonst würde die
+          # Pipeline jeden Server akzeptieren, der gerade antwortet.
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Website synchronisieren
+        if: needs.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          rsync -rlv --delete --exclude 'downloads/' --chmod=D2775,F664 \
+            website/ "$DEPLOY_USER@$DEPLOY_HOST:$WEBROOT/"
+
+      - name: Installer herunterladen
+        if: needs.build.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          pattern: installer-*
+          merge-multiple: true
+
+      - name: Installer hochladen
+        if: needs.build.result == 'success'
+        run: |
+          VERSION="${{ needs.changes.outputs.version }}"
+          LIVE=$(ssh "$DEPLOY_USER@$DEPLOY_HOST" \
+            "awk '/^version:/{print \$2}' $WEBROOT/downloads/latest.yml 2>/dev/null" || true)
+
+          # Erst die Installer, danach die Update-Metadaten: electron-updater
+          # darf keine Version melden, deren Datei noch nicht vollständig da ist.
+          rsync -rlv --chmod=F664 --exclude 'latest*.yml' \
+            installers/ "$DEPLOY_USER@$DEPLOY_HOST:$WEBROOT/downloads/"
+          rsync -rlv --chmod=F664 \
+            installers/latest*.yml "$DEPLOY_USER@$DEPLOY_HOST:$WEBROOT/downloads/"
+
+          {
+            echo "## Installer $VERSION veröffentlicht"
+            ls -1 installers | sed 's/^/- /'
+            if [ "$LIVE" = "$VERSION" ]; then
+              echo
+              echo "> **Achtung:** Auf dem Server lag bereits $VERSION."
+              echo "> Die Dateien wurden ersetzt, aber bestehende Installationen"
+              echo "> erhalten kein OTA-Update - dafür muss die Version in"
+              echo "> package.json erhöht werden."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Erreichbarkeit prüfen
+        run: |
+          for url in https://cubory.app/ https://cubory.app/downloads/latest.yml; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+            echo "$url -> $code"
+            [ "$code" = "200" ] || exit 1
+          done
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Tests
+        working-directory: backend
+        run: go test ./...
+      - name: Binary bauen
+        working-directory: backend
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o cubory-api ./cmd/api
+      - name: SSH einrichten
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+      - name: Ausrollen
+        run: |
+          scp backend/cubory-api "$DEPLOY_USER@$DEPLOY_HOST:/srv/cubory-staging/cubory-api"
+          # Das Skript prüft danach /healthz und rollt bei Fehlschlag zurück.
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" sudo /usr/local/sbin/cubory-deploy-api
