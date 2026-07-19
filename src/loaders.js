@@ -5,7 +5,6 @@ import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { unzipSync, zipSync } from 'three/examples/jsm/libs/fflate.module.js';
-import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { parseString as parseDxf, denormalise, toPolylines, colors as dxfColors } from 'dxf';
 import occtimportjs from 'occt-import-js';
 import occtWasmUrl from 'occt-import-js/dist/occt-import-js.wasm?url';
@@ -217,19 +216,17 @@ async function loadOcct(arrayBuffer, kind) {
   let triangles = 0;
 
   result.meshes.forEach((meshData, i) => {
-    let geo = new THREE.BufferGeometry();
+    const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(meshData.attributes.position.array, 3));
     // Index vor den Normalen: ohne ihn würde three die Dreiecke aus je drei
     // aufeinanderfolgenden Ecken bilden und damit für eine ganz andere
     // Aufteilung rechnen als die, die später gezeichnet wird.
     geo.setIndex(new THREE.Uint32BufferAttribute(meshData.index.array, 1));
     triangles += meshData.index.array.length / 3;
-    let flat = false;
     if (meshData.attributes.normal) {
       geo.setAttribute('normal', new THREE.Float32BufferAttribute(meshData.attributes.normal.array, 3));
-    } else {
-      ({ geo, flat } = shade(geo, triangleCount(geo) > CREASE_LIMIT ? 'flat' : 'creased'));
     }
+    const flat = needsFlatShading(geo);
 
     let color = COLORS.defaultMesh;
     if (meshData.color) {
@@ -290,48 +287,26 @@ function dedupeParts(parts, meshes) {
 
 /* ── Schattierung ────────────────────────────────────────────────────────── */
 
-/** Ab dieser Dreiecksanzahl je Modell wird nicht mehr auf Knickwinkel
- *  umgerechnet. toCreasedNormals() löst die Indizierung auf und verdreifacht
- *  damit die Eckenzahl - bei einer Million Dreiecken kostet das rund 45 MB und
- *  gut eine Sekunde Ladezeit zusätzlich. So fein vernetzte Modelle sehen flach
- *  schattiert ohnehin nahezu gleich aus, weil eine einzelne Facette dann kaum
- *  größer als ein Pixel wird. */
-export const CREASE_LIMIT = 300000;
-
-function triangleCount(geo) {
-  const pos = geo.getAttribute('position');
-  if (!pos) return 0;
-  return (geo.index ? geo.index.count : pos.count) / 3;
-}
-
-/** Entscheidet die Schattierung für ein ganzes Modell. Bewusst nicht je
- *  Bauteil: sonst träfen in einer Baugruppe zwei Verfahren aufeinander und
- *  benachbarte Teile sähen unterschiedlich aus. Gezählt werden nur Netze ohne
- *  eigene Normalen - nur die müssen wir überhaupt umrechnen. */
-export function shadingMode(root) {
-  let tris = 0;
-  root.traverse((o) => {
-    if (o.isMesh && !o.geometry.getAttribute('normal')) tris += triangleCount(o.geometry);
-  });
-  return tris > CREASE_LIMIT ? 'flat' : 'creased';
-}
-
-/** Liefert die Geometrie mit brauchbaren Normalen und dazu, ob das Material
- *  flach schattieren muss.
+/** Mesh-Formate (3MF, PLY, OBJ) bringen keine Normalen mit. Solche Netze werden
+ *  flach schattiert: three leitet die Normale im Shader aus der Fläche ab, jede
+ *  Facette bekommt also ihre eigene. Kanten bleiben dadurch scharf, und es
+ *  kostet weder Speicher noch Ladezeit.
  *
- *  Nicht mit computeVertexNormals(): das mittelt die Normale über alle Flächen,
- *  die sich eine Ecke teilen. An einer 90-Grad-Kante verschmiert das die
- *  Schattierung - eine Kiste mit Rippen sieht aus, als wäre sie geschmolzen.
- *  toCreasedNormals() trennt die Ecken erst ab 60 Grad und lässt gekrümmte
- *  Flächen (Bohrungen, Rundungen) weich.
+ *  Zwei Alternativen wurden verworfen:
+ *  - computeVertexNormals() mittelt über alle Flächen an einer Ecke. An einer
+ *    90-Grad-Kante verschmiert das die Schattierung - eine Kiste mit Rippen sah
+ *    aus, als wäre sie geschmolzen.
+ *  - toCreasedNormals() trennt zwar ab 60 Grad Knickwinkel, erzeugte aber an
+ *    Ringen und Aufsätzen zackenförmige Fehlstellen rund um die Silhouette und
+ *    verdreifachte nebenbei die Eckenzahl.
  *
- *  Bei sehr großen Netzen entfällt das: flatShading braucht keine Normalen,
- *  three leitet sie im Shader aus der Fläche ab - das kostet weder Speicher
- *  noch Ladezeit und hält die Kanten ebenfalls scharf. */
-export function shade(geo, mode) {
-  if (geo.getAttribute('normal')) return { geo, flat: false };
-  if (mode === 'flat') return { geo, flat: true };
-  return { geo: toCreasedNormals(geo), flat: false };
+ *  Facettierte Rundungen sind der Preis - aber bei diesen Formaten ist die
+ *  Facette die tatsächliche Geometrie, und Slicer stellen sie genauso dar.
+ *  Formate mit echten Normalen (STEP/IGES über OpenCascade, STL, GLTF) behalten
+ *  ihre weiche Schattierung: dort beschreiben die Normalen die wirkliche
+ *  Krümmung und nicht nur die Vernetzung. */
+function needsFlatShading(geo) {
+  return !geo.getAttribute('normal');
 }
 
 function meshMaterial(flat = false) {
@@ -345,9 +320,8 @@ function meshMaterial(flat = false) {
 }
 
 function loadStl(arrayBuffer) {
-  const raw = new STLLoader().parse(arrayBuffer);
-  const { geo, flat } = shade(raw, triangleCount(raw) > CREASE_LIMIT ? 'flat' : 'creased');
-  const mesh = new THREE.Mesh(geo, meshMaterial(flat));
+  const geo = new STLLoader().parse(arrayBuffer);
+  const mesh = new THREE.Mesh(geo, meshMaterial(needsFlatShading(geo)));
   const group = new THREE.Group();
   group.add(mesh);
   const pos = geo.getAttribute('position');
@@ -364,13 +338,10 @@ function loadStl(arrayBuffer) {
 function loadObj(arrayBuffer) {
   const text = new TextDecoder('utf-8').decode(arrayBuffer);
   const object = new OBJLoader().parse(text);
-  const mode = shadingMode(object);
   let triangles = 0;
   object.traverse((o) => {
     if (o.isMesh) {
-      const { geo, flat } = shade(o.geometry, mode);
-      o.geometry = geo;
-      o.material = meshMaterial(flat);
+      o.material = meshMaterial(needsFlatShading(o.geometry));
       const pos = o.geometry.getAttribute('position');
       if (pos) triangles += (o.geometry.index ? o.geometry.index.count : pos.count) / 3;
     }
@@ -394,12 +365,11 @@ function collectParts(root, keepColors = false) {
   const parts = [];
   const meshes = [];
   let triangles = 0;
-  const mode = shadingMode(root);
 
   root.traverse((o) => {
     if (!o.isMesh) return;
-    const { geo, flat } = shade(o.geometry, mode);
-    o.geometry = geo;
+    const geo = o.geometry;
+    const flat = needsFlatShading(geo);
 
     // Farben aus der Datei behalten (3MF-Mehrmaterialdruck, GLTF-Materialien),
     // sonst den einheitlichen CAD-Look verwenden.
@@ -502,14 +472,14 @@ function loadPly(arrayBuffer) {
   }
 
   const dreiecke = Math.round(geo.index.count / 3);
-  const { geo: beschattet, flat } = shade(geo, dreiecke > CREASE_LIMIT ? 'flat' : 'creased');
+  const flat = needsFlatShading(geo);
   const mat = vertexColors
     ? new THREE.MeshStandardMaterial({
         vertexColors, metalness: 0.25, roughness: 0.5,
         side: THREE.DoubleSide, flatShading: flat,
       })
     : meshMaterial(flat);
-  group.add(new THREE.Mesh(beschattet, mat));
+  group.add(new THREE.Mesh(geo, mat));
   return {
     object: group,
     mode: '3d',

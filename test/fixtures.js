@@ -82,42 +82,20 @@ export function plyPointCloud(count = 500) {
     + pts.join('\n') + '\n');
 }
 
-/** Zylinder mit Deckeln, als indiziertes Netz. Dient dem Gegenstück zur
- *  Würfelprüfung: gekrümmte Flächen müssen weich schattiert bleiben. Wer die
- *  Schattierung pauschal auf Facetten umstellt, sieht hier Kanten. */
-export function plyCylinder(segments = 24, r = 20, h = 40) {
-  const verts = [];
-  for (let i = 0; i < segments; i++) {
-    const a = (i / segments) * Math.PI * 2;
-    verts.push([Math.cos(a) * r, Math.sin(a) * r, 0]);
-    verts.push([Math.cos(a) * r, Math.sin(a) * r, h]);
-  }
-  const unten = verts.length;
-  verts.push([0, 0, 0]);
-  const oben = verts.length;
-  verts.push([0, 0, h]);
-
-  const faces = [];
-  for (let i = 0; i < segments; i++) {
-    const a = i * 2;
-    const b = ((i + 1) % segments) * 2;
-    faces.push([a, b, b + 1], [a, b + 1, a + 1]); // Mantel
-    faces.push([unten, b, a], [oben, a + 1, b + 1]); // Deckel
-  }
-
-  return textBuffer(`ply\nformat ascii 1.0\nelement vertex ${verts.length}\n`
-    + 'property float x\nproperty float y\nproperty float z\n'
-    + `element face ${faces.length}\nproperty list uchar int vertex_indices\nend_header\n`
-    + verts.map((v) => v.map((n) => n.toFixed(4)).join(' ')).join('\n') + '\n'
-    + faces.map((f) => `3 ${f.join(' ')}`).join('\n') + '\n');
-}
-
 /* ── STL / OBJ ───────────────────────────────────────────────────────────── */
 
 export function stlAscii() {
   const tri = CUBE_F.map((f) => {
-    const v = f.map((i) => CUBE_V[i].join(' '));
-    return `facet normal 0 0 1\n outer loop\n  vertex ${v[0]}\n  vertex ${v[1]}\n  vertex ${v[2]}\n endloop\nendfacet`;
+    const [a, b, c] = f.map((i) => CUBE_V[i]);
+    // Echte Facettennormale: STLLoader übernimmt sie, und die Tests prüfen,
+    // dass mitgelieferte Normalen erhalten bleiben.
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    const w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    const n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    const len = Math.hypot(...n) || 1;
+    const nn = n.map((k) => (k / len).toFixed(6)).join(' ');
+    const v = [a, b, c].map((p) => p.join(' '));
+    return `facet normal ${nn}\n outer loop\n  vertex ${v[0]}\n  vertex ${v[1]}\n  vertex ${v[2]}\n endloop\nendfacet`;
   }).join('\n');
   return textBuffer(`solid cube\n${tri}\nendsolid cube\n`);
 }

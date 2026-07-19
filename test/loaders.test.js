@@ -3,28 +3,11 @@
 // Jeder Regressionstest hier steht für einen Fehler, den echte Dateien in
 // diesem Projekt schon einmal ausgelöst haben.
 import { describe, it, expect } from 'vitest';
-import * as THREE from 'three';
-import { loadCadFile, shade, shadingMode, CREASE_LIMIT } from '../src/loaders.js';
+import { loadCadFile } from '../src/loaders.js';
 import {
   dxfWithLayers, dxfWithBrokenGroupCode, plyMesh, plyPointCloud,
-  stlAscii, objCube, glbAssembly, threeMfClassic, threeMfProduction, plyCylinder,
+  stlAscii, objCube, glbAssembly, threeMfClassic, threeMfProduction,
 } from './fixtures.js';
-
-/** Normalen eines Modells als Liste von [x,y,z] je Ecke. */
-function normalen(result) {
-  const out = [];
-  result.object.traverse((o) => {
-    if (!o.isMesh) return;
-    const n = o.geometry.getAttribute('normal');
-    const idx = o.geometry.index;
-    const anzahl = idx ? idx.count : n.count;
-    for (let i = 0; i < anzahl; i++) {
-      const v = idx ? idx.getX(i) : i;
-      out.push([n.getX(v), n.getY(v), n.getZ(v)]);
-    }
-  });
-  return out;
-}
 
 // Bewusst von Hand gerechnet statt über THREE.Color: dessen getHSL() liefert
 // Werte im linearen Arbeitsfarbraum und würde hier andere Zahlen zeigen als
@@ -163,96 +146,51 @@ describe('3MF', () => {
   });
 });
 
-// Regression: Normalen wurden mit computeVertexNormals() berechnet, das über
-// alle Flächen an einer Ecke mittelt. Auf einer Kiste mit Rippen verschmierte
-// das die Schattierung, als wäre das Teil geschmolzen. Die beiden Tests fangen
-// bewusst beide Fehlerrichtungen: pauschales Mitteln und pauschales Facettieren.
+// Regression: Normalen wurden erst gemittelt (scharfe Kanten verschmierten,
+// eine Kiste mit Rippen sah geschmolzen aus), dann auf Knickwinkel gerechnet
+// (das erzeugte Zacken rund um Ringe und Aufsätze). Jetzt flach schattiert,
+// wo die Datei keine Normalen mitbringt.
 describe('Schattierung', () => {
-  it('hält Kanten an rechten Winkeln scharf', async () => {
-    const werte = normalen(await loadCadFile('t.3mf', threeMfClassic()));
-    expect(werte.length).toBeGreaterThan(0);
-    for (const [x, y, z] of werte) {
-      // Am Würfel zeigt jede Normale entlang einer Achse. Gemittelte Normalen
-      // an den Ecken zeigen dagegen schräg in den Raum.
-      const achsen = [x, y, z].filter((k) => Math.abs(Math.abs(k) - 1) < 0.01);
-      expect(achsen).toHaveLength(1);
-    }
-  });
-
-  it('lässt gekrümmte Flächen weich', async () => {
-    const r = await loadCadFile('zyl.ply', plyCylinder(24));
-    const geo = r.object.children[0].geometry;
-    const n = geo.getAttribute('normal');
-    const idx = geo.index;
-    // Dreiecke über den Index auflösen. Ohne das würde der Test bei
-    // indizierter Geometrie beliebige Ecken zu Dreiecken zusammenfassen und
-    // damit etwas ganz anderes messen als die Schattierung.
-    const ecke = (i) => {
-      const v = idx ? idx.getX(i) : i;
-      return [n.getX(v), n.getY(v), n.getZ(v)];
-    };
-    let weich = 0;
-    let mantel = 0;
-    const anzahl = idx ? idx.count : n.count;
-    for (let i = 0; i < anzahl; i += 3) {
-      const drei = [0, 1, 2].map((k) => ecke(i + k));
-      if (drei.some(([, , z]) => Math.abs(z) > 0.1)) continue; // Deckel überspringen
-      mantel++;
-      const gleich = drei.every(([x, y]) =>
-        Math.abs(x - drei[0][0]) < 1e-4 && Math.abs(y - drei[0][1]) < 1e-4);
-      if (!gleich) weich++;
-    }
-    expect(mantel, 'keine Mantelfläche gefunden - die Randnormalen sind '
-      + 'vermutlich mit denen der Deckel vermischt').toBeGreaterThan(0);
-    expect(weich, 'Mantelflächen sind facettiert statt weich schattiert').toBeGreaterThan(0);
-  });
-});
-
-// Bei sehr großen Netzen wäre das Umrechnen auf Knickwinkel teuer: es löst die
-// Indizierung auf und verdreifacht die Eckenzahl. Solche Modelle sind aber so
-// fein vernetzt, dass Flachschattierung praktisch gleich aussieht - und die
-// braucht weder Speicher noch Rechenzeit.
-describe('Schattierung staffelt nach Größe', () => {
-  /** Netz mit vorgegebener Dreiecksanzahl, ohne echte Geometrie aufzubauen. */
-  const netz = (dreiecke, mitNormalen = false) => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(9), 3));
-    g.setIndex(new THREE.Uint32BufferAttribute(new Uint32Array(dreiecke * 3), 1));
-    if (mitNormalen) g.setAttribute('normal', new THREE.Float32BufferAttribute(new Float32Array(9), 3));
-    const m = new THREE.Mesh(g);
-    const root = new THREE.Group();
-    root.add(m);
-    return { g, root };
+  const netze = (r) => {
+    const out = [];
+    r.object.traverse((o) => {
+      if (!o.isMesh) return;
+      out.push({
+        flach: !!o.material.flatShading,
+        hatNormalen: !!o.geometry.getAttribute('normal'),
+        indiziert: !!o.geometry.index,
+        ecken: o.geometry.getAttribute('position').count,
+      });
+    });
+    return out;
   };
 
-  it('rechnet kleine Modelle auf Knickwinkel um', () => {
-    expect(shadingMode(netz(1000).root)).toBe('creased');
+  it('schattiert Netze ohne Normalen flach, damit Kanten scharf bleiben', async () => {
+    const [m] = netze(await loadCadFile('t.3mf', threeMfClassic()));
+    expect(m.hatNormalen).toBe(false);
+    expect(m.flach).toBe(true);
   });
 
-  it('schaltet große Modelle auf Flachschattierung', () => {
-    expect(shadingMode(netz(CREASE_LIMIT + 1).root)).toBe('flat');
+  it('rührt die Geometrie dafür nicht an', async () => {
+    // Die Zwischenfassung rechnete Normalen aus und löste dafür die
+    // Indizierung auf - das verdreifachte die Eckenzahl und kostete bei
+    // großen Modellen eine Sekunde Ladezeit.
+    const [m] = netze(await loadCadFile('t.3mf', threeMfClassic()));
+    expect(m.indiziert).toBe(true);
+    expect(m.ecken).toBe(8); // acht Würfelecken, nicht 36 aufgelöste
   });
 
-  it('zählt nur Netze ohne eigene Normalen', () => {
-    // Was schon Normalen mitbringt, muss nicht umgerechnet werden und darf die
-    // Entscheidung für den Rest des Modells nicht kippen.
-    expect(shadingMode(netz(CREASE_LIMIT + 1, true).root)).toBe('creased');
+  it('schattiert auch PLY und GLTF ohne Normalen flach', async () => {
+    expect(netze(await loadCadFile('t.ply', plyMesh()))[0].flach).toBe(true);
+    expect(netze(await loadCadFile('t.glb', glbAssembly()))[0].flach).toBe(true);
   });
 
-  it('lässt die Geometrie im flachen Modus unangetastet', () => {
-    const { g } = netz(10);
-    const r = shade(g, 'flat');
-    expect(r.geo).toBe(g);
-    expect(r.geo.index).not.toBeNull();
-    expect(r.flat).toBe(true);
-  });
-
-  it('entscheidet einmal fürs ganze Modell, nicht je Bauteil', () => {
-    // Sonst träfen in einer Baugruppe zwei Verfahren aufeinander und
-    // benachbarte Teile sähen unterschiedlich aus.
-    const root = new THREE.Group();
-    for (let i = 0; i < 4; i++) root.add(netz(CREASE_LIMIT / 3).root.children[0]);
-    expect(shadingMode(root)).toBe('flat');
+  it('behält weiche Schattierung, wo die Datei echte Normalen mitbringt', async () => {
+    // Bei STEP/IGES und STL beschreiben die Normalen die tatsächliche
+    // Krümmung und nicht bloß die Vernetzung.
+    const [m] = netze(await loadCadFile('t.stl', stlAscii()));
+    expect(m.hatNormalen).toBe(true);
+    expect(m.flach).toBe(false);
   });
 });
 
