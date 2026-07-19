@@ -318,6 +318,7 @@ function renderModelUi(reset) {
   if (dimText) rows.push([t('info.dims'), dimText]);
   if (current.stats.entities != null) rows.push([t('info.entities'), String(current.stats.entities)]);
   if (current.stats.triangles != null) rows.push([t('info.triangles'), current.stats.triangles.toLocaleString(currentLang())]);
+  if (current.stats.points != null) rows.push([t('info.points'), current.stats.points.toLocaleString(currentLang())]);
   el.modelInfo.innerHTML = rows
     .map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd title="${escapeHtml(v)}">${escapeHtml(v)}</dd></div>`)
     .join('');
@@ -386,7 +387,9 @@ function renderModelUi(reset) {
       ? t('status.entities', { n: current.stats.entities })
       : current.stats.triangles != null
         ? t('status.triangles', { n: current.stats.triangles.toLocaleString(currentLang()) })
-        : '';
+        : current.stats.points != null
+          ? t('status.points', { n: current.stats.points.toLocaleString(currentLang()) })
+          : '';
   el.statusSize.textContent = dimText ?? '';
   el.statusHint.textContent = current.mode === '2d' ? t('status.hint2d') : t('status.hint3d');
 }

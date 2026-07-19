@@ -63,7 +63,8 @@ let mainWindow = null;
 // Datei, die per Doppelklick/„Öffnen mit" ankam, bevor das Fenster bereit war
 let pendingFile = null;
 
-const SUPPORTED = ['.dxf', '.dwg', '.step', '.stp', '.iges', '.igs', '.brep', '.stl', '.obj'];
+const SUPPORTED = ['.dxf', '.dwg', '.step', '.stp', '.iges', '.igs', '.brep',
+  '.stl', '.obj', '.3mf', '.ply', '.gltf', '.glb'];
 
 // DWG → DXF über LibreDWG (dwg2dxf). Gesucht im PATH und an üblichen Orten.
 const { execFileSync } = require('child_process');
@@ -214,7 +215,8 @@ ipcMain.handle('dialog:open', async () => {
     defaultPath: appStore?.get('last_open_dir') || undefined,
     properties: ['openFile'],
     filters: [
-      { name: 'CAD-Dateien', extensions: ['dxf', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep', 'stl', 'obj'] },
+      { name: 'CAD-Dateien', extensions: ['dxf', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep',
+        'stl', 'obj', '3mf', 'ply', 'gltf', 'glb'] },
       { name: 'Alle Dateien', extensions: ['*'] },
     ],
   });

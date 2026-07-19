@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { unzipSync, zipSync } from 'three/examples/jsm/libs/fflate.module.js';
 import { parseString as parseDxf, denormalise, toPolylines, colors as dxfColors } from 'dxf';
 import occtimportjs from 'occt-import-js';
 import occtWasmUrl from 'occt-import-js/dist/occt-import-js.wasm?url';
@@ -40,6 +44,13 @@ export async function loadCadFile(name, arrayBuffer, loadAs) {
       return loadStl(arrayBuffer);
     case 'obj':
       return loadObj(arrayBuffer);
+    case '3mf':
+      return load3mf(arrayBuffer);
+    case 'ply':
+      return loadPly(arrayBuffer);
+    case 'gltf':
+    case 'glb':
+      return loadGltf(arrayBuffer, ext.toUpperCase());
     default:
       throw new Error(t('error.format', { ext }));
   }
@@ -243,28 +254,30 @@ async function loadOcct(arrayBuffer, kind) {
     mesh.add(edgeLines);
   });
 
-  // Doppelte Teilenamen durchnummerieren (manche CAD-Exporte nennen alles „Part 1")
-  const totals = new Map();
-  parts.forEach((n) => totals.set(n, (totals.get(n) || 0) + 1));
-  const seen = new Map();
-  group.children.forEach((mesh, i) => {
-    const base = parts[i];
-    if (totals.get(base) > 1) {
-      const n = (seen.get(base) || 0) + 1;
-      seen.set(base, n);
-      parts[i] = `${base} (${n})`;
-      mesh.userData.part = parts[i];
-    }
-  });
-
   return {
     object: group,
     mode: '3d',
     format: kind.toUpperCase(),
     layers: null,
-    parts,
+    parts: dedupeParts(parts, group.children),
     stats: { triangles: Math.round(triangles) },
   };
+}
+
+/** Doppelte Teilenamen durchnummerieren - manche CAD-Exporte nennen jedes
+ *  Bauteil „Part 1", was Teileliste und Explosionsansicht unbrauchbar macht. */
+function dedupeParts(parts, meshes) {
+  const totals = new Map();
+  parts.forEach((n) => totals.set(n, (totals.get(n) || 0) + 1));
+  const seen = new Map();
+  return parts.map((base, i) => {
+    if (totals.get(base) <= 1) return base;
+    const n = (seen.get(base) || 0) + 1;
+    seen.set(base, n);
+    const name = `${base} (${n})`;
+    if (meshes[i]) meshes[i].userData.part = name;
+    return name;
+  });
 }
 
 /* ── STL / OBJ ───────────────────────────────────────────────────────────── */
@@ -314,4 +327,161 @@ function loadObj(arrayBuffer) {
     parts: null,
     stats: { triangles: Math.round(triangles) },
   };
+}
+
+/* ── 3MF / PLY / GLTF ────────────────────────────────────────────────────── */
+
+/** Bereitet einen geladenen Scene-Graph auf: CAD-Material vergeben, Dreiecke
+ *  zählen und Bauteile benennen, damit Teileliste und Explosionsansicht auch
+ *  bei Baugruppen aus diesen Formaten funktionieren. */
+function collectParts(root, keepColors = false) {
+  const parts = [];
+  const meshes = [];
+  let triangles = 0;
+
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const geo = o.geometry;
+    if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+
+    // Farben aus der Datei behalten (3MF-Mehrmaterialdruck, GLTF-Materialien),
+    // sonst den einheitlichen CAD-Look verwenden.
+    const src = Array.isArray(o.material) ? o.material[0] : o.material;
+    const vertexColors = !!geo.getAttribute('color');
+    const own = keepColors && (vertexColors || (src?.color && src.color.getHex() !== 0xffffff));
+    o.material = own
+      ? new THREE.MeshStandardMaterial({
+          color: src?.color ? src.color.getHex() : 0xffffff,
+          vertexColors,
+          metalness: 0.25,
+          roughness: 0.5,
+          side: THREE.DoubleSide,
+        })
+      : meshMaterial();
+
+    const pos = geo.getAttribute('position');
+    if (pos) triangles += (geo.index ? geo.index.count : pos.count) / 3;
+
+    const name = o.name || t('part.fallback', { n: parts.length + 1 });
+    o.userData.part = name;
+    o.userData.partIndex = parts.length;
+    parts.push(name);
+    meshes.push(o);
+  });
+
+  return { parts: dedupeParts(parts, meshes), triangles: Math.round(triangles) };
+}
+
+/** 3MF Production Extension: Slicer wie Bambu Studio oder PrusaSlicer legen die
+ *  Geometrie in eigene 3D/Objects/*.model-Dateien und verweisen aus der
+ *  Wurzeldatei darauf. three baut die Wurzeldatei zuerst und findet die
+ *  verwiesenen Objekte dann noch nicht - der Loader bricht ab. Wir sortieren
+ *  die Objektdateien deshalb nach vorne: beim Auflösen des Verweises liegen sie
+ *  dann schon im gemeinsamen Objektspeicher. Praktisch jede aus einem Slicer
+ *  exportierte 3MF-Datei ist so aufgebaut. */
+function prepare3mf(arrayBuffer) {
+  let zip;
+  try {
+    zip = unzipSync(new Uint8Array(arrayBuffer));
+  } catch {
+    return arrayBuffer; // kein lesbares Archiv - der Loader meldet das selbst
+  }
+  const names = Object.keys(zip);
+  const isRoot = (n) => n.toLowerCase() === '3d/3dmodel.model';
+  const external = names.filter((n) => /^3D\/.+\.model$/i.test(n) && !isRoot(n));
+  if (!external.length) return arrayBuffer; // klassische 3MF, nichts zu tun
+
+  const ordered = {};
+  for (const n of external) ordered[n] = zip[n];
+  for (const n of names) if (!(n in ordered)) ordered[n] = zip[n];
+  // Ohne Kompression neu packen - das Archiv wird nur umsortiert und bleibt
+  // im Arbeitsspeicher, erneutes Deflaten wäre verschenkte Zeit.
+  return zipSync(ordered, { level: 0 });
+}
+
+function load3mf(arrayBuffer) {
+  let object;
+  try {
+    object = new ThreeMFLoader().parse(prepare3mf(arrayBuffer));
+  } catch {
+    // three meldet Archivprobleme auf Englisch und mit Klassennamen - für den
+    // Nutzer ist nur relevant, dass die Datei nicht lesbar ist.
+    throw new Error(t('error.noGeometry'));
+  }
+  const { parts, triangles } = collectParts(object, true);
+  if (!triangles) throw new Error(t('error.noGeometry'));
+  return {
+    object,
+    mode: '3d',
+    format: '3MF',
+    layers: null,
+    parts: parts.length > 1 ? parts : null,
+    stats: { triangles },
+  };
+}
+
+function loadPly(arrayBuffer) {
+  const geo = new PLYLoader().parse(arrayBuffer);
+  const group = new THREE.Group();
+  const vertexColors = !!geo.getAttribute('color');
+  const count = geo.getAttribute('position')?.count ?? 0;
+  if (!count) throw new Error(t('error.noGeometry'));
+
+  // PLY ohne Flächen ist eine Punktwolke (3D-Scan) - die als Mesh zu zeichnen
+  // ergäbe ein leeres Bild.
+  if (!geo.index) {
+    const mat = new THREE.PointsMaterial({ size: 1.4, sizeAttenuation: false, vertexColors });
+    if (!vertexColors) mat.color.set(COLORS.defaultMesh);
+    group.add(new THREE.Points(geo, mat));
+    return {
+      object: group,
+      mode: '3d',
+      format: 'PLY',
+      layers: null,
+      parts: null,
+      stats: { points: count },
+    };
+  }
+
+  if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+  const mat = vertexColors
+    ? new THREE.MeshStandardMaterial({ vertexColors, metalness: 0.25, roughness: 0.5, side: THREE.DoubleSide })
+    : meshMaterial();
+  group.add(new THREE.Mesh(geo, mat));
+  return {
+    object: group,
+    mode: '3d',
+    format: 'PLY',
+    layers: null,
+    parts: null,
+    stats: { triangles: Math.round(geo.index.count / 3) },
+  };
+}
+
+function loadGltf(arrayBuffer, format) {
+  return new Promise((resolve, reject) => {
+    // Zweites Argument ist der Basispfad für externe Texturen - lokal geladene
+    // Dateien bringen keine mit, .glb hat ohnehin alles eingebettet.
+    new GLTFLoader().parse(
+      arrayBuffer,
+      '',
+      (gltf) => {
+        const object = gltf.scene || gltf.scenes?.[0];
+        const { parts, triangles } = object ? collectParts(object, true) : {};
+        if (!triangles) {
+          reject(new Error(t('error.noGeometry')));
+          return;
+        }
+        resolve({
+          object,
+          mode: '3d',
+          format,
+          layers: null,
+          parts: parts.length > 1 ? parts : null,
+          stats: { triangles },
+        });
+      },
+      () => reject(new Error(t('error.noGeometry')))
+    );
+  });
 }
