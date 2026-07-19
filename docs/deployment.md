@@ -164,3 +164,66 @@ nichts hochgeladen. Der Rauchtest der App und die Go-Tests laufen nur, wenn sich
 Nützlich beim Ändern eines Regressionstests: einmal die zugehörige Korrektur im
 Quelltext entfernen und prüfen, dass genau dieser Test rot wird. Ein Test, der
 auch ohne den Fix besteht, schützt vor nichts.
+
+## Sicherungen
+
+`cubory-backup.timer` sichert täglich um 03:30 Uhr nach `/var/backups/cubory/`:
+
+- `cubory-<Zeitstempel>.dump` - `pg_dump -Fc`, komprimiert und einzeln
+  wiederherstellbar
+- `api.env-<Zeitstempel>` - die Konfiguration. Sie enthält den
+  Ed25519-Signierschlüssel: geht der verloren, lässt sich **keine bereits
+  ausgelieferte Lizenz mehr prüfen**. Kein Datenbank-Backup hilft dann weiter.
+
+Aufbewahrt werden 14 Tage. Verzeichnis und Dateien gehören root mit Modus 700
+beziehungsweise 600 - die Sicherungen enthalten Passwort-Hashes und Schlüssel.
+
+Ein systemd-Timer statt eines Cron-Eintrags, weil er drei Dinge mitbringt, die
+hier zählen: Protokoll über `journalctl -u cubory-backup`, `Persistent=true`
+holt einen Lauf nach, wenn der Server zum Zeitpunkt aus war, und der Rest des
+Stacks läuft ohnehin über systemd.
+
+### Prüfen
+
+```bash
+systemctl list-timers cubory-backup.timer   # nächster Lauf
+journalctl -u cubory-backup -n 20           # letzte Läufe
+systemctl start cubory-backup               # sofort sichern
+```
+
+Das Skript verwirft eine Sicherung, die sich nicht lesen lässt oder verdächtig
+wenig enthält. Eine reine Größenprüfung würde einen abgebrochenen Dump
+durchgehen lassen, deshalb liest es das Inhaltsverzeichnis mit `pg_restore -l`.
+
+### Wiederherstellen
+
+Die Sicherung gehört root, `pg_restore` läuft als `postgres` - deshalb die
+Datei als root öffnen und über stdin hineinreichen. Andernfalls scheitert es an
+`Permission denied`:
+
+```bash
+DUMP=$(ls -t /var/backups/cubory/*.dump | head -1)
+
+# Erst in eine Wegwerf-Datenbank, um den Stand zu prüfen
+sudo -u postgres createdb cubory_pruefung
+sudo -u postgres pg_restore -d cubory_pruefung < "$DUMP"
+sudo -u postgres psql -d cubory_pruefung -c 'SELECT count(*) FROM users;'
+sudo -u postgres dropdb cubory_pruefung
+
+# Ernstfall: API anhalten, Datenbank ersetzen, API starten
+systemctl stop cubory-api
+sudo -u postgres dropdb cubory && sudo -u postgres createdb -O cubory cubory
+sudo -u postgres pg_restore -d cubory < "$DUMP"
+systemctl start cubory-api
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8880/healthz
+```
+
+Verifiziert am 19.07.2026: Sicherung eingespielt, alle acht Tabellen stimmten
+in der Zeilenzahl mit dem Original überein.
+
+### Was das nicht abdeckt
+
+Die Sicherungen liegen **auf demselben Server**. Gegen einen Ausfall der
+Maschine, ein gelöschtes Verzeichnis oder einen Einbruch schützen sie nicht.
+Für echten Schutz gehört eine Kopie auf ein anderes System - etwa nächtlich per
+`rsync`, oder über die Snapshots des Hosters. Das ist offen.
