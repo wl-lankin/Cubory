@@ -51,11 +51,22 @@ Wird der Seed getauscht, verlieren alle ausgelieferten Apps die Lizenzprüfung -
 dann muss der neue Public Key in die App und ein Update ausgerollt werden.
 Backup des Seeds ist Pflicht.
 
+## E-Mail (aktiv)
+
+Versand über Strato: `smtp.strato.de:587` (STARTTLS), Absender
+`Cubory <info@cubory.app>`. Zugangsdaten in `/etc/cubory/api.env`.
+
+## Paddle
+
+- Client-side Token liegt öffentlich in `website/checkout/paddle-config.js`.
+- **Default payment link** im Paddle-Dashboard: `https://cubory.app/checkout/`
+- Server-seitig fehlen noch (in `/etc/cubory/api.env`):
+  `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_MONTHLY|YEARLY|LIFETIME`.
+  Webhook-Ziel im Dashboard: `https://api.cubory.app/api/webhooks/paddle`
+  (Events: transaction.completed, transaction.payment_failed,
+  subscription.created/updated/canceled, adjustment.updated).
+
 ## Noch offen
 
-- **SMTP** (`CUBORY_SMTP_HOST/PORT/USER/PASS/FROM` in api.env): ohne das werden
-  Bestätigungscodes nur ins Journal geschrieben (`journalctl -u cubory-api`).
-- **Paddle** (`PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_*`):
-  ohne das antworten Kauf-Endpoints mit 503, alles andere läuft.
 - **Backups**: `pg_dump` per Cron einrichten.
 - **macOS-Signatur**: für Gatekeeper-freien Start und automatisches OTA.
