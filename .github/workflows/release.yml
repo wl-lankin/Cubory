@@ -9,6 +9,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Nur Leserechte. paths-filter braucht in Pull Requests zusätzlich Zugriff auf
+# die Dateiliste des PR - die holt es über die API, nicht über den Git-Verlauf.
+permissions:
+  contents: read
+  pull-requests: read
+
 # Zwei parallele Rollouts würden sich auf dem Server gegenseitig überschreiben.
 concurrency:
   group: release-${{ github.ref }}
