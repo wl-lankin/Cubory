@@ -17,14 +17,39 @@ if (scrub) {
   let loaded = 0;
   const cx = scrub.getContext('2d');
   const draw = (i) => { const im = imgs[i]; if (im?.complete) cx.drawImage(im, 0, 0, scrub.width, scrub.height); };
-  for (let i = 0; i < FR; i++) {
+  const quelle = (i) => `/assets/explode/f${String(i).padStart(2, '0')}.jpg`;
+  const laden = (i) => {
+    if (imgs[i]) return;
     const im = new Image();
-    im.src = `assets/explode/f${String(i).padStart(2, '0')}.jpg`;
-    im.onload = () => { if (++loaded === 1) { scrub.width = im.naturalWidth; scrub.height = im.naturalHeight; draw(0); } };
-    imgs.push(im);
-  }
+    im.src = quelle(i);
+    im.onload = () => { if (++loaded === 1) { scrub.width = im.naturalWidth; scrub.height = im.naturalHeight; } draw(0); };
+    imgs[i] = im;
+  };
+
+  // Nur das erste Bild sofort - die übrigen fünfzehn wiegen zusammen rund
+  // 2,5 MB und werden erst gebraucht, wenn der Abschnitt in die Nähe des
+  // Sichtfensters kommt. Vorher geladen würden sie nur die Startseite
+  // ausbremsen.
+  laden(0);
+  const nachladen = () => { for (let i = 1; i < FR; i++) laden(i); };
   // Gedämpftes Nachziehen: die Frames folgen dem Scroll weich statt hart
   const section = document.getElementById('app');
+  // Erst wenn die Seite fertig geladen ist, und dann in einer Leerlaufphase:
+  // so konkurrieren die Frames nicht mit allem, was für den ersten Eindruck
+  // zählt. Ein Beobachter auf den Abschnitt hätte hier nichts gebracht - der
+  // liegt direkt unter dem Hero und gilt sofort als nah genug.
+  let angestossen = false;
+  const nachladenEinmal = () => {
+    if (angestossen) return;
+    angestossen = true;
+    nachladen();
+  };
+  addEventListener('load', () => {
+    (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(nachladenEinmal);
+  }, { once: true });
+  // Wer sofort scrollt, soll nicht auf die Leerlaufphase warten.
+  addEventListener('scroll', nachladenEinmal, { once: true, passive: true });
+
   let targetF = 0, curF = 0, lastDrawn = -1;
   addEventListener('scroll', () => {
     const r = section.getBoundingClientRect();

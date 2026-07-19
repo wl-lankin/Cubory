@@ -1,0 +1,15 @@
+# https://cubory.app
+User-agent: *
+Allow: /
+
+# Kundenbereiche und Kaufabwicklung gehören nicht in den Index: sie sind
+# entweder persönlich oder nur eine Zwischenstation.
+Disallow: /portal/
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /reset-password.html
+
+# Die Installer sollen über die Downloadseite gefunden werden, nicht einzeln.
+Disallow: /downloads/
+
+Sitemap: https://cubory.app/sitemap.xml
