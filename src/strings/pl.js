@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Eksport',
   'tool.exportTip': 'Eksportuj model (Pro)',
   'measure.hint': 'Kliknij dwa punkty, aby zmierzyć',
+  'section.posTip': 'Wpisz pozycję cięcia w mm',
   'section.off': 'Wyłączony',
   'explode.na': 'Ten model ma tylko jeden element',
   'about.title': 'O Cubory',

@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Izvezi',
   'tool.exportTip': 'Izvezi model (Pro)',
   'measure.hint': 'Klikni na dvije točke da bi izmjerio',
+  'section.posTip': 'Unesi položaj rezanja u mm',
   'section.off': 'Isključi',
   'explode.na': 'Ovaj model ima samo jedan dio',
   'about.title': 'O Cuboryu',

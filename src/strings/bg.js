@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Експортирай',
   'tool.exportTip': 'Експортирай модел (Pro)',
   'measure.hint': 'Кликни две точки за измерване',
+  'section.posTip': 'Въведи позицията на реза в мм',
   'section.off': 'Изключен',
   'explode.na': 'Моделът има само една част',
   'about.title': 'За Cubory',

@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Exportera',
   'tool.exportTip': 'Exportera modell (Pro)',
   'measure.hint': 'Klicka på två punkter för att mäta',
+  'section.posTip': 'Ange klippningspositionen i mm',
   'section.off': 'Av',
   'explode.na': 'Den här modellen har bara en del',
   'about.title': 'Om Cubory',

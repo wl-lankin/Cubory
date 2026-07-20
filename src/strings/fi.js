@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Vie',
   'tool.exportTip': 'Vie mallin (Pro)',
   'measure.hint': 'Klikkaa kahdella pisteellä mittaamaan',
+  'section.posTip': 'Syötä leikkauspaikka millimetreissä',
   'section.off': 'Pois päältä',
   'explode.na': 'Tämä malli on vain yhdestä osasta',
   'about.title': 'Cubory:n tiedot',

@@ -366,6 +366,9 @@ export class Viewer {
     const pos = min + (max - min) * t;
     // geclippt wird alles jenseits von pos entlang der Achse
     this.renderer.clippingPlanes = [new THREE.Plane(a.clone().negate(), pos)];
+    // dim: Modellausdehnung entlang der Achse, mm: Schnittabstand von der
+    // Unterkante - beides fürs Eingabefeld im Schnitt-Panel.
+    return { dim: max - min, mm: (max - min) * t };
   }
 
   /** Längste CAD-Achse des Modells (für sinnvolle Schnitt-Voreinstellung). */

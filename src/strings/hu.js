@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Exportál',
   'tool.exportTip': 'Modell exportálása (Pro)',
   'measure.hint': 'Kattints két pontra a méréshez',
+  'section.posTip': 'Add meg a vágási pozíciót mm-ben',
   'section.off': 'Ki',
   'explode.na': 'Ez a modell csak egy darabból áll',
   'about.title': 'Cubory névjegye',

@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Exporteer',
   'tool.exportTip': 'Model exporteren (Pro)',
   'measure.hint': 'Klik twee punten om te meten',
+  'section.posTip': 'Voer de snijpositie in mm in',
   'section.off': 'Uit',
   'explode.na': 'Dit model heeft slechts één onderdeel',
   'about.title': 'Over Cubory',

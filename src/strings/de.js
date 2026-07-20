@@ -100,6 +100,7 @@ export default {
   'tool.export': 'Export',
   'tool.exportTip': 'Modell exportieren (Pro)',
   'measure.hint': 'Zwei Punkte anklicken zum Messen',
+  'section.posTip': 'Schnittposition in mm eingeben',
   'section.off': 'Aus',
   'explode.na': 'Dieses Modell hat nur ein Teil',
   'about.title': 'Über Cubory',

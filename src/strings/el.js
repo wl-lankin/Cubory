@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Εξαγωγή',
   'tool.exportTip': 'Εξαγωγή μοντέλου (Pro)',
   'measure.hint': 'Κάνε κλικ σε δύο σημεία για μέτρηση',
+  'section.posTip': 'Πληκτρολογήστε τη θέση του κόψιμου σε χιλιοστά',
   'section.off': 'Απενεργοποιημένο',
   'explode.na': 'Το μοντέλο έχει μόνο ένα μέρος',
   'about.title': 'Περί Cubory',

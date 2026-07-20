@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Esporta',
   'tool.exportTip': 'Esporta modello (Pro)',
   'measure.hint': 'Clicca due punti per misurare',
+  'section.posTip': 'Inserisci la posizione del taglio in mm',
   'section.off': 'Disattivato',
   'explode.na': 'Questo modello ha una sola parte',
   'about.title': 'Informazioni su Cubory',

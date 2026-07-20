@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Export',
   'tool.exportTip': 'Exportă modelul (Pro)',
   'measure.hint': 'Click pe două puncte pentru a măsura',
+  'section.posTip': 'Scrie poziția tăierii în mm',
   'section.off': 'Oprit',
   'explode.na': 'Acest model are doar o parte',
   'about.title': 'Despre Cubory',

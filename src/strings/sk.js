@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Export',
   'tool.exportTip': 'Exportovať model (Pro)',
   'measure.hint': 'Klikni na dve body pre meranie',
+  'section.posTip': 'Zadaj pozíciu rezu v mm',
   'section.off': 'Vypnuté',
   'explode.na': 'Tento model má len jednu časť',
   'about.title': 'O Cubory',

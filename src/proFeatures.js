@@ -117,7 +117,11 @@ function showHintLabel() {
   const el = document.createElement('div');
   el.className = 'measure-label';
   el.style.left = '50%';
-  el.style.top = '40px';
+  // Unter die Werkzeugleiste, gleiche Höhe wie das Feature-Panel. Ohne das
+  // eigene translateX hier zöge die -130%-Verschiebung der Klasse den Hinweis
+  // nach oben hinter die Leiste - genau dort war er vorher verdeckt.
+  el.style.top = '52px';
+  el.style.transform = 'translateX(-50%)';
   el.textContent = t('measure.hint');
   el.dataset.hint = '1';
   $('measure-labels').appendChild(el);
@@ -148,6 +152,11 @@ function formatMm(v) {
   return (v >= 100 ? Math.round(v) : v.toFixed(2)) + ' mm';
 }
 
+// Zahl fürs Eingabefeld: große Werte ganzzahlig, kleine mit einer Nachkommastelle.
+function roundMm(v) {
+  return v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
+}
+
 /* ── Schnittansicht ──────────────────────────────────────────────────────── */
 
 function toggleSection() {
@@ -162,20 +171,42 @@ function toggleSection() {
   $('tool-explode')?.classList.remove('on');
   openPanel(`
     ${['x', 'y', 'z'].map((a) => `<button class="axis" data-axis="${a}">${a.toUpperCase()}</button>`).join('')}
-    <input type="range" id="section-t" min="0" max="1000" value="500" />`);
+    <input type="range" id="section-t" min="0" max="1000" value="500" />
+    <span class="section-field"><input type="number" id="section-mm" class="section-mm" min="0" step="0.1"
+      title="${t('section.posTip')}" /><span class="section-unit">mm</span></span>`);
   const panel = $('feature-panel');
+  const slider = $('section-t');
+  const input = $('section-mm');
   let axis = viewer.longestAxis?.() || 'x';
-  const apply = () => viewer.setSection(axis, Number($('section-t').value) / 1000);
+  let dim = 0;
+
+  // Regler bewegt -> Schnitt setzen, Feld nachziehen.
+  const fromSlider = () => {
+    const r = viewer.setSection(axis, Number(slider.value) / 1000);
+    dim = r.dim;
+    input.max = roundMm(dim);
+    if (document.activeElement !== input) input.value = roundMm(r.mm);
+  };
+  // Zahl eingetippt -> auf 0..dim begrenzen, Regler und Schnitt nachziehen.
+  const fromInput = () => {
+    const mm = Math.min(Math.max(parseFloat(input.value) || 0, 0), dim);
+    slider.value = String(dim > 0 ? (mm / dim) * 1000 : 0);
+    const r = viewer.setSection(axis, Number(slider.value) / 1000);
+    input.value = roundMm(r.mm);
+  };
+
   panel.querySelectorAll('.axis').forEach((b) => {
     b.classList.toggle('on', b.dataset.axis === axis);
     b.addEventListener('click', () => {
       axis = b.dataset.axis;
       panel.querySelectorAll('.axis').forEach((x) => x.classList.toggle('on', x === b));
-      apply();
+      fromSlider();
     });
   });
-  $('section-t').addEventListener('input', apply);
-  apply();
+  slider.addEventListener('input', fromSlider);
+  input.addEventListener('change', fromInput);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { fromInput(); input.blur(); } });
+  fromSlider();
   return true;
 }
 

@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Eksporter',
   'tool.exportTip': 'Eksporter model (Pro)',
   'measure.hint': 'Klik på to punkter for at måle',
+  'section.posTip': 'Indtast skæringens position i mm',
   'section.off': 'Fra',
   'explode.na': 'Dette model har kun en del',
   'about.title': 'Om Cubory',

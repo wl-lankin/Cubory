@@ -412,6 +412,26 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   border-color: rgba(255, 61, 138, 0.4);
 }
 #feature-panel input[type="range"] { width: 170px; accent-color: var(--accent-1); }
+.section-field { display: inline-flex; align-items: baseline; gap: 4px; }
+.section-mm {
+  width: 62px;
+  font: 600 12px 'Inter', sans-serif;
+  color: var(--text);
+  background: rgba(160, 170, 255, 0.08);
+  border: 1px solid rgba(160, 170, 255, 0.22);
+  border-radius: 999px;
+  padding: 4px 10px;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+.section-mm::-webkit-outer-spin-button,
+.section-mm::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.section-mm:focus {
+  outline: none;
+  border-color: rgba(255, 61, 138, 0.6);
+  background: rgba(255, 61, 138, 0.12);
+}
+.section-unit { font: 500 11px 'Inter', sans-serif; color: var(--text-faint); }
 
 #measure-labels { position: absolute; inset: 0; pointer-events: none; z-index: 12; }
 .measure-label {

@@ -101,6 +101,7 @@ export default {
   'tool.export': 'Експортувати',
   'tool.exportTip': 'Експортувати модель (Pro)',
   'measure.hint': 'Натисни два пункти для вимірювання',
+  'section.posTip': 'Введи позицію розрізу в мм',
   'section.off': 'Вимкнуто',
   'explode.na': 'Ця модель має тільки одну частину',
   'about.title': 'Про Cubory',
