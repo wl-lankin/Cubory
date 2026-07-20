@@ -10,6 +10,9 @@ let cfg = null;   // aktive Konfiguration
 let modal = null;
 let st = null;    // { option, busy, gen, dir, saved, browse }
 
+// Test-Hook wie window.__openPath: liefert die aktuelle Erzeugung
+if (typeof window !== 'undefined') window.__saveModalGen = () => st?.gen;
+
 /**
  * @param cfg {
  *   title, optionsLabel,
@@ -147,7 +150,7 @@ function updatePreview() {
   if (st.busy) {
     el.innerHTML = `<div class="hs-loader"><div class="spinner"></div><span>${esc(t('hdshot.generating'))}</span></div>`;
   } else if (st.gen?.previewUrl) {
-    el.innerHTML = `<img src="${st.gen.previewUrl}" alt="" /><span class="hs-dims mono">${esc(genInfo())}</span>`;
+    el.innerHTML = `<img src="${st.gen.previewUrl}" alt="" class="${st.gen.light ? 'sm-doc' : ''}" /><span class="hs-dims mono">${esc(genInfo())}</span>`;
   } else {
     el.innerHTML = `<div class="hs-loader"><span>${esc(t('hdshot.saveError'))}</span></div>`;
   }

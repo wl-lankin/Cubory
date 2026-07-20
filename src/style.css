@@ -1109,6 +1109,9 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   justify-content: center;
 }
 .hs-preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* SVG-Export für weißes Papier: heller Grund, damit die schwarzen Linien
+   in der Vorschau sichtbar sind. */
+.hs-preview img.sm-doc { background: #f4f5fb; padding: 8px; }
 .hs-loader { display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--text-muted); font-size: 12.5px; }
 .hs-dims {
   position: absolute; right: 8px; bottom: 8px;
