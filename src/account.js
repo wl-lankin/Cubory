@@ -17,6 +17,18 @@ export function openAccountModal() {
   if (!modal) openModal();
 }
 
+// Die Lizenz gilt als "aufgelöst", sobald der Hauptprozess nach seinem
+// Start-Heartbeat einen echten Zustand pusht - oder nach einer Notbremse, falls
+// gar kein Push kommt (nicht angemeldet, offline). Vorher darf nichts
+// Lizenzabhängiges wie der Upgrade-Nudge entschieden werden, sonst blitzt er
+// bei einem Pro-Nutzer auf, bevor die Lizenz da ist.
+let settleResolve;
+const licenseSettled = new Promise((res) => { settleResolve = res; });
+let settledDone = false;
+function markSettled() { if (!settledDone) { settledDone = true; settleResolve(); } }
+
+export function whenLicenseSettled() { return licenseSettled; }
+
 export function initAccount(onLicenseChange) {
   const btn = document.getElementById('btn-account');
   btn.addEventListener('click', () => (modal ? closeModal() : openModal()));
@@ -27,6 +39,7 @@ export function initAccount(onLicenseChange) {
     renderBanner();
     onLicenseChange?.(s);
     if (modal) renderModal();
+    markSettled(); // ein echter Push vom Hauptprozess - Lizenz steht
   });
 
   window.cubory.account.state().then((res) => {
@@ -37,6 +50,11 @@ export function initAccount(onLicenseChange) {
       onLicenseChange?.(state);
     }
   });
+
+  // Notbremse: Angemeldete bekommen den Heartbeat-Push meist in unter einer
+  // Sekunde; kommt keiner (anonym oder offline), lösen wir nach der ungefähren
+  // Intro-Dauer trotzdem auf, damit der Nudge nicht ewig ausbleibt.
+  setTimeout(markSettled, 2800);
 }
 
 function planLabel() {
