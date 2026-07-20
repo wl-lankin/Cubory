@@ -179,11 +179,11 @@ src/proFeatures.js Messen, Schnitt, Explosion, Export
 src/i18n.js        Sprachauswahl und t()-Funktion
 src/strings/       en.js (Quelle), de.js (handgepflegt), Rest generiert
 backend/           Go/Gin-API: Konten, Lizenzen, Billing, E-Mail
-website/           Marketingseite, Kundenportal, Admin-Backend, Rechtstexte
+website/           Marketingseite (de und en), Kundenportal, Admin, Rechtstexte
 test/              Unit-Tests und Rauchtest, Fixtures im Code erzeugt
 deploy/            Servereinrichtung und API-Rollout mit Rollback
 .github/workflows/ CI und Auslieferung
-scripts/           translate-locales.mjs (Ollama-Übersetzung)
+scripts/           translate-locales.mjs (Ollama), build-en.mjs (englische Seite)
 docs/              Screenshots, Deployment, Lizenz-Architektur
 release/           fertige Installer (nach npm run dist)
 ```

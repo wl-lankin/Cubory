@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cubory - CAD Viewer for DXF, DWG, STEP, STL | Mac & Windows</title>
+<link rel="icon" href="/assets/icon.png?v=2">
+<link rel="canonical" href="https://cubory.app/en/" />
+<link rel="alternate" hreflang="de" href="https://cubory.app/">
+<link rel="alternate" hreflang="en" href="https://cubory.app/en/">
+<link rel="alternate" hreflang="x-default" href="https://cubory.app/">
+<meta property="og:title" content="Cubory - CAD Viewer for DXF, DWG, STEP and STL">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cubory">
+<meta property="og:locale" content="en">
+<meta property="og:description" content="Open DXF, DWG, STEP, IGES, STL, OBJ & 3MF - on Mac, Windows and Linux, fully offline. Free forever.">
+<meta property="og:url" content="https://cubory.app/en/">
+<meta property="og:image" content="https://cubory.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cubory.app/assets/og.png">
+<meta name="twitter:title" content="Cubory - CAD Viewer for DXF, DWG, STEP and STL">
+<meta name="twitter:description" content="Open CAD files without detours - on Mac, Windows and Linux, fully offline. Free, with no time limit.">
+<meta name="theme-color" content="#070b22">
+<meta name="description" content="Open CAD files without detours: DXF, DWG, STEP, IGES, STL, OBJ, 3MF and more - on Mac, Windows and Linux, fully offline. Free, with no time limit.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://cubory.app/#app",
+      "name": "Cubory",
+      "alternateName": "Cubory CAD Viewer",
+      "applicationCategory": "DesignApplication",
+      "applicationSubCategory": "CAD Viewer",
+      "operatingSystem": "macOS, Windows, Linux",
+      "softwareVersion": "1.5.3",
+      "url": "https://cubory.app/en/",
+      "downloadUrl": "https://cubory.app/#download",
+      "installUrl": "https://cubory.app/#download",
+      "screenshot": "https://cubory.app/assets/og.png",
+      "inLanguage": [
+        "de",
+        "en"
+      ],
+      "description": "CAD-Viewer für DXF, DWG, STEP, IGES, BREP, STL, OBJ, 3MF, PLY und GLTF. Öffnet Zeichnungen und 3D-Modelle lokal, ohne Server und ohne Internetverbindung.",
+      "featureList": [
+        "DXF und DWG als 2D-Zeichnung mit Ebenen",
+        "STEP, IGES und BREP über OpenCascade",
+        "STL, OBJ, 3MF, PLY und GLTF",
+        "Ansichten, Drahtgitter, Kantenlinien und Raster",
+        "Teileliste für Baugruppen",
+        "Messen mit Einrasten auf Ecken und Kanten",
+        "Schnittansichten entlang X, Y und Z",
+        "Explosionsansichten",
+        "Export nach STL und SVG, HD-Screenshots",
+        "20 Sprachen, vollständig offline nutzbar"
+      ],
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Free",
+          "price": "0",
+          "priceCurrency": "EUR",
+          "valueAddedTaxIncluded": false,
+          "availability": "https://schema.org/InStock",
+          "description": "Alle Formate, Ansichten und Ebenen - unbegrenzt und ohne Zeitlimit."
+        },
+        {
+          "@type": "Offer",
+          "name": "Pro",
+          "price": "79",
+          "priceCurrency": "EUR",
+          "valueAddedTaxIncluded": false,
+          "availability": "https://schema.org/InStock",
+          "description": "Pro Jahr. Messen, Schnittansichten, Explosionsansichten und Export."
+        },
+        {
+          "@type": "Offer",
+          "name": "Lifetime",
+          "price": "199",
+          "priceCurrency": "EUR",
+          "valueAddedTaxIncluded": false,
+          "availability": "https://schema.org/InStock",
+          "description": "Einmalig. Pro-Funktionen dauerhaft."
+        }
+      ],
+      "author": {
+        "@id": "https://cubory.app/#person"
+      },
+      "publisher": {
+        "@id": "https://cubory.app/#person"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://cubory.app/#person",
+      "name": "Wolfgang Linz",
+      "url": "https://wolfgang-linz.de"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://cubory.app/#website",
+      "url": "https://cubory.app/en/",
+      "name": "Cubory",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://cubory.app/#person"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://cubory.app/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Brauche ich AutoCAD, um eine DWG oder DXF zu öffnen?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nein. Cubory zeigt DWG- und DXF-Zeichnungen direkt an, mit allen Ebenen und ihren Original-Farben. Für DWG wird zusätzlich LibreDWG auf dem System benötigt, für DXF nichts weiter."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Welche Dateiformate kann Cubory öffnen?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "2D: DXF und DWG. 3D: STEP, STP, IGES, IGS, BREP, STL, OBJ, 3MF, PLY sowie GLTF und GLB. STEP, IGES und BREP laufen über OpenCascade, denselben Kern, den auch professionelle CAD-Programme verwenden."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ist Cubory kostenlos?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Der Viewer ja, dauerhaft und ohne Zeitlimit: alle Formate, Ansichten, Ebenen und Teilelisten. Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro und kosten 79 € im Jahr oder 199 € einmalig."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Funktioniert Cubory ohne Internetverbindung?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Dateien werden ausschließlich auf dem eigenen Rechner geladen und dargestellt, nichts wird hochgeladen. Die kostenlosen Funktionen brauchen gar keine Verbindung. Eine Pro-Lizenz meldet sich etwa täglich beim Server; bleibt der Rechner offline, läuft Pro noch 30 Tage weiter."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Läuft Cubory auf Mac, Windows und Linux?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ja: macOS für Apple Silicon und Intel, Windows 64-bit und Linux als AppImage. Die Installer sind noch nicht signiert, deshalb zeigen Gatekeeper und SmartScreen beim ersten Start eine Warnung, die sich bestätigen lässt."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Was unterscheidet Free von Pro?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Free zeigt alle Dateien unbegrenzt an. Pro ergänzt Messen mit Einrasten auf Ecken und Kanten, Schnittansichten entlang X, Y und Z, Explosionsansichten für Baugruppen sowie Export nach STL und SVG. Jedes neue Konto bekommt Pro 7 Tage kostenlos."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+:root{--bg0:#070b22;--bg1:#0a0e2a;--panel:rgba(19,25,66,.55);--border:rgba(160,170,255,.14);
+--text:#eef0ff;--muted:#9aa3d0;--faint:#5d668f;--a1:#ff3d8a;--a2:#7c5cff;
+--grad:linear-gradient(92deg,var(--a1),var(--a2))}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,sans-serif;color:var(--text);background:
+radial-gradient(900px 600px at 85% -10%,rgba(255,61,138,.14),transparent 60%),
+radial-gradient(1000px 700px at -10% 40%,rgba(124,92,255,.14),transparent 60%),
+linear-gradient(180deg,var(--bg0),var(--bg1) 40%,#0d1233);overflow-x:hidden}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px}
+nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0;position:relative;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:19px}
+.brand img{width:30px;height:30px;border-radius:8px}
+nav .links{display:flex;gap:26px;font-size:13.5px;color:var(--muted)}
+nav a{color:inherit;text-decoration:none}
+nav .links a:hover{color:var(--text)}
+.btn{display:inline-block;font-weight:600;font-size:14px;color:var(--text);border-radius:999px;
+padding:13px 28px;text-decoration:none;transition:.15s}
+.btn-primary{background:var(--grad);box-shadow:0 6px 24px rgba(255,61,138,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(255,61,138,.5)}
+.btn-ghost{border:1px solid rgba(160,170,255,.25);color:var(--muted)}
+.btn-ghost:hover{color:var(--text);border-color:rgba(160,170,255,.5)}
+header{min-height:min(88vh,780px);display:flex;flex-direction:column;position:relative;
+border:1px solid rgba(160,170,255,.22);margin:110px 0 150px;padding:0 34px;cursor:crosshair;
+background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.045) 39px 40px),
+repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.045) 39px 40px)}
+header::before,header::after{content:"";position:absolute;width:14px;height:14px;border:1px solid rgba(160,170,255,.5)}
+header::before{top:-7px;left:-7px;border-width:0 1px 1px 0}
+header::after{bottom:-7px;right:-7px;border-width:1px 0 0 1px}
+.hero2{flex:1;display:grid;grid-template-columns:1.15fr 1fr;gap:30px;align-items:center;padding:8px 0 46px}
+.hero-l{text-align:left}
+.hero-l .cta{justify-content:flex-start}
+.hero-r svg{width:100%;max-width:440px;animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.dw path{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.1s cubic-bezier(.4,0,.2,1) forwards;animation-delay:calc(var(--i)*.22s)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.dw2{opacity:0;animation:fadein 1s ease forwards 2.4s}
+@keyframes fadein{to{opacity:1}}
+.hdim{display:flex;align-items:center;gap:10px;color:var(--faint);margin:2px 0 20px;max-width:520px}
+.hdim i{flex:1;height:1px;background:rgba(160,170,255,.35);position:relative}
+.hdim i::before,.hdim i::after{content:"";position:absolute;top:-3px;width:1px;height:7px;background:rgba(160,170,255,.5)}
+.hdim i:first-child::before{left:0}.hdim i:last-child::after{right:0}
+.hdim span{font-size:10.5px;letter-spacing:.14em}
+.xh{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s}
+header:hover .xh{opacity:1}
+.xh-h{position:absolute;left:0;right:0;height:1px;background:rgba(255,61,138,.25)}
+.xh-v{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,61,138,.25)}
+.xh-label{position:absolute;font-size:10px;color:var(--faint);letter-spacing:.1em;transform:translate(10px,10px);white-space:nowrap}
+@media(max-width:860px){.hero2{grid-template-columns:1fr}.hero-r{display:none}header{cursor:auto}.xh{display:none}}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 80px;position:relative;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-8% -18%;z-index:-1;pointer-events:none;
+background:radial-gradient(55% 62% at 50% 48%,rgba(7,11,34,.8),rgba(7,11,34,.35) 60%,transparent 78%)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-bottom:20px}
+/* Formatliste: echte Flex-Liste statt Trennpunkte im Text. Bei neun Formaten
+   bricht die Zeile in der schmalen Hero-Spalte zwangsläufig um - mit
+   Trennzeichen im Text bliebe dabei ein Punkt am Zeilenende hängen. */
+.formats{display:flex;flex-wrap:wrap;gap:8px 20px;letter-spacing:.2em}
+h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,4.6vw,60px);line-height:1.04;letter-spacing:-.015em;margin-bottom:20px}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:17px;line-height:1.7;color:var(--muted);max-width:560px;margin-bottom:36px}
+.cta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center}
+.hint{font-size:13px;color:var(--faint)}
+section{padding:90px 0;scroll-margin-top:20px}
+h2{font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;margin-bottom:14px;text-align:center}
+.lead{text-align:center;color:var(--muted);max-width:540px;margin:0 auto 48px;line-height:1.7}
+#app{height:170vh;padding:0}
+.shot-sticky{position:sticky;top:6vh;padding:20px 0}
+#scrub{display:block;width:100%;height:auto;border-radius:18px}
+.shot{border-radius:18px;border:1px solid var(--border);box-shadow:0 40px 120px rgba(124,92,255,.25),0 12px 40px rgba(3,5,20,.6);overflow:hidden}
+.shot img{display:block;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:26px;
+backdrop-filter:blur(18px) saturate(1.3)}
+.card .ic{font-size:20px;margin-bottom:12px;display:block}
+.card h3{font-family:'Space Grotesk';font-size:16px;margin-bottom:8px}
+.card p{font-size:13.5px;color:var(--muted);line-height:1.65}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:stretch}
+.plan{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:30px;
+backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:6px}
+.plan.hot{border-color:rgba(255,61,138,.5);box-shadow:0 0 60px rgba(255,61,138,.15);position:relative}
+.plan .tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--grad);
+font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:999px;text-transform:uppercase}
+.plan h3{font-family:'Space Grotesk';font-size:15px;color:var(--muted)}
+.plan .price{font-family:'Space Grotesk';font-weight:700;font-size:38px}
+.plan .per{font-size:12.5px;color:var(--faint);margin-bottom:14px}
+.plan ul{list-style:none;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.plan li::before{content:"✓  ";color:var(--a1);font-weight:700}
+.plan .btn{margin-top:auto;text-align:center}
+.dl{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.dl a{display:flex;flex-direction:column;gap:3px;min-width:200px;background:var(--panel);border:1px solid var(--border);
+border-radius:14px;padding:18px 24px;text-decoration:none;color:var(--text);backdrop-filter:blur(18px);transition:.15s}
+.dl a:hover{border-color:rgba(255,61,138,.45);transform:translateY(-2px)}
+.dl b{font-family:'Space Grotesk';font-size:15px}
+.dl span{font-size:12px;color:var(--faint)}
+footer{border-top:1px solid var(--border);padding:34px 0;font-size:12.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+/* ── Technische-Zeichnung-Ästhetik ── */
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
+.dim{display:flex;align-items:center;gap:14px;justify-content:center;color:var(--faint);
+font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.18em;margin-bottom:18px}
+.dim::before,.dim::after{content:"";flex:0 0 90px;height:1px;background:rgba(160,170,255,.3)}
+.dim::before{background:linear-gradient(90deg,transparent,rgba(160,170,255,.4))}
+.dim::after{background:linear-gradient(90deg,rgba(160,170,255,.4),transparent)}
+.sheet{position:relative;border:1px solid rgba(160,170,255,.28);background:
+repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.05) 39px 40px),
+repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.05) 39px 40px),
+rgba(10,14,42,.5);padding:44px 40px 0}
+.sheet::before,.sheet::after{content:"";position:absolute;width:14px;height:14px;border:1px solid rgba(160,170,255,.5)}
+.sheet::before{top:-7px;left:-7px;border-width:0 1px 1px 0}
+.sheet::after{bottom:-7px;right:-7px;border-width:1px 0 0 1px}
+.sheet-label{position:absolute;top:-9px;left:24px;background:var(--bg1);padding:0 10px;
+font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.2em;color:var(--faint)}
+.bom{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
+.bom svg{width:100%;height:auto}
+.bom-table{border:1px solid rgba(160,170,255,.25);font-size:13px}
+.bom-row{display:grid;grid-template-columns:52px 1fr 92px;align-items:center;
+border-bottom:1px solid rgba(160,170,255,.14);padding:13px 16px;gap:14px;transition:background .15s;cursor:default}
+.bom-row:last-child{border-bottom:none}
+.bom-row.head{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+.bom-row:not(.head):hover,.bom-row.hl{background:rgba(255,61,138,.08)}
+.pos{width:26px;height:26px;border:1px solid rgba(160,170,255,.5);border-radius:50%;display:flex;
+align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}
+.bom-row:hover .pos,.bom-row.hl .pos{border-color:var(--a1);color:var(--text);box-shadow:0 0 10px rgba(255,61,138,.4)}
+.bom-row b{display:block;font-size:13.5px;font-weight:600}
+.bom-row small{color:var(--muted);font-size:12px;line-height:1.5}
+.lic{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;text-align:center;
+padding:4px 0;border:1px solid rgba(160,170,255,.3);color:var(--muted)}
+.lic.pro{border:none;background:var(--grad);color:#fff;font-weight:700}
+.balloon{opacity:.85;transition:.2s}
+.balloon.hl circle{stroke:#ff3d8a;fill:rgba(255,61,138,.18)}
+.balloon.hl text{fill:#fff}
+.tblock{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid rgba(160,170,255,.28);border-bottom:none;
+margin:44px -40px 0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--faint)}
+.tblock div{padding:9px 14px;border-right:1px solid rgba(160,170,255,.18);border-top:1px solid rgba(160,170,255,.18)}
+.tblock div:nth-child(3n){border-right:none}
+.tblock b{color:var(--muted);font-weight:600}
+.spec{border:1px solid rgba(160,170,255,.28);overflow:visible}
+@media(max-width:700px){.spec{overflow-x:auto}}
+.spec table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+.spec th,.spec td{padding:14px 18px;text-align:center;border:1px solid rgba(160,170,255,.14)}
+.spec th{font-family:'Space Grotesk';font-size:14.5px}
+.spec th.rec{padding-top:22px}
+.spec td:first-child,.spec th:first-child{text-align:left;font-family:ui-monospace,Menlo,monospace;
+font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+.spec .price-cell{font-family:'Space Grotesk';font-weight:700;font-size:26px}
+.spec .rec{position:relative;background:rgba(255,61,138,.07)}
+.bill-toggle{display:flex;gap:3px;justify-content:center;margin-top:8px}
+.bill-toggle button{font:600 10.5px Inter,sans-serif;color:var(--muted);background:transparent;
+border:1px solid rgba(160,170,255,.25);border-radius:999px;padding:4px 12px;cursor:pointer}
+.bill-toggle button.on{color:#fff;background:var(--grad);border-color:transparent}
+.spec .stamp{position:absolute;top:-13px;z-index:2;left:50%;transform:translateX(-50%) rotate(-4deg);background:var(--grad);
+font-size:9.5px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:3px;text-transform:uppercase;font-family:Inter}
+.spec .ok{color:var(--a1);font-weight:700}
+.spec .no{color:var(--faint)}
+.plot{border:1px solid rgba(160,170,255,.28);font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.plot a{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 22px;
+color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255,.2);transition:background .15s}
+.plot a:last-child{border-bottom:none}
+.plot a:hover{background:rgba(255,61,138,.07)}
+.plot .file{color:var(--text)}
+.plot .meta{color:var(--faint);font-size:11.5px;flex:1;text-align:right}
+.plot .arrow{color:var(--a1);font-weight:700}
+@media(max-width:860px){.bom{grid-template-columns:1fr}.tblock{grid-template-columns:1fr 1fr}.tblock div:nth-child(3n){border-right:1px solid rgba(160,170,255,.18)}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.reveal{opacity:1;transform:none}}
+
+/* Fragen und Antworten: schlicht gehalten, damit der Abschnitt den Rest der
+   Seite nicht überlagert. Die Antworten stehen im Markup und sind damit
+   auffindbar, auch wenn sie zugeklappt sind. */
+.faq{max-width:780px;margin:0 auto;border-top:1px solid var(--border)}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item summary{display:flex;gap:14px;align-items:baseline;cursor:pointer;
+  padding:19px 4px;font-size:17px;font-weight:500;color:var(--text);list-style:none}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';margin-left:auto;color:var(--faint);
+  font-size:19px;line-height:1;transition:transform .2s}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item summary:hover{color:#fff}
+.faq-item .pos{font:600 11px ui-monospace,Menlo,monospace;color:var(--faint);
+  letter-spacing:.1em;flex:0 0 auto;padding-top:3px}
+.faq-item p{padding:0 34px 20px 32px;color:var(--muted);line-height:1.75;font-size:15.5px}
+
+/* Hinweis auf die englische Fassung. Bewusst schlank und wegklickbar - ein
+   automatischer Sprachwechsel würde Suchmaschinen die deutsche Seite
+   verbergen. */
+.langbar{display:flex;align-items:center;gap:14px;justify-content:center;
+  padding:9px 16px;font-size:13.5px;color:var(--muted);
+  background:rgba(19,25,66,.72);border-bottom:1px solid var(--border);
+  position:relative;z-index:60}
+.langbar a{color:var(--text);text-decoration:none;font-weight:500}
+.langbar a:hover{color:#fff}
+.langbar button{background:none;border:0;color:var(--faint);font-size:17px;
+  line-height:1;cursor:pointer;padding:0 2px}
+.langbar button:hover{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header id="sheet0">
+  <span class="sheet-label">SHEET 0 · DRAFT</span>
+  <nav>
+    <a class="brand" href="#"><img src="/assets/icon.png" alt=""><img src="/assets/wordmark.png" alt="Cubory" style="height:20px;width:auto"></a>
+    <div class="links">
+      <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#download">Download</a><a href="#faq">FAQ</a>
+    </div>
+  </nav>
+  <div class="hero2">
+    <div class="hero-l">
+      <p class="eyebrow mono formats"><span>DXF</span><span>DWG</span><span>STEP</span><span>IGES</span><span>STL</span><span>OBJ</span><span>3MF</span><span>PLY</span><span>GLTF</span></p>
+      <h1>Every model<br><span class="grad" id="h2">Instantly in view</span></h1>
+      <div class="hdim"><i></i><span class="mono" id="hdim-label">— mm</span><i></i></div>
+      <p class="sub">Cubory opens drawings and 3D models right away - on Mac, Windows and Linux, fully offline. Free forever. Pro when you need more.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#download">Download free →</a>
+        <a class="btn btn-ghost" href="#pricing">Discover Pro</a>
+      </div>
+      <p class="hint" style="margin-top:18px">7 days of Pro free with every new account · no credit card required</p>
+    </div>
+    <div class="hero-r">
+      <svg viewBox="0 0 420 400" fill="none" aria-hidden="true">
+        <g stroke="#aab3ff" stroke-width="1.4" class="dw">
+          <path style="--i:0" pathLength="100" d="M210 60 330 120"></path>
+          <path style="--i:1" pathLength="100" d="M330 120v120"></path>
+          <path style="--i:2" pathLength="100" d="M330 240 210 300"></path>
+          <path style="--i:3" pathLength="100" d="M210 300 90 240"></path>
+          <path style="--i:4" pathLength="100" d="M90 240V120"></path>
+          <path style="--i:5" pathLength="100" d="M90 120 210 60"></path>
+          <path style="--i:6" pathLength="100" d="M210 180 330 120"></path>
+          <path style="--i:7" pathLength="100" d="M210 180 90 120"></path>
+          <path style="--i:8" pathLength="100" d="M210 180v120"></path>
+        </g>
+        <g class="dw2">
+          <g stroke="#7c5cff" stroke-width=".9" opacity=".7">
+            <path d="M76 240V120M72 120h8M72 240h8"></path>
+            <text x="58" y="180" fill="#9aa3d0" font-size="10.5" font-family="monospace" text-anchor="middle" transform="rotate(-90 58 180)">120 mm</text>
+            <path d="M210 316 330 256M210 320v-8M330 260v-8"></path>
+            <text x="258" y="308" fill="#9aa3d0" font-size="10.5" font-family="monospace">√2·a</text>
+          </g>
+          <g font-family="monospace" font-size="11">
+            <line x1="330" y1="120" x2="374" y2="92" stroke="#5d668f" stroke-width=".8"></line>
+            <circle cx="386" cy="86" r="12" stroke="#ff3d8a" fill="rgba(255,61,138,.12)"></circle>
+            <text x="386" y="90" fill="#fff" text-anchor="middle">1</text>
+          </g>
+          <path d="M195 165h30M210 150v30" stroke="#ff3d8a" stroke-width=".8" opacity=".8"></path>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="xh" id="xh"><div class="xh-h"></div><div class="xh-v"></div>
+    <span class="xh-label mono" id="xh-label">X 0.0 · Y 0.0</span></div>
+</header>
+
+<section id="app">
+  <div class="shot-sticky">
+    <p class="dim">POS 5 · EXPLODED VIEW · SCROLL</p>
+    <div class="shot"><canvas id="scrub" width="1440" height="900"></canvas></div>
+  </div>
+</section>
+
+
+<section id="features">
+  <p class="dim reveal">POS 1-7 · TOOLS</p>
+  <h2 class="reveal">A viewer like an <span class="grad">assembly drawing</span></h2>
+  <p class="lead reveal">Every feature has its position - just like on the drawing sheet. Hover over the parts list.</p>
+  <div class="sheet reveal">
+    <span class="sheet-label">SHEET 1/1</span>
+    <div class="bom">
+      <svg viewBox="0 0 420 360" fill="none" aria-hidden="true">
+        <g stroke="#5d668f" stroke-width="1">
+          <path d="M210 60 330 120v120L210 300 90 240V120Z"></path>
+          <path d="M210 60v120M210 180l120-60M210 180 90 120M210 180v120M330 240 210 180M90 240l120-60" opacity=".55"></path>
+          <path d="M150 90 270 150M270 90 150 150" opacity=".3"></path>
+        </g>
+        <g stroke="#7c5cff" stroke-width=".8" opacity=".6">
+          <path d="M80 240V120M76 120h8M76 240h8"></path>
+          <text x="62" y="180" fill="#9aa3d0" font-size="10" font-family="monospace" text-anchor="middle" transform="rotate(-90 62 180)">120 mm</text>
+        </g>
+        <g id="balloons" font-family="monospace" font-size="11">
+          <g class="balloon" data-pos="1"><line x1="210" y1="60" x2="250" y2="28" stroke="#5d668f" stroke-width=".8"></line><circle cx="262" cy="24" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="262" y="28" fill="#9aa3d0" text-anchor="middle">1</text></g>
+          <g class="balloon" data-pos="2"><line x1="330" y1="120" x2="374" y2="100" stroke="#5d668f" stroke-width=".8"></line><circle cx="386" cy="96" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="386" y="100" fill="#9aa3d0" text-anchor="middle">2</text></g>
+          <g class="balloon" data-pos="3"><line x1="210" y1="180" x2="276" y2="152" stroke="#5d668f" stroke-width=".8"></line><circle cx="288" cy="148" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="288" y="152" fill="#9aa3d0" text-anchor="middle">3</text></g>
+          <g class="balloon" data-pos="4"><line x1="90" y1="120" x2="48" y2="96" stroke="#5d668f" stroke-width=".8"></line><circle cx="36" cy="92" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="36" y="96" fill="#9aa3d0" text-anchor="middle">4</text></g>
+          <g class="balloon" data-pos="5"><line x1="330" y1="240" x2="372" y2="270" stroke="#5d668f" stroke-width=".8"></line><circle cx="384" cy="274" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="384" y="278" fill="#9aa3d0" text-anchor="middle">5</text></g>
+          <g class="balloon" data-pos="6"><line x1="210" y1="300" x2="252" y2="330" stroke="#5d668f" stroke-width=".8"></line><circle cx="264" cy="334" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="264" y="338" fill="#9aa3d0" text-anchor="middle">6</text></g>
+          <g class="balloon" data-pos="7"><line x1="90" y1="240" x2="50" y2="272" stroke="#5d668f" stroke-width=".8"></line><circle cx="38" cy="276" r="12" stroke="#9aa3d0" fill="rgba(10,14,42,.9)"></circle><text x="38" y="280" fill="#9aa3d0" text-anchor="middle">7</text></g>
+        </g>
+      </svg>
+      <div class="bom-table">
+        <div class="bom-row head"><span>Pos.</span><span>Description</span><span style="text-align:center">License</span></div>
+        <div class="bom-row" data-pos="1"><span class="pos">1</span><span><b>All common formats</b><small>DXF, DWG, STEP, STP, IGES, BREP, STL, OBJ, 3MF, PLY, GLTF, GLB - a real OpenCascade core</small></span><span class="lic">FREE</span></div>
+        <div class="bom-row" data-pos="2"><span class="pos">2</span><span><b>Assemblies &amp; layers</b><small>Part names, isolation, original colors</small></span><span class="lic">FREE</span></div>
+        <div class="bom-row" data-pos="3"><span class="pos">3</span><span><b>Measure with snapping</b><small>mm-precise, snaps to corners and edges</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="4"><span class="pos">4</span><span><b>Section views</b><small>Clipping along X/Y/Z, continuous</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="5"><span class="pos">5</span><span><b>Exploded views</b><small>Pull assemblies apart continuously</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="6"><span class="pos">6</span><span><b>Export &amp; HD shots</b><small>STL, true-to-scale SVG, HD screenshots</small></span><span class="lic pro">PRO</span></div>
+        <div class="bom-row" data-pos="7"><span class="pos">7</span><span><b>20 languages · offline</b><small>fully local, Pro works up to 30 days offline</small></span><span class="lic">FREE</span></div>
+      </div>
+    </div>
+    <div class="tblock">
+      <div><b>CUBORY</b> · The modern CAD viewer</div><div>Scale <b>1:1</b></div><div>Sheet <b>1/1</b></div>
+      <div>Drawn <b>2026-07-18</b></div><div>Checked <b>✓ bestanden</b></div><div>Material <b>Electron · three.js</b></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <p class="dim reveal">TABLE A · TERMS</p>
+  <h2 class="reveal">Pricing like a <span class="grad">datasheet</span></h2>
+  <p class="lead reveal">Free stays fully usable forever. Pro unlocks positions 3-6.</p>
+  <div class="spec reveal">
+    <table>
+      <tbody><tr><th></th><th>Free</th><th class="rec"><span class="stamp">Recommended</span>Pro
+        <div class="bill-toggle"><button type="button" data-b="monthly">Monthly</button><button type="button" class="on" data-b="yearly">Yearly</button></div></th><th>Lifetime</th></tr>
+      <tr><td>Price (net)</td><td class="price-cell">0 €</td><td class="price-cell rec" id="pro-price">79 €</td><td class="price-cell">199 €</td></tr>
+      <tr><td>Billing</td><td>-</td><td class="rec" id="pro-per">per year · 2 months free</td><td>one-time</td></tr>
+      <tr><td>Pos. 1-2, 7</td><td class="ok">✓</td><td class="rec ok">✓</td><td class="ok">✓</td></tr>
+      <tr><td>Pos. 3-6 (Pro)</td><td class="no">-</td><td class="rec ok">✓</td><td class="ok">✓</td></tr>
+      <tr><td>Devices</td><td>2</td><td class="rec">3</td><td>3</td></tr>
+      <tr><td>Trial</td><td>-</td><td class="rec">7 days free</td><td>-</td></tr>
+      <tr><td></td><td><a class="btn btn-ghost" href="#download">Download</a></td><td class="rec"><a class="btn btn-primary" id="buy-pro" href="/portal/?plan=yearly">Try</a></td><td><a class="btn btn-ghost" href="/portal/?plan=lifetime">Buy</a></td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+
+<section id="download">
+  <p class="dim reveal">OUTPUT · PLOT</p>
+  <h2 class="reveal">Cubory <span class="grad">download</span></h2>
+  <p class="lead reveal"><span id="dl-version">Version …</span> · Free features without an account</p>
+  <div class="plot reveal" id="dl-list">
+    <a href="/downloads/" data-os="mac-arm64"><span class="file">macOS · Apple Silicon</span><span class="meta">…</span><span class="arrow">↓</span></a>
+    <a href="/downloads/" data-os="mac-x64"><span class="file">macOS · Intel</span><span class="meta">…</span><span class="arrow">↓</span></a>
+    <a href="/downloads/" data-os="win"><span class="file">Windows · 64-bit</span><span class="meta">…</span><span class="arrow">↓</span></a>
+    <a href="/downloads/" data-os="linux"><span class="file">Linux · AppImage</span><span class="meta">…</span><span class="arrow">↓</span></a>
+  </div>
+</section>
+
+<section id="faq">
+  <p class="dim reveal">POS 8 · QUESTIONS</p>
+  <h2 class="reveal">Frequently <span class="grad">asked</span></h2>
+  <div class="faq">
+    <details class="faq-item reveal">
+      <summary><span class="pos">1</span>Do I need AutoCAD to open a DWG or DXF?</summary>
+      <p>No. Cubory displays DWG and DXF drawings directly, with all layers and their original colors. DWG additionally requires LibreDWG on your system, DXF needs nothing else.</p>
+    </details>
+    <details class="faq-item reveal">
+      <summary><span class="pos">2</span>Which file formats can Cubory open?</summary>
+      <p>2D: DXF and DWG. 3D: STEP, STP, IGES, IGS, BREP, STL, OBJ, 3MF, PLY as well as GLTF and GLB. STEP, IGES and BREP run on OpenCascade, the same core professional CAD software uses.</p>
+    </details>
+    <details class="faq-item reveal">
+      <summary><span class="pos">3</span>Is Cubory free?</summary>
+      <p>The viewer yes, permanently and with no time limit: all formats, views, layers and parts lists. Measuring, section views, exploded views and export belong to Pro and cost 79 € per year or 199 € once.</p>
+    </details>
+    <details class="faq-item reveal">
+      <summary><span class="pos">4</span>Does Cubory work without an internet connection?</summary>
+      <p>Files are loaded and rendered exclusively on your own machine, nothing is uploaded. The free features need no connection at all. A Pro license checks in with the server about once a day; if the machine stays offline, Pro keeps working for another 30 days.</p>
+    </details>
+    <details class="faq-item reveal">
+      <summary><span class="pos">5</span>Does Cubory run on Mac, Windows and Linux?</summary>
+      <p>Yes: macOS for Apple Silicon and Intel, Windows 64-bit and Linux as an AppImage. The installers are not code-signed yet, so Gatekeeper and SmartScreen show a warning on first launch that you can confirm.</p>
+    </details>
+    <details class="faq-item reveal">
+      <summary><span class="pos">6</span>What is the difference between Free and Pro?</summary>
+      <p>Free displays all files without limits. Pro adds measuring with snapping to corners and edges, section views along X, Y and Z, exploded views for assemblies and export to STL and SVG. Every new account gets Pro free for 7 days.</p>
+    </details>
+  </div>
+</section>
+
+
+<footer>
+  <span>© 2026 Cubory · The modern CAD viewer</span>
+  <span><a href="/impressum.html" style="color:var(--faint)">Legal notice</a> · <a href="/datenschutz.html" style="color:var(--faint)">Privacy</a> · <a href="/agb.html" style="color:var(--faint)">Terms</a> · <a href="/agb.html#widerruf" style="color:var(--faint)">Refund policy</a> · <a href="/en/" hreflang="en">English</a> · Entwickelt von <a href="https://wolfgang-linz.de" style="color:var(--muted)">Wolfgang Linz</a></span>
+</footer>
+</div>
+<script type="module" src="/main.js"></script>
+
+
+</body></html>

@@ -1,15 +1,60 @@
-// Website-Lokalisierung ohne Umschalter: Deutsch ist die Quelle im Markup,
-// alle anderen Browsersprachen bekommen Englisch. Ersetzt exakte Textknoten
-// über ein Wörterbuch - kein Retagging der Seite nötig.
-// Test-Override: ?lang=en
+// Zwei Aufgaben:
+//
+// 1. Das Wörterbuch Deutsch -> Englisch. Es wird nicht mehr im Browser
+//    angewendet, sondern von scripts/build-en.mjs gelesen, das daraus
+//    website/en/index.html erzeugt. Beide Sprachen haben damit eine eigene
+//    Adresse, die Suchmaschinen getrennt in den Index nehmen können.
+//    Vorher wurde diese Seite im Browser übersetzt - Googlebot surft mit
+//    en-US und hätte unter der deutschen Adresse englischen Inhalt gesehen,
+//    in direkter Konkurrenz zu /en/.
+//
+// 2. Ein dezenter Hinweis für Besucher mit nicht-deutschem Browser, dass es
+//    die Seite auf Englisch gibt. Bewusst kein automatischer Wechsel: der
+//    würde Suchmaschinen daran hindern, die deutsche Fassung zu erfassen.
 (function () {
   const params = new URLSearchParams(location.search);
   const lang = (params.get('lang') || navigator.language || 'de').slice(0, 2).toLowerCase();
   window.__t = (s) => s;
-  if (lang === 'de') return;
-  document.documentElement.lang = 'en';
+  if (lang === 'de' || location.pathname.startsWith('/en')) return;
+  if (localStorage.getItem('cubory-lang-hinweis') === 'weg') return;
+
+  addEventListener('DOMContentLoaded', () => {
+    const bar = document.createElement('div');
+    bar.className = 'langbar';
+    bar.innerHTML = '<span>This page is also available in English.</span>'
+      + '<a href="/en/" hreflang="en">Read in English &rarr;</a>'
+      + '<button type="button" aria-label="Dismiss">&times;</button>';
+    bar.querySelector('button').addEventListener('click', () => {
+      localStorage.setItem('cubory-lang-hinweis', 'weg');
+      bar.remove();
+    });
+    document.body.prepend(bar);
+  });
+  return;
 
   const D = {
+    'POS 8 · RÜCKFRAGEN': 'POS 8 · QUESTIONS',
+    'Häufig': 'Frequently', 'gefragt': 'asked',
+    'Brauche ich AutoCAD, um eine DWG oder DXF zu öffnen?': 'Do I need AutoCAD to open a DWG or DXF?',
+    'Nein. Cubory zeigt DWG- und DXF-Zeichnungen direkt an, mit allen Ebenen und ihren Original-Farben. Für DWG wird zusätzlich LibreDWG auf dem System benötigt, für DXF nichts weiter.':
+      'No. Cubory displays DWG and DXF drawings directly, with all layers and their original colors. DWG additionally requires LibreDWG on your system, DXF needs nothing else.',
+    'Welche Dateiformate kann Cubory öffnen?': 'Which file formats can Cubory open?',
+    '2D: DXF und DWG. 3D: STEP, STP, IGES, IGS, BREP, STL, OBJ, 3MF, PLY sowie GLTF und GLB. STEP, IGES und BREP laufen über OpenCascade, denselben Kern, den auch professionelle CAD-Programme verwenden.':
+      '2D: DXF and DWG. 3D: STEP, STP, IGES, IGS, BREP, STL, OBJ, 3MF, PLY as well as GLTF and GLB. STEP, IGES and BREP run on OpenCascade, the same core professional CAD software uses.',
+    'Ist Cubory kostenlos?': 'Is Cubory free?',
+    'Funktioniert Cubory ohne Internetverbindung?': 'Does Cubory work without an internet connection?',
+    'Läuft Cubory auf Mac, Windows und Linux?': 'Does Cubory run on Mac, Windows and Linux?',
+    'Was unterscheidet Free von Pro?': 'What is the difference between Free and Pro?',
+    'Free zeigt alle Dateien unbegrenzt an. Pro ergänzt Messen mit Einrasten auf Ecken und Kanten, Schnittansichten entlang X, Y und Z, Explosionsansichten für Baugruppen sowie Export nach STL und SVG. Jedes neue Konto bekommt Pro 7 Tage kostenlos.':
+      'Free displays all files without limits. Pro adds measuring with snapping to corners and edges, section views along X, Y and Z, exploded views for assemblies and export to STL and SVG. Every new account gets Pro free for 7 days.',
+    'Der Viewer ja, dauerhaft und ohne Zeitlimit: alle Formate, Ansichten, Ebenen und Teilelisten. Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro und kosten 79 € im Jahr oder 199 € einmalig.':
+      'The viewer yes, permanently and with no time limit: all formats, views, layers and parts lists. Measuring, section views, exploded views and export belong to Pro and cost 79 € per year or 199 € once.',
+    'Dateien werden ausschließlich auf dem eigenen Rechner geladen und dargestellt, nichts wird hochgeladen. Die kostenlosen Funktionen brauchen gar keine Verbindung. Eine Pro-Lizenz meldet sich etwa täglich beim Server; bleibt der Rechner offline, läuft Pro noch 30 Tage weiter.':
+      'Files are loaded and rendered exclusively on your own machine, nothing is uploaded. The free features need no connection at all. A Pro license checks in with the server about once a day; if the machine stays offline, Pro keeps working for another 30 days.',
+    'Ja: macOS für Apple Silicon und Intel, Windows 64-bit und Linux als AppImage. Die Installer sind noch nicht signiert, deshalb zeigen Gatekeeper und SmartScreen beim ersten Start eine Warnung, die sich bestätigen lässt.':
+      'Yes: macOS for Apple Silicon and Intel, Windows 64-bit and Linux as an AppImage. The installers are not code-signed yet, so Gatekeeper and SmartScreen show a warning on first launch that you can confirm.',
+    'FAQ': 'FAQ',
+    '· Free-Funktionen ohne Konto': '· Free features without an account',
     'Features': 'Features', 'Preise': 'Pricing', 'Download': 'Download',
     'Jedes Modell': 'Every model', 'Sofort im Blick': 'Instantly in view',
     'Cubory öffnet Zeichnungen und 3D-Modelle ohne Umwege - auf Mac, Windows und Linux, komplett offline. Free für immer. Pro, wenn du mehr willst.':

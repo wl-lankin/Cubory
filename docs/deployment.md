@@ -227,3 +227,32 @@ Die Sicherungen liegen **auf demselben Server**. Gegen einen Ausfall der
 Maschine, ein gelöschtes Verzeichnis oder einen Einbruch schützen sie nicht.
 Für echten Schutz gehört eine Kopie auf ein anderes System - etwa nächtlich per
 `rsync`, oder über die Snapshots des Hosters. Das ist offen.
+
+
+## Suchmaschinen
+
+Die Startseite gibt es zweimal: Deutsch unter `/`, Englisch unter `/en/`. Die
+englische Fassung wird erzeugt, nicht gepflegt:
+
+```bash
+node scripts/build-en.mjs   # nach jeder Änderung an website/index.html
+```
+
+Das Skript nimmt das Wörterbuch aus `website/translate.js` - dieselbe Datei,
+aus der früher im Browser übersetzt wurde. Bleibt ein Text ohne Übersetzung,
+bricht es mit einer Liste der offenen Stellen ab.
+
+Zwei Dinge, die leicht übersehen werden:
+
+- **Nach jeder Textänderung neu erzeugen.** Sonst driften die Sprachfassungen
+  auseinander. `npm test` prüft die englische Seite mit, aber nicht, ob sie
+  aktuell ist.
+- **Kein automatischer Sprachwechsel.** Früher übersetzte `translate.js` die
+  deutsche Seite im Browser. Googlebot surft mit en-US und hätte unter der
+  deutschen Adresse englischen Inhalt gesehen, in Konkurrenz zur eigenen
+  englischen Seite. Jetzt bleibt jede Adresse bei ihrer Sprache, und Besucher
+  mit fremdsprachigem Browser bekommen nur einen wegklickbaren Hinweis.
+
+`robots.txt` sperrt Portal, Admin, Checkout und den Download-Ordner; diese
+Seiten tragen zusätzlich `noindex`, weil ein Ausschluss in robots.txt das
+Indexieren einer verlinkten Adresse nicht verhindert.
