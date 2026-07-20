@@ -54,14 +54,19 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => (
 async function init() {
   const res = await window.cubory.screenshot.lastDir();
   st.dir = res.ok ? res.data : null;
-  await capture();
+  updateFoot();
+  browse(st.dir); // Ordnerliste laden (async, füllt nur #hs-browse)
+  await capture(); // Screenshot erzeugen (async, tauscht nur #hs-preview)
 }
 
 /** Screenshot in der gewählten Auflösung erzeugen. Der Renderer blockiert dabei
- *  kurz, deshalb erst die Ladeanzeige zeichnen lassen und dann aufnehmen. */
+ *  kurz, deshalb erst die Ladeanzeige zeichnen lassen und dann aufnehmen.
+ *  Getauscht wird nur die Vorschau - kein Neuaufbau des ganzen Modals, sonst
+ *  flackert es und die Ordnerliste würde neu geladen. */
 async function capture() {
   st.busy = true;
-  renderShell();
+  updatePreview();
+  updateControls();
   // zwei Frames warten, damit die Ladeanzeige sichtbar wird, bevor der
   // synchrone Renderdurchlauf die Oberfläche blockiert
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -69,7 +74,9 @@ async function capture() {
   st.dims = viewer.screenshotSize ? viewer.screenshotSize(st.scale) : null;
   st.busy = false;
   st.saved = null;
-  renderShell();
+  updatePreview();
+  updateControls();
+  updateFoot();
 }
 
 /* ── Zielordner navigieren (nur Ordner, keine Dateien) ───────────────────── */
@@ -80,7 +87,9 @@ async function browse(dirPath) {
   st.dir = res.data.path;
   st.browse = res.data;
   st.saved = null;
-  renderShell();
+  renderBrowse();
+  updateControls();
+  updateFoot();
 }
 
 function crumbs(p) {
@@ -98,10 +107,12 @@ function crumbs(p) {
 
 /* ── Rendern ─────────────────────────────────────────────────────────────── */
 
+// Baut das Modal genau einmal auf. Danach ändern nur die Teil-Updater unten
+// einzelne Bereiche - so tauscht die fertige Aufnahme einfach den Loader gegen
+// das Bild, ohne Flackern.
 function renderShell() {
   if (!modal) return;
   const defName = `${slug(getName())}-${stamp()}`;
-  const b = st.browse;
 
   modal.innerHTML = `<div class="hs-card glass sheet sheet-corners">
     <div class="hs-head">
@@ -109,17 +120,11 @@ function renderShell() {
       <button class="hs-x" id="hs-close" title="${esc(t('about.close'))}">✕</button>
     </div>
 
-    <div class="hs-preview">
-      ${st.busy
-        ? `<div class="hs-loader"><div class="spinner"></div><span>${esc(t('hdshot.generating'))}</span></div>`
-        : `<img src="${st.dataUrl}" alt="" />
-           <span class="hs-dims mono">${st.dims ? `${st.dims.w} × ${st.dims.h}` : ''}</span>`}
-    </div>
+    <div class="hs-preview" id="hs-preview"></div>
 
     <div class="hs-scales">
       <span class="hs-label">${esc(t('hdshot.resolution'))}</span>
-      ${SCALES.map((s) => `<button class="hs-scale${s === st.scale ? ' on' : ''}" data-scale="${s}"
-        ${st.busy ? 'disabled' : ''}>${s}×</button>`).join('')}
+      ${SCALES.map((s) => `<button class="hs-scale" data-scale="${s}">${s}×</button>`).join('')}
     </div>
 
     <div class="hs-field">
@@ -130,12 +135,75 @@ function renderShell() {
 
     <div class="hs-field hs-folder">
       <span class="hs-label">${esc(t('hdshot.folder'))}</span>
-      <div class="hs-shortcuts">
-        ${(b?.shortcuts || []).map((s) => `<button class="hs-sc" data-path="${esc(s.path)}">${esc(t('browser.' + s.key))}</button>`).join('')}
-      </div>
+      <div class="hs-shortcuts" id="hs-shortcuts"></div>
     </div>
 
-    ${b ? `<div class="hs-crumbs">
+    <div id="hs-browse"></div>
+
+    <div class="hs-foot">
+      <span id="hs-foot-status"></span>
+      <div class="hs-actions">
+        <button class="btn btn-ghost" id="hs-copy">${esc(t('hdshot.copy'))}</button>
+        <button class="btn btn-primary" id="hs-save">${esc(t('hdshot.save'))}</button>
+      </div>
+    </div>
+  </div>`;
+
+  // Statische Handler nur einmal setzen.
+  modal.querySelector('#hs-close').addEventListener('click', close);
+  modal.querySelectorAll('.hs-scale').forEach((b) => b.addEventListener('click', () => {
+    const s = Number(b.dataset.scale);
+    if (s !== st.scale && !st.busy) { st.scale = s; capture(); }
+  }));
+  modal.querySelector('#hs-copy').addEventListener('click', onCopy);
+  modal.querySelector('#hs-save').addEventListener('click', onSave);
+  modal.querySelector('#hs-name').addEventListener('input', () => { st.saved = null; updateFoot(); });
+
+  updatePreview();
+  updateControls();
+  renderBrowse(); // zeigt zunächst den kleinen Loader
+  updateFoot();
+}
+
+/* ── Teil-Updater ────────────────────────────────────────────────────────── */
+
+function updatePreview() {
+  const el = modal?.querySelector('#hs-preview');
+  if (!el) return;
+  el.innerHTML = st.busy
+    ? `<div class="hs-loader"><div class="spinner"></div><span>${esc(t('hdshot.generating'))}</span></div>`
+    : `<img src="${st.dataUrl}" alt="" /><span class="hs-dims mono">${st.dims ? `${st.dims.w} × ${st.dims.h}` : ''}</span>`;
+}
+
+function updateControls() {
+  if (!modal) return;
+  modal.querySelectorAll('.hs-scale').forEach((b) => {
+    b.classList.toggle('on', Number(b.dataset.scale) === st.scale);
+    b.disabled = st.busy;
+  });
+  const copy = modal.querySelector('#hs-copy');
+  const save = modal.querySelector('#hs-save');
+  if (copy) copy.disabled = st.busy;
+  if (save) save.disabled = st.busy || !st.browse;
+}
+
+function renderBrowse() {
+  const el = modal?.querySelector('#hs-browse');
+  if (!el) return;
+  const b = st.browse;
+
+  // Shortcuts ändern sich nie - nur einmal aufbauen.
+  const scut = modal.querySelector('#hs-shortcuts');
+  if (scut && b && !scut.children.length) {
+    scut.innerHTML = b.shortcuts.map((s) => `<button class="hs-sc" data-path="${esc(s.path)}">${esc(t('browser.' + s.key))}</button>`).join('');
+    scut.querySelectorAll('.hs-sc').forEach((x) => x.addEventListener('click', () => browse(x.dataset.path)));
+  }
+
+  if (!b) {
+    el.innerHTML = `<div class="hs-list hs-list-loading"><div class="spinner small"></div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="hs-crumbs">
       ${crumbs(b.path).map((c, i, a) => `<button class="hs-crumb${i === a.length - 1 ? ' on' : ''}" data-path="${esc(c.path)}">${esc(c.name)}</button>${i < a.length - 1 ? '<span class="hs-sep">›</span>' : ''}`).join('')}
     </div>
     <div class="hs-list">
@@ -143,38 +211,22 @@ function renderShell() {
       ${b.dirs.length
         ? b.dirs.map((x) => `<div class="hs-row" data-dir="${esc(x.path)}"><span class="hs-ic">▸</span><span>${esc(x.name)}</span></div>`).join('')
         : `<p class="hs-empty">${esc(t('hdshot.noSubfolders'))}</p>`}
-    </div>` : `<div class="hs-list hs-list-loading"><div class="spinner small"></div></div>`}
-
-    <div class="hs-foot">
-      ${st.saved
-        ? `<span class="hs-saved">✓ ${esc(t('hdshot.saved'))} · <button class="hs-reveal" id="hs-reveal">${esc(t('hdshot.reveal'))}</button></span>`
-        : `<span class="hs-savepath mono" title="${esc(st.dir || '')}">${esc(shortPath(st.dir))}</span>`}
-      <div class="hs-actions">
-        <button class="btn btn-ghost" id="hs-copy" ${st.busy ? 'disabled' : ''}>${esc(t('hdshot.copy'))}</button>
-        <button class="btn btn-primary" id="hs-save" ${st.busy || !b ? 'disabled' : ''}>${esc(t('hdshot.save'))}</button>
-      </div>
-    </div>
-  </div>`;
-
-  wire();
-  if (!b && !st.busy) browse(st.dir); // Ordnerliste beim ersten Rendern nachladen
+    </div>`;
+  el.querySelectorAll('[data-dir], .hs-crumb').forEach((x) =>
+    x.addEventListener('click', () => browse(x.dataset.dir || x.dataset.path)));
 }
 
-function wire() {
-  modal.querySelector('#hs-close')?.addEventListener('click', close);
-  modal.querySelectorAll('.hs-scale').forEach((b) => b.addEventListener('click', () => {
-    const s = Number(b.dataset.scale);
-    if (s !== st.scale) { st.scale = s; capture(); }
-  }));
-  modal.querySelectorAll('[data-dir], .hs-sc, .hs-crumb').forEach((el) =>
-    el.addEventListener('click', () => browse(el.dataset.dir || el.dataset.path)));
-  modal.querySelector('#hs-copy')?.addEventListener('click', onCopy);
-  modal.querySelector('#hs-save')?.addEventListener('click', onSave);
-  modal.querySelector('#hs-reveal')?.addEventListener('click', () => {
-    if (st.saved) window.cubory.screenshot.reveal(st.saved);
-  });
-  const name = modal.querySelector('#hs-name');
-  if (name) name.addEventListener('input', () => { st.saved = null; });
+function updateFoot() {
+  const el = modal?.querySelector('#hs-foot-status');
+  if (!el) return;
+  if (st.saved) {
+    el.innerHTML = `<span class="hs-saved">✓ ${esc(t('hdshot.saved'))} · <button class="hs-reveal" id="hs-reveal">${esc(t('hdshot.reveal'))}</button></span>`;
+    el.querySelector('#hs-reveal').addEventListener('click', () => {
+      if (st.saved) window.cubory.screenshot.reveal(st.saved);
+    });
+  } else {
+    el.innerHTML = `<span class="hs-savepath mono" title="${esc(st.dir || '')}">${esc(shortPath(st.dir))}</span>`;
+  }
 }
 
 async function onSave() {
@@ -182,7 +234,7 @@ async function onSave() {
   const res = await window.cubory.screenshot.saveTo({ dataUrl: st.dataUrl, dir: st.dir, filename });
   if (res.ok && res.data) {
     st.saved = res.data.path;
-    renderShell();
+    updateFoot();
   } else {
     flash('#hs-save', t('hdshot.saveError'));
   }
