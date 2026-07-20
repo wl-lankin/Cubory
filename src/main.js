@@ -11,10 +11,11 @@ import { Viewer } from './viewer.js';
 import { loadCadFile } from './loaders.js';
 import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
 import { playIntro } from './intro.js';
-import { initAccount, initAbout, can, openAccountModal } from './account.js';
+import { initAccount, initAbout, can, openAccountModal, currentAccount, whenLicenseSettled } from './account.js';
 import { maybeShowNudge } from './nudge.js';
 import { initFileBrowser, openFileBrowser } from './fileBrowser.js';
 import { initSettings } from './settings.js';
+import { initHdShot, openHdShot } from './hdShot.js';
 import { initProFeatures, handleProAction, resetProFeatures, updateProLocks } from './proFeatures.js';
 
 document.getElementById('app').style.setProperty('--ambient-bg', `url(${ambientUrl})`);
@@ -24,15 +25,24 @@ if (window.cubory?.platform === 'win32') document.body.classList.add('platform-w
 
 // Start-Animation: Partikel-Vortex → Kristall → Schockwelle; danach UI-Einflug.
 // Bei reduzierter Bewegung oder direktem Dateistart wird sie übersprungen.
+// Das Intro läuft ein paar Sekunden - genau die Zeit, in der der Hauptprozess
+// im Hintergrund die Lizenz per Heartbeat prüft. Beides wird als Versprechen
+// gekoppelt, damit lizenzabhängige Oberfläche (der Upgrade-Nudge) erst danach
+// entscheidet. So sieht ein Pro-Nutzer nie kurz den Nudge aufblitzen.
 let intro = null;
+let introDone;
 if (location.hostname === 'localhost' || localStorage.getItem('cubory-intro') === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.body.classList.add('intro-done');
+  introDone = Promise.resolve();
 } else {
   document.body.classList.add('intro-playing');
-  intro = playIntro(() => {
-    document.body.classList.remove('intro-playing');
-    document.body.classList.add('intro-done');
-    intro = null;
+  introDone = new Promise((resolve) => {
+    intro = playIntro(() => {
+      document.body.classList.remove('intro-playing');
+      document.body.classList.add('intro-done');
+      intro = null;
+      resolve();
+    });
   });
 }
 
@@ -56,6 +66,7 @@ const el = {
 
 const viewer = new Viewer(document.getElementById('viewport'));
 initProFeatures(viewer, () => current);
+initHdShot(viewer, () => current?.name);
 
 /* ── Sprache ─────────────────────────────────────────────────────────────── */
 
@@ -80,24 +91,19 @@ function updateProUi() {
   updateProLocks();
 }
 
-// Upgrade-Nudge: einmal pro Start prüfen, aber erst wenn das Intro vorbei ist
-let nudgeChecked = false;
-function checkNudge(state) {
-  if (nudgeChecked) return;
-  if (document.body.classList.contains('intro-playing')) {
-    setTimeout(() => checkNudge(state), 800);
-    return;
-  }
-  nudgeChecked = true;
-  maybeShowNudge(state, { onUpgrade: () => openAccountModal() });
-}
-
 initAbout();
-initAccount((state) => {
+initAccount(() => {
+  // bei jeder Lizenzänderung nur die Werkzeug-Schlösser spiegeln
   updateProUi();
-  checkNudge(state);
 });
 updateProUi();
+
+// Upgrade-Nudge erst, wenn Intro UND Lizenz aufgelöst sind - dann mit dem
+// endgültigen Zustand (currentAccount), nicht dem ersten, der noch anonym
+// sein kann.
+Promise.all([introDone, whenLicenseSettled()]).then(() => {
+  maybeShowNudge(currentAccount(), { onUpgrade: () => openAccountModal() });
+});
 
 /* ── Datei öffnen ────────────────────────────────────────────────────────── */
 
@@ -421,7 +427,7 @@ el.toolbar.addEventListener('click', (e) => {
     case 'grid': btn.classList.toggle('on', viewer.toggleGrid()); break;
     case 'wireframe': btn.classList.toggle('on', viewer.toggleWireframe()); break;
     case 'edges': btn.classList.toggle('on', viewer.toggleEdges()); break;
-    case 'hdshot': takeHdScreenshot(); break;
+    case 'hdshot': openHdShot(); break;
     case 'measure':
     case 'section':
     case 'explode':
@@ -432,17 +438,6 @@ el.toolbar.addEventListener('click', (e) => {
     }
   }
 });
-
-async function takeHdScreenshot() {
-  // UI-Check ist nur Anzeige; die Durchsetzung passiert im Main-Prozess
-  if (!can('hires_screenshot')) {
-    alert(t('pro.locked'));
-    document.getElementById('btn-account').click();
-    return;
-  }
-  const dataUrl = viewer.captureScreenshot(3);
-  await window.cubory.screenshot.save(dataUrl);
-}
 
 /* ── Helfer ──────────────────────────────────────────────────────────────── */
 

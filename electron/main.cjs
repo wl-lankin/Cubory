@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu, shell, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, shell, Tray, nativeImage, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { SecureStore } = require('./services/secureStore.cjs');
@@ -270,6 +270,7 @@ ipcMain.handle('fs:listDir', (_event, dirPath) => {
         { key: 'desktop', path: app.getPath('desktop') },
         { key: 'documents', path: app.getPath('documents') },
         { key: 'downloads', path: app.getPath('downloads') },
+        { key: 'pictures', path: app.getPath('pictures') },
       ],
       dirs, files,
     } };
@@ -426,18 +427,52 @@ function setupAccountIpc() {
 
   // Beispiel-Pro-Feature: HD-Screenshot. Durchsetzung im Main-Prozess -
   // der Renderer kann das Gating nicht umgehen.
-  ipcMain.handle('screenshot:save', async (_event, dataUrl) => {
+  const pngBuffer = (dataUrl) => Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+
+  // Zielordner, den sich der HD-Shot-Dialog beim Öffnen vorschlägt: zuletzt
+  // genutzter Ordner, sonst der Bilder-Ordner des Systems.
+  ipcMain.handle('screenshot:lastDir', () => {
+    let dir = appStore?.get('last_shot_dir');
+    try { if (dir) fs.accessSync(dir); else dir = null; } catch { dir = null; }
+    return { ok: true, data: dir || app.getPath('pictures') || app.getPath('desktop') };
+  });
+
+  // Speichern in einen vom Nutzer im Modal gewählten Ordner - kein System-Dialog.
+  ipcMain.handle('screenshot:saveTo', async (_event, { dataUrl, dir, filename }) => {
     if (!account.can('hires_screenshot')) {
       return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
     }
-    const result = await dialog.showSaveDialog(mainWindow, {
-      defaultPath: `cubory-screenshot-${Date.now()}.png`,
-      filters: [{ name: 'PNG', extensions: ['png'] }],
-    });
-    if (result.canceled || !result.filePath) return { ok: true, data: null };
-    const base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
-    fs.writeFileSync(result.filePath, Buffer.from(base64, 'base64'));
-    return { ok: true, data: result.filePath };
+    try {
+      // Dateinamen entschärfen: keine Pfadtrenner oder für Dateisysteme
+      // ungültige Zeichen zulassen.
+      let name = String(filename || '').replace(/[/\\?%*:|"<>]/g, '_').trim() || `cubory-${Date.now()}`;
+      if (!name.toLowerCase().endsWith('.png')) name += '.png';
+      const target = path.join(path.resolve(dir), name);
+      fs.writeFileSync(target, pngBuffer(dataUrl));
+      appStore?.set('last_shot_dir', path.resolve(dir));
+      return { ok: true, data: { path: target } };
+    } catch (err) {
+      return { ok: false, error: { code: 'fs_error', message: err.message } };
+    }
+  });
+
+  // In die Zwischenablage - als echtes Bild, nicht als Text.
+  ipcMain.handle('screenshot:copy', async (_event, dataUrl) => {
+    if (!account.can('hires_screenshot')) {
+      return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
+    }
+    try {
+      clipboard.writeImage(nativeImage.createFromDataURL(dataUrl));
+      return { ok: true, data: null };
+    } catch (err) {
+      return { ok: false, error: { code: 'clipboard_error', message: err.message } };
+    }
+  });
+
+  // Gespeicherte Datei im Datei-Manager zeigen.
+  ipcMain.handle('screenshot:reveal', (_event, filePath) => {
+    try { shell.showItemInFolder(path.resolve(filePath)); return { ok: true, data: null }; }
+    catch (err) { return { ok: false, error: { code: 'reveal_error', message: err.message } }; }
   });
 }
 

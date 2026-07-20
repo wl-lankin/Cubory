@@ -416,6 +416,11 @@ export class Viewer {
   }
 
   /** Hochauflösender Screenshot: rendert einmalig mit Faktor `scale`. */
+  /** Pixelmaße, die ein Screenshot in dieser Auflösung hätte. */
+  screenshotSize(scale = 3) {
+    return { w: Math.round(this.container.clientWidth * scale), h: Math.round(this.container.clientHeight * scale) };
+  }
+
   captureScreenshot(scale = 3) {
     const w = this.container.clientWidth, h = this.container.clientHeight;
     this.renderer.setSize(w * scale, h * scale, false);

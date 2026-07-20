@@ -30,7 +30,10 @@ contextBridge.exposeInMainWorld('cubory', {
     can: (key) => ipcRenderer.invoke('license:can', key),
   },
   screenshot: {
-    save: (dataUrl) => ipcRenderer.invoke('screenshot:save', dataUrl),
+    lastDir: () => ipcRenderer.invoke('screenshot:lastDir'),
+    saveTo: (payload) => ipcRenderer.invoke('screenshot:saveTo', payload),
+    copy: (dataUrl) => ipcRenderer.invoke('screenshot:copy', dataUrl),
+    reveal: (filePath) => ipcRenderer.invoke('screenshot:reveal', filePath),
   },
   exportFile: {
     save: (payload) => ipcRenderer.invoke('export:save', payload),
