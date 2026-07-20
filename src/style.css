@@ -653,6 +653,14 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   color: var(--text-muted);
   margin-bottom: 18px;
 }
+/* Formatliste wie auf der Website: einzelne Kürzel, nur über Abstand getrennt.
+   Trennpunkte im Text hinterlassen beim Umbruch sonst einen hängenden Punkt. */
+.hero-formats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px 16px;
+}
 
 .hero-title {
   font-family: 'Space Grotesk', sans-serif;
