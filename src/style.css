@@ -298,12 +298,12 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   padding: 7px 0;
 }
 .account-row > span:first-child { color: var(--text-muted); flex: 0 0 auto; }
-/* Angemeldet-als: zwei Zeilen statt nebeneinander - lange Namen und E-Mails
-   sprengen sonst die Zeile. Label bleibt links, der Wert rechtsbündig wie in
-   den Zeilen darunter (Lizenz, Läuft ab); er bricht notfalls überall um. */
-.account-row-stack { flex-direction: column; align-items: stretch; gap: 3px; }
-.account-id { color: var(--text); overflow-wrap: anywhere; text-align: right; }
-.account-id b { font-weight: 600; }
+/* Angemeldet-als: Label und Name in einer Zeile (wie Lizenz + Badge), die
+   E-Mail als Unterzeile direkt darunter. Beide rechtsbündig und umbruchfähig,
+   damit lange Namen und Adressen das Modal nicht sprengen. */
+.account-name { color: var(--text); font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.account-row-sub { padding-top: 0; margin-top: -3px; }
+.account-email { color: var(--text-muted); text-align: right; overflow-wrap: anywhere; }
 
 .account-devices { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .account-devices li {
