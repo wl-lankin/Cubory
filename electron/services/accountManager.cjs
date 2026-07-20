@@ -201,8 +201,19 @@ class AccountManager {
   }
 
   startHeartbeat() {
-    this.heartbeat(); // sofort beim Start
+    // Den ersten Heartbeat als Versprechen festhalten, damit der Renderer
+    // gezielt darauf warten kann (whenReady), statt auf eine geratene Frist.
+    this._ready = this.heartbeat().catch(() => {});
     this._heartbeatTimer = setInterval(() => this.heartbeat(), HEARTBEAT_INTERVAL);
+  }
+
+  /** Zustand, nachdem die Start-Lizenzprüfung durch ist. Ein Pro-Nutzer mit
+   *  abgelaufenem Zugriffstoken braucht dafür einen Refresh und dann den
+   *  Heartbeat - erst danach steht Pro fest. Pull statt Push, damit der
+   *  Renderer nichts verpassen kann. */
+  async whenReady() {
+    await Promise.resolve(this._ready);
+    return this.state();
   }
 
   stopHeartbeat() {

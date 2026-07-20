@@ -391,6 +391,7 @@ function setupAccountIpc() {
   ipcMain.handle('update:install', () => updates.install());
 
   ipcMain.handle('account:state', wrap(() => account.state()));
+  ipcMain.handle('account:whenReady', wrap(() => account.whenReady()));
   ipcMain.handle('account:login', wrap((email, password) => account.login(email, password)));
   ipcMain.handle('account:register', wrap((name, email, password) => account.register(name, email, password)));
   ipcMain.handle('account:logout', wrap(() => account.logout()));

@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('cubory', {
 
   account: {
     state: () => ipcRenderer.invoke('account:state'),
+    whenReady: () => ipcRenderer.invoke('account:whenReady'),
     login: (email, password) => ipcRenderer.invoke('account:login', email, password),
     register: (name, email, password) => ipcRenderer.invoke('account:register', name, email, password),
     logout: () => ipcRenderer.invoke('account:logout'),
