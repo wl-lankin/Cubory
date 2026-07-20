@@ -131,8 +131,8 @@ function accountView() {
     : (state.kind === 'lifetime' ? t('account.lifetime') : '');
   return `
     <h2 class="account-title">${escapeHtml(t('account.title'))}</h2>
-    <div class="account-row"><span>${escapeHtml(t('account.loggedInAs'))}</span>
-      <span>${escapeHtml(state.user?.name || '')} · ${escapeHtml(state.user?.email || '')}</span></div>
+    <div class="account-row account-row-stack"><span>${escapeHtml(t('account.loggedInAs'))}</span>
+      <span class="account-id"><b>${escapeHtml(state.user?.name || '')}</b> · ${escapeHtml(state.user?.email || '')}</span></div>
     <div class="account-row"><span>${escapeHtml(t('account.license'))}</span>
       <span class="account-badge big">${escapeHtml(planLabel())}</span></div>
     ${state.trialDaysLeft != null ? `<div class="account-row"><span></span><span>${escapeHtml(t('account.trialDaysLeft', { n: state.trialDaysLeft }))}</span></div>` : ''}
