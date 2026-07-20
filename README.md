@@ -183,7 +183,7 @@ website/           Marketingseite (de und en), Kundenportal, Admin, Rechtstexte
 test/              Unit-Tests und Rauchtest, Fixtures im Code erzeugt
 deploy/            Servereinrichtung und API-Rollout mit Rollback
 .github/workflows/ CI und Auslieferung
-scripts/           translate-locales.mjs (Ollama), build-en.mjs (englische Seite)
+scripts/           translate-locales.mjs (Ollama), build-en.mjs, build-guides.mjs
 docs/              Screenshots, Deployment, Lizenz-Architektur
 release/           fertige Installer (nach npm run dist)
 ```

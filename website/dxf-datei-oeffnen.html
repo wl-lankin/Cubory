@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DXF-Datei öffnen - kostenlos, ohne AutoCAD | Cubory</title>
+<meta name="description" content="DXF öffnen unter Windows, Mac und Linux: was im Format steckt, welche Programme es anzeigen und was zu tun ist, wenn die Zeichnung leer bleibt." />
+<link rel="canonical" href="https://cubory.app/dxf-datei-oeffnen.html" />
+<link rel="alternate" hreflang="de" href="https://cubory.app/dxf-datei-oeffnen.html" />
+<link rel="alternate" hreflang="en" href="https://cubory.app/en/open-dxf-file.html" />
+<link rel="alternate" hreflang="x-default" href="https://cubory.app/dxf-datei-oeffnen.html" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="DXF-Datei öffnen: so geht es ohne AutoCAD" />
+<meta property="og:description" content="DXF öffnen unter Windows, Mac und Linux: was im Format steckt, welche Programme es anzeigen und was zu tun ist, wenn die Zeichnung leer bleibt." />
+<meta property="og:url" content="https://cubory.app/dxf-datei-oeffnen.html" />
+<meta property="og:image" content="https://cubory.app/assets/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://cubory.app/assets/og.png" />
+<meta name="theme-color" content="#070b22" />
+<link rel="icon" href="/assets/icon.png?v=2" />
+<link rel="stylesheet" href="/assets/fonts/fonts.css" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://cubory.app/dxf-datei-oeffnen.html#artikel",
+      "headline": "DXF-Datei öffnen: so geht es ohne AutoCAD",
+      "description": "DXF öffnen unter Windows, Mac und Linux: was im Format steckt, welche Programme es anzeigen und was zu tun ist, wenn die Zeichnung leer bleibt.",
+      "inLanguage": "de",
+      "author": {
+        "@type": "Person",
+        "name": "Wolfgang Linz",
+        "url": "https://wolfgang-linz.de"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Wolfgang Linz",
+        "url": "https://wolfgang-linz.de"
+      },
+      "mainEntityOfPage": "https://cubory.app/dxf-datei-oeffnen.html",
+      "about": {
+        "@type": "SoftwareApplication",
+        "name": "Cubory",
+        "url": "https://cubory.app/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Cubory",
+          "item": "https://cubory.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "DXF-Datei öffnen: so geht es ohne AutoCAD",
+          "item": "https://cubory.app/dxf-datei-oeffnen.html"
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{--text:#eef0ff;--muted:#9aa3d0;--faint:#5d668f;--a1:#ff3d8a;--a2:#7c5cff;--border:rgba(160,170,255,.22)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh;padding:60px 24px;
+background:radial-gradient(900px 600px at 85% -10%,rgba(255,61,138,.12),transparent 60%),
+linear-gradient(180deg,#070b22,#0a0e2a 40%,#0d1233)}
+.sheet{position:relative;max-width:760px;margin:0 auto;border:1px solid var(--border);padding:48px 44px;
+background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(160,170,255,.04) 39px 40px),
+repeating-linear-gradient(90deg,transparent 0 39px,rgba(160,170,255,.04) 39px 40px),rgba(10,14,42,.5)}
+.sheet::before,.sheet::after{content:"";position:absolute;width:14px;height:14px;border:1px solid rgba(160,170,255,.5)}
+.sheet::before{top:-7px;left:-7px;border-width:0 1px 1px 0}
+.sheet::after{bottom:-7px;right:-7px;border-width:1px 0 0 1px}
+.label{position:absolute;top:-9px;left:24px;background:#0a0e2a;padding:0 10px;
+font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.2em;color:var(--faint)}
+h1{font-family:'Space Grotesk';font-size:27px;line-height:1.25;margin-bottom:18px}
+h2{font-family:'Space Grotesk';font-size:17px;margin:34px 0 10px;color:var(--text)}
+p,li{font-size:15px;line-height:1.8;color:var(--muted)}
+p+p{margin-top:12px}
+ul,ol{margin:12px 0 0 20px}
+li{margin-bottom:9px}
+li b{color:var(--text);font-weight:600}
+em{color:var(--text);font-style:normal;font-weight:500}
+code{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--text)}
+a{color:var(--a1);text-decoration:none}
+a:hover{text-decoration:underline}
+.intro{font-size:16px;line-height:1.8;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--border)}
+.back{display:inline-block;margin-bottom:26px;font-size:13px;color:var(--muted)}
+.back:hover{color:var(--text);text-decoration:none}
+.cta{display:inline-block;margin-top:34px;padding:13px 26px;border-radius:999px;
+background:linear-gradient(92deg,var(--a1),var(--a2));color:#fff;font-weight:600;font-size:15px}
+.cta:hover{text-decoration:none;filter:brightness(1.08)}
+.fuss{max-width:760px;margin:26px auto 0;font-size:12.5px;color:var(--faint);display:flex;
+gap:10px;flex-wrap:wrap;justify-content:space-between}
+.fuss a{color:var(--faint)}
+</style>
+</head>
+<body>
+<article class="sheet">
+  <span class="label">RATGEBER · DXF</span>
+  <a class="back" href="/">&larr; Zur Startseite</a>
+  <h1>DXF-Datei öffnen: so geht es ohne AutoCAD</h1>
+  <p class="intro">Eine DXF-Datei kommt meist von jemand anderem: vom Konstruktionsbüro, vom Laserdienstleister, aus einem Onlineshop für Bauteile. Und dann steht man davor und hat kein CAD-Programm. Dieser Text erklärt, was in so einer Datei steckt und wie man sie ansieht.</p>
+
+<h2>Was ist eine DXF-Datei?</h2>
+<p>DXF steht für <em>Drawing Interchange Format</em> und stammt von Autodesk, den Machern von AutoCAD. Gedacht ist es als Austauschformat: eine Zeichnung soll damit von einem CAD-Programm ins andere wandern, ohne dass beide dasselbe Dateiformat sprechen müssen.</p>
+<p>Der Inhalt ist fast immer eine zweidimensionale Zeichnung: Linien, Bögen, Kreise, Polylinien, Bemaßungen und Texte. Alles davon liegt auf Ebenen, und jede Ebene hat eine Farbe. Genau diese Ebenen sind der Grund, warum eine DXF mehr ist als ein Bild - man kann einzelne davon ausblenden, etwa um die Bemaßung wegzunehmen und nur die Kontur zu sehen.</p>
+<p>Die meisten DXF-Dateien sind reiner Text. Man kann sie in einem Editor öffnen und liest dann Zahlen in einer strengen Abfolge aus Gruppencode und Wert. Nützlich ist das selten, aber es erklärt, warum DXF-Dateien für ihren Inhalt oft erstaunlich groß sind.</p>
+
+<h2>Womit lässt sich eine DXF öffnen?</h2>
+<p>Man braucht kein AutoCAD. Diese Wege funktionieren:</p>
+<ul><li><b>Cubory</b> - der Viewer, um den es auf dieser Seite geht. Zeigt DXF mit Ebenen und Original-Farben, läuft auf Mac, Windows und Linux, kostet nichts und braucht kein Konto.</li><li><b>LibreCAD</b> oder <b>QCAD</b> - freie CAD-Programme. Können auch zeichnen und ändern, sind dafür schwergewichtiger und in der Bedienung gewöhnungsbedürftig.</li><li><b>Online-Viewer</b> - schnell, aber die Datei landet auf einem fremden Server. Bei Zeichnungen, die jemand anderem gehören, ist das oft keine gute Idee.</li><li><b>Autodesk-Programme</b> - AutoCAD selbst oder der kostenlose Viewer des Herstellers. Beides deutlich schwerer als nötig, wenn man nur hineinschauen will.</li></ul>
+
+<h2>DXF mit Cubory ansehen</h2>
+<ol><li>Cubory laden und installieren - es gibt Installer für macOS, Windows und Linux.</li><li>Die Datei per Doppelklick öffnen oder ins Fenster ziehen. Beim ersten Mal fragt das System möglicherweise, welches Programm zuständig ist.</li><li>Links steht die Ebenenliste. Ein Klick auf den Punkt daneben blendet eine Ebene aus, etwa die Bemaßung.</li><li>Mit dem Mausrad zoomen, mit gedrückter linker Taste verschieben. <em>Einpassen</em> holt die ganze Zeichnung zurück ins Bild, wenn man sich verirrt hat.</li></ol>
+
+<h2>Wenn nichts zu sehen ist</h2>
+<p>Eine leer wirkende Zeichnung hat meist eine von vier Ursachen:</p>
+<ul><li><b>Alles ist da, nur weit weg.</b> Manche Programme legen Objekte in großem Abstand vom Nullpunkt ab. Einmal <em>Einpassen</em> drücken.</li><li><b>Die Ebene ist ausgeblendet.</b> In der Ebenenliste nachsehen, ob alle Punkte an sind.</li><li><b>Dunkle Farben auf dunklem Grund.</b> CAD-Zeichnungen sind für weißes Papier gemacht, reines Blau oder Schwarz verschwindet auf dunklem Hintergrund. Cubory hellt solche Farben automatisch auf und behält dabei den Farbton, damit Ebenen unterscheidbar bleiben.</li><li><b>Die Datei ist kaputt.</b> Kommt vor, wenn sie aus einer DWG konvertiert wurde. Am besten beim Absender eine frische Ausgabe erbitten.</li></ul>
+
+<h2>DXF und DWG - was ist der Unterschied?</h2>
+<p>DWG ist das eigentliche Arbeitsformat von AutoCAD und nicht offengelegt. DXF ist die dokumentierte Austauschfassung davon. Praktisch heißt das: fast jedes Programm kann DXF lesen, DWG deutlich weniger.</p>
+<p>Cubory öffnet auch DWG. Dafür wird zusätzlich LibreDWG auf dem System gebraucht, ein freies Werkzeug, das die Datei nach DXF wandelt. Wer die Wahl hat, sollte sich die Zeichnung gleich als DXF geben lassen.</p>
+
+<h2>Was kostet das?</h2>
+<p>DXF ansehen kostet nichts, dauerhaft und ohne Konto. Alle Formate, Ebenen und Ansichten gehören zur kostenlosen Fassung. Geld kostet erst, wer in der Zeichnung messen, sie schneiden oder exportieren will - das sind 79 € im Jahr oder 199 € einmalig, jeweils netto.</p>
+
+  <a class="cta" href="/#download">Cubory laden</a>
+</article>
+<div class="fuss">
+  <span><a href="/impressum.html">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a> · <a href="/agb.html">AGB</a></span>
+  <a href="/en/open-dxf-file.html" hreflang="en">English</a>
+</div>
+</body>
+</html>

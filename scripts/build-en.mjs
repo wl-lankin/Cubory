@@ -73,7 +73,12 @@ ausgabe = ausgabe
   .replace(/(src|href)="assets\//g, '$1="/assets/')
   .replace(/src="main\.js"/g, 'src="/main.js"')
   // Die Seite ist bereits übersetzt; translate.js würde nur erneut darüberlaufen
-  .replace(/\s*<script src="\/translate\.js"><\/script>/g, '');
+  .replace(/\s*<script src="\/translate\.js"><\/script>/g, '')
+  // Ratgeber-Links auf die englischen Fassungen umbiegen
+  .replace(/href="\/dxf-datei-oeffnen\.html"/g, 'href="/en/open-dxf-file.html"')
+  .replace(/href="\/step-datei-oeffnen\.html"/g, 'href="/en/open-step-file.html"')
+  // Der Sprachlink zeigt von der englischen Seite zurück auf die deutsche
+  .replace(/<a href="\/en\/" hreflang="en">English<\/a>/g, '<a href="/" hreflang="de">Deutsch</a>');
 
 // Kopfbereich auf Englisch
 ausgabe = ausgabe
