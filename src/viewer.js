@@ -423,13 +423,19 @@ export class Viewer {
 
   captureScreenshot(scale = 3) {
     const w = this.container.clientWidth, h = this.container.clientHeight;
+    const prevRatio = this.renderer.getPixelRatio();
+    // Pixelratio für die Aufnahme auf 1: das Bild soll genau w*scale × h*scale
+    // groß werden. Auf Retina (Ratio 2) wäre der echte Puffer sonst doppelt so
+    // groß und spränge bei 4x über das Canvas-Limit - toDataURL liefert dann
+    // ein leeres Bild.
+    this.renderer.setPixelRatio(1);
     this.renderer.setSize(w * scale, h * scale, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.render(this.scene, this.camera);
     const dataUrl = this.renderer.domElement.toDataURL('image/png');
+    this.renderer.setPixelRatio(prevRatio);
     this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     return dataUrl;
   }
 
