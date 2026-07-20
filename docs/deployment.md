@@ -235,8 +235,15 @@ Die Startseite gibt es zweimal: Deutsch unter `/`, Englisch unter `/en/`. Die
 englische Fassung wird erzeugt, nicht gepflegt:
 
 ```bash
-node scripts/build-en.mjs   # nach jeder Änderung an website/index.html
+node scripts/build-en.mjs       # nach jeder Änderung an website/index.html
+node scripts/build-guides.mjs   # nach jeder Änderung an scripts/guides.data.mjs
 ```
+
+Die Ratgeberseiten (`dxf-datei-oeffnen.html`, `step-datei-oeffnen.html` und ihre
+englischen Fassungen) entstehen aus `scripts/guides.data.mjs`. Dort steht nur
+der Text, die Vorlage liegt im Erzeuger. Neue Seiten müssen zusätzlich in
+`website/sitemap.xml` eingetragen und von der Startseite verlinkt werden -
+sonst findet Google sie kaum.
 
 Das Skript nimmt das Wörterbuch aus `website/translate.js` - dieselbe Datei,
 aus der früher im Browser übersetzt wurde. Bleibt ein Text ohne Übersetzung,

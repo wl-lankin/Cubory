@@ -54,6 +54,10 @@
     'Ja: macOS für Apple Silicon und Intel, Windows 64-bit und Linux als AppImage. Die Installer sind noch nicht signiert, deshalb zeigen Gatekeeper und SmartScreen beim ersten Start eine Warnung, die sich bestätigen lässt.':
       'Yes: macOS for Apple Silicon and Intel, Windows 64-bit and Linux as an AppImage. The installers are not code-signed yet, so Gatekeeper and SmartScreen show a warning on first launch that you can confirm.',
     'FAQ': 'FAQ',
+    '· Entwickelt von': '· Built by',
+    'Widerruf & Erstattung': 'Refund policy',
+    'DXF öffnen': 'Open DXF',
+    'STEP-Datei öffnen': 'Open STEP files',
     '· Free-Funktionen ohne Konto': '· Free features without an account',
     'Features': 'Features', 'Preise': 'Pricing', 'Download': 'Download',
     'Jedes Modell': 'Every model', 'Sofort im Blick': 'Instantly in view',

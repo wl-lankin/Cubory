@@ -13,6 +13,30 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://cubory.app/dxf-datei-oeffnen.html</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cubory.app/step-datei-oeffnen.html</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cubory.app/en/open-dxf-file.html</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cubory.app/en/open-step-file.html</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cubory.app/impressum.html</loc>
     <lastmod>2026-07-20</lastmod>
     <changefreq>yearly</changefreq>
