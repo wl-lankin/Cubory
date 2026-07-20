@@ -413,22 +413,42 @@ function setupAccountIpc() {
   }));
 
   // Export (Pro): Durchsetzung im Main-Prozess
-  ipcMain.handle('export:save', async (_event, { base64, filename, filterName, ext }) => {
+  // Zielordner, den der Export-Dialog beim Öffnen vorschlägt.
+  ipcMain.handle('export:lastDir', () => {
+    let dir = appStore?.get('last_export_dir');
+    try { if (dir) fs.accessSync(dir); else dir = null; } catch { dir = null; }
+    return { ok: true, data: dir || app.getPath('documents') || app.getPath('desktop') };
+  });
+
+  // Speichern in den im Modal gewählten Ordner - kein System-Dialog.
+  ipcMain.handle('export:saveTo', async (_event, { base64, dir, filename, ext }) => {
     if (!account.can('export')) {
       return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
     }
-    const result = await dialog.showSaveDialog(mainWindow, {
-      defaultPath: filename,
-      filters: [{ name: filterName, extensions: [ext] }],
-    });
-    if (result.canceled || !result.filePath) return { ok: true, data: null };
-    fs.writeFileSync(result.filePath, Buffer.from(base64, 'base64'));
-    return { ok: true, data: result.filePath };
+    try {
+      let name = String(filename || '').replace(/[/\\?%*:|"<>]/g, '_').trim() || `cubory-export`;
+      const suffix = '.' + String(ext || 'dat').toLowerCase();
+      if (!name.toLowerCase().endsWith(suffix)) name += suffix;
+      const target = path.join(path.resolve(dir), name);
+      fs.writeFileSync(target, Buffer.from(base64, 'base64'));
+      appStore?.set('last_export_dir', path.resolve(dir));
+      return { ok: true, data: { path: target } };
+    } catch (err) {
+      return { ok: false, error: { code: 'fs_error', message: err.message } };
+    }
+  });
+
+  // Textinhalt (SVG-Quelltext) in die Zwischenablage.
+  ipcMain.handle('export:copyText', async (_event, text) => {
+    if (!account.can('export')) {
+      return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
+    }
+    try { clipboard.writeText(String(text || '')); return { ok: true, data: null }; }
+    catch (err) { return { ok: false, error: { code: 'clipboard_error', message: err.message } }; }
   });
 
   // Beispiel-Pro-Feature: HD-Screenshot. Durchsetzung im Main-Prozess -
   // der Renderer kann das Gating nicht umgehen.
-  const pngBuffer = (dataUrl) => Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
 
   // Zielordner, den sich der HD-Shot-Dialog beim Öffnen vorschlägt: zuletzt
   // genutzter Ordner, sonst der Bilder-Ordner des Systems.
@@ -439,7 +459,7 @@ function setupAccountIpc() {
   });
 
   // Speichern in einen vom Nutzer im Modal gewählten Ordner - kein System-Dialog.
-  ipcMain.handle('screenshot:saveTo', async (_event, { dataUrl, dir, filename }) => {
+  ipcMain.handle('screenshot:saveTo', async (_event, { base64, dir, filename }) => {
     if (!account.can('hires_screenshot')) {
       return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
     }
@@ -449,7 +469,7 @@ function setupAccountIpc() {
       let name = String(filename || '').replace(/[/\\?%*:|"<>]/g, '_').trim() || `cubory-${Date.now()}`;
       if (!name.toLowerCase().endsWith('.png')) name += '.png';
       const target = path.join(path.resolve(dir), name);
-      fs.writeFileSync(target, pngBuffer(dataUrl));
+      fs.writeFileSync(target, Buffer.from(base64, 'base64'));
       appStore?.set('last_shot_dir', path.resolve(dir));
       return { ok: true, data: { path: target } };
     } catch (err) {
@@ -471,7 +491,7 @@ function setupAccountIpc() {
   });
 
   // Gespeicherte Datei im Datei-Manager zeigen.
-  ipcMain.handle('screenshot:reveal', (_event, filePath) => {
+  ipcMain.handle('fs:reveal', (_event, filePath) => {
     try { shell.showItemInFolder(path.resolve(filePath)); return { ok: true, data: null }; }
     catch (err) { return { ok: false, error: { code: 'reveal_error', message: err.message } }; }
   });

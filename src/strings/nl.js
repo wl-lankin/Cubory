@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Kopieer',
   'hdshot.copied': 'Gekopieerd',
   'hdshot.copyError': 'Kopiëren mislukt',
+  'export.title': 'Exporteer',
+  'export.format': 'Formaat',
   'pro.locked': 'Dit is een Cubory Pro functie.',
   'nudge.title': 'Je gebruikt Cubory Free',
   'nudge.body': 'Upgrade naar Cubory Pro en ontgrendel:',

@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Αντιγραφή',
   'hdshot.copied': 'Αντιγράφηκε',
   'hdshot.copyError': 'Αποτυχία αντιγραφής',
+  'export.title': 'Εξαγωγή',
+  'export.format': 'Μορφή',
   'pro.locked': 'Αυτή είναι μια λειτουργία του Cubory Pro.',
   'nudge.title': 'Χρησιμοποιείς το Cubory Free',
   'nudge.body': 'Αναβάλλε στο Cubory Pro και αποκλείδωσε:',

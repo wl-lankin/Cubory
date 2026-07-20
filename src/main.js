@@ -402,7 +402,6 @@ function renderModelUi(reset) {
 }
 
 // Hooks für automatisierte Tests
-import('./proFeatures.js').then((m) => { window.__buildExport = () => m.buildExport(current); });
 window.__viewer = viewer;
 
 // Hook für automatisierte Tests: Datei über Pfad laden

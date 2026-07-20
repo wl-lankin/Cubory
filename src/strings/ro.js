@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Copiază',
   'hdshot.copied': 'Copiat',
   'hdshot.copyError': 'Eșuat copierea',
+  'export.title': 'Exportă',
+  'export.format': 'Format',
   'pro.locked': 'Aceasta este o caracteristică a Cubory Pro.',
   'nudge.title': 'Folosești Cubory Free',
   'nudge.body': 'Actualizează la Cubory Pro și dezblochează:',

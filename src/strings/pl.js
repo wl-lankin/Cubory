@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Kopiuj',
   'hdshot.copied': 'Skopiowano',
   'hdshot.copyError': 'Kopiowanie nie powiodło się',
+  'export.title': 'Eksportuj',
+  'export.format': 'Format',
   'pro.locked': 'To jest funkcja Cubory Pro.',
   'nudge.title': 'Używasz Cubory Free',
   'nudge.body': 'Przejdź na Cubory Pro i odblokuj:',

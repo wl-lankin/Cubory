@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Kopiraj',
   'hdshot.copied': 'Kopirano',
   'hdshot.copyError': 'Kopiranje nije uspjelo',
+  'export.title': 'Izvoz',
+  'export.format': 'Format',
   'pro.locked': 'Ovo je Cubory Pro funkcija.',
   'nudge.title': 'Koristiš Cubory Besplatno',
   'nudge.body': 'Nadogradi na Cubory Pro i otključaj:',

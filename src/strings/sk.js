@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Kopírovať',
   'hdshot.copied': 'Skopírované',
   'hdshot.copyError': 'Kopírovanie zlyhalo',
+  'export.title': 'Exportovať',
+  'export.format': 'Formát',
   'pro.locked': 'Toto je funkcia Cubory Pro.',
   'nudge.title': 'Používáš Cubory Free',
   'nudge.body': 'Zlepši sa na Cubory Pro a odomkni:',

@@ -1069,7 +1069,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 
 /* ── HD-Shot-Modal ───────────────────────────────────────────────────────── */
 
-#hdshot-modal {
+.save-modal {
   position: fixed;
   inset: 0;
   z-index: 62;

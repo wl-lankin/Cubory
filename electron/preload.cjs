@@ -34,14 +34,16 @@ contextBridge.exposeInMainWorld('cubory', {
     lastDir: () => ipcRenderer.invoke('screenshot:lastDir'),
     saveTo: (payload) => ipcRenderer.invoke('screenshot:saveTo', payload),
     copy: (dataUrl) => ipcRenderer.invoke('screenshot:copy', dataUrl),
-    reveal: (filePath) => ipcRenderer.invoke('screenshot:reveal', filePath),
   },
   exportFile: {
-    save: (payload) => ipcRenderer.invoke('export:save', payload),
+    lastDir: () => ipcRenderer.invoke('export:lastDir'),
+    saveTo: (payload) => ipcRenderer.invoke('export:saveTo', payload),
+    copyText: (text) => ipcRenderer.invoke('export:copyText', text),
   },
   files: {
     listDir: (dirPath) => ipcRenderer.invoke('fs:listDir', dirPath),
     recent: () => ipcRenderer.invoke('fs:recent'),
+    reveal: (filePath) => ipcRenderer.invoke('fs:reveal', filePath),
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Копирай',
   'hdshot.copied': 'Копирано',
   'hdshot.copyError': 'Копирането не успя',
+  'export.title': 'Експорт',
+  'export.format': 'Формат',
   'pro.locked': 'Това е функция на Cubory Pro.',
   'nudge.title': 'Използваш Cubory Free',
   'nudge.body': 'Награди се до Cubory Pro и разключи:',

@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Másolás',
   'hdshot.copied': 'Megmásolt',
   'hdshot.copyError': 'A másolás sikertelen',
+  'export.title': 'Exportálás',
+  'export.format': 'Formátum',
   'pro.locked': 'Ez egy Cubory Pro funkció.',
   'nudge.title': 'Cubory Ingyenes használatban van',
   'nudge.body': 'Frissíts Cubory Pro-ra és oldd fel:',

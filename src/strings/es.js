@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Copiar',
   'hdshot.copied': 'Copiado',
   'hdshot.copyError': 'Fallo al copiar',
+  'export.title': 'Exportar',
+  'export.format': 'Formato',
   'pro.locked': 'Esta es una característica de Cubory Pro.',
   'nudge.title': 'Estás usando Cubory Gratis',
   'nudge.body': 'Actualiza a Cubory Pro y desbloquea:',

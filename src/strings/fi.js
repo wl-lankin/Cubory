@@ -91,6 +91,8 @@ export default {
   'hdshot.copy': 'Kopioi',
   'hdshot.copied': 'Kopioitu',
   'hdshot.copyError': 'Kopiointi epäonnistui',
+  'export.title': 'Vie',
+  'export.format': 'Muoto',
   'pro.locked': 'Tämä on Cubory Pro ominaisuus.',
   'nudge.title': 'Käytät Cubory Ilmaista',
   'nudge.body': 'Päivitä Cubory Pro:lle ja avaa:',
