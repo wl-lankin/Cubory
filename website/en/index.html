@@ -69,12 +69,21 @@
         },
         {
           "@type": "Offer",
-          "name": "Pro",
+          "name": "Pro (monatlich)",
+          "price": "9",
+          "priceCurrency": "EUR",
+          "valueAddedTaxIncluded": false,
+          "availability": "https://schema.org/InStock",
+          "description": "Pro Monat. Messen, Schnittansichten, Explosionsansichten und Export."
+        },
+        {
+          "@type": "Offer",
+          "name": "Pro (jährlich)",
           "price": "79",
           "priceCurrency": "EUR",
           "valueAddedTaxIncluded": false,
           "availability": "https://schema.org/InStock",
-          "description": "Pro Jahr. Messen, Schnittansichten, Explosionsansichten und Export."
+          "description": "Pro Jahr, zwei Monate günstiger als monatlich. Messen, Schnittansichten, Explosionsansichten und Export."
         },
         {
           "@type": "Offer",
@@ -134,7 +143,7 @@
           "name": "Ist Cubory kostenlos?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Der Viewer ja, dauerhaft und ohne Zeitlimit: alle Formate, Ansichten, Ebenen und Teilelisten. Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro und kosten 79 € im Jahr oder 199 € einmalig."
+            "text": "Der Viewer ja, dauerhaft und ohne Zeitlimit: alle Formate, Ansichten, Ebenen und Teilelisten. Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro: 9 € im Monat, 79 € im Jahr oder 199 € einmalig."
           }
         },
         {
@@ -480,14 +489,14 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
   <div class="spec reveal">
     <table>
       <tbody><tr><th></th><th>Free</th><th class="rec"><span class="stamp">Recommended</span>Pro
-        <div class="bill-toggle"><button type="button" data-b="monthly">Monthly</button><button type="button" class="on" data-b="yearly">Yearly</button></div></th><th>Lifetime</th></tr>
-      <tr><td>Price (net)</td><td class="price-cell">0 €</td><td class="price-cell rec" id="pro-price">79 €</td><td class="price-cell">199 €</td></tr>
-      <tr><td>Billing</td><td>-</td><td class="rec" id="pro-per">per year · 2 months free</td><td>one-time</td></tr>
+        <div class="bill-toggle"><button type="button" class="on" data-b="monthly">Monthly</button><button type="button" data-b="yearly">Yearly</button></div></th><th>Lifetime</th></tr>
+      <tr><td>Price (net)</td><td class="price-cell">0 €</td><td class="price-cell rec" id="pro-price">9 €</td><td class="price-cell">199 €</td></tr>
+      <tr><td>Billing</td><td>-</td><td class="rec" id="pro-per">per month</td><td>one-time</td></tr>
       <tr><td>Pos. 1-2, 7</td><td class="ok">✓</td><td class="rec ok">✓</td><td class="ok">✓</td></tr>
       <tr><td>Pos. 3-6 (Pro)</td><td class="no">-</td><td class="rec ok">✓</td><td class="ok">✓</td></tr>
       <tr><td>Devices</td><td>2</td><td class="rec">3</td><td>3</td></tr>
       <tr><td>Trial</td><td>-</td><td class="rec">7 days free</td><td>-</td></tr>
-      <tr><td></td><td><a class="btn btn-ghost" href="#download">Download</a></td><td class="rec"><a class="btn btn-primary" id="buy-pro" href="/portal/?plan=yearly">Try</a></td><td><a class="btn btn-ghost" href="/portal/?plan=lifetime">Buy</a></td></tr>
+      <tr><td></td><td><a class="btn btn-ghost" href="#download">Download</a></td><td class="rec"><a class="btn btn-primary" id="buy-pro" href="/portal/?plan=monthly">Try</a></td><td><a class="btn btn-ghost" href="/portal/?plan=lifetime">Buy</a></td></tr>
     </tbody></table>
   </div>
 </section>
@@ -519,7 +528,7 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
     </details>
     <details class="faq-item reveal">
       <summary><span class="pos">3</span>Is Cubory free?</summary>
-      <p>The viewer yes, permanently and with no time limit: all formats, views, layers and parts lists. Measuring, section views, exploded views and export belong to Pro and cost 79 € per year or 199 € once.</p>
+      <p>The viewer yes, permanently and with no time limit: all formats, views, layers and parts lists. Measuring, section views, exploded views and export belong to Pro: 9 € per month, 79 € per year or 199 € once.</p>
     </details>
     <details class="faq-item reveal">
       <summary><span class="pos">4</span>Does Cubory work without an internet connection?</summary>

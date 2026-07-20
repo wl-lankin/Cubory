@@ -92,7 +92,7 @@ export const guides = [
           p: [
             'DXF ansehen kostet nichts, dauerhaft und ohne Konto. Alle Formate, Ebenen und Ansichten gehören zur '
             + 'kostenlosen Fassung. Geld kostet erst, wer in der Zeichnung messen, sie schneiden oder exportieren '
-            + 'will - das sind 79 € im Jahr oder 199 € einmalig, jeweils netto.',
+            + 'will - das sind 9 € im Monat, 79 € im Jahr oder 199 € einmalig, jeweils netto.',
           ],
         },
       ],
@@ -177,7 +177,7 @@ export const guides = [
           p: [
             'Viewing DXF costs nothing, permanently and without an account. All formats, layers and views belong to '
             + 'the free version. You only pay if you want to measure inside the drawing, section it or export it - '
-            + 'that is 79 € per year or 199 € once, both net.',
+            + 'that is 9 € per month, 79 € per year or 199 € once, all net.',
           ],
         },
       ],
@@ -258,8 +258,8 @@ export const guides = [
           h: 'Was kostet das?',
           p: [
             'Ansehen, drehen, Teile isolieren und Ebenen schalten: kostenlos, ohne Zeitlimit und ohne Konto. '
-            + 'Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro und kosten 79 € im Jahr '
-            + 'oder 199 € einmalig, jeweils netto.',
+            + 'Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro: 9 € im Monat, '
+            + '79 € im Jahr oder 199 € einmalig, jeweils netto.',
           ],
         },
       ],
@@ -335,8 +335,8 @@ export const guides = [
           h: 'What does it cost?',
           p: [
             'Viewing, rotating, isolating parts and toggling layers: free, with no time limit and no account. '
-            + 'Measuring, section views, exploded views and export belong to Pro and cost 79 € per year or 199 € '
-            + 'once, both net.',
+            + 'Measuring, section views, exploded views and export belong to Pro: 9 € per month, 79 € per year '
+            + 'or 199 € once, all net.',
           ],
         },
       ],
