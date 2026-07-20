@@ -47,13 +47,15 @@
     'Was unterscheidet Free von Pro?': 'What is the difference between Free and Pro?',
     'Free zeigt alle Dateien unbegrenzt an. Pro ergänzt Messen mit Einrasten auf Ecken und Kanten, Schnittansichten entlang X, Y und Z, Explosionsansichten für Baugruppen sowie Export nach STL und SVG. Jedes neue Konto bekommt Pro 7 Tage kostenlos.':
       'Free displays all files without limits. Pro adds measuring with snapping to corners and edges, section views along X, Y and Z, exploded views for assemblies and export to STL and SVG. Every new account gets Pro free for 7 days.',
-    'Der Viewer ja, dauerhaft und ohne Zeitlimit: alle Formate, Ansichten, Ebenen und Teilelisten. Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro und kosten 79 € im Jahr oder 199 € einmalig.':
-      'The viewer yes, permanently and with no time limit: all formats, views, layers and parts lists. Measuring, section views, exploded views and export belong to Pro and cost 79 € per year or 199 € once.',
     'Dateien werden ausschließlich auf dem eigenen Rechner geladen und dargestellt, nichts wird hochgeladen. Die kostenlosen Funktionen brauchen gar keine Verbindung. Eine Pro-Lizenz meldet sich etwa täglich beim Server; bleibt der Rechner offline, läuft Pro noch 30 Tage weiter.':
       'Files are loaded and rendered exclusively on your own machine, nothing is uploaded. The free features need no connection at all. A Pro license checks in with the server about once a day; if the machine stays offline, Pro keeps working for another 30 days.',
     'Ja: macOS für Apple Silicon und Intel, Windows 64-bit und Linux als AppImage. Die Installer sind noch nicht signiert, deshalb zeigen Gatekeeper und SmartScreen beim ersten Start eine Warnung, die sich bestätigen lässt.':
       'Yes: macOS for Apple Silicon and Intel, Windows 64-bit and Linux as an AppImage. The installers are not code-signed yet, so Gatekeeper and SmartScreen show a warning on first launch that you can confirm.',
+    'Der Viewer ja, dauerhaft und ohne Zeitlimit: alle Formate, Ansichten, Ebenen und Teilelisten. Messen, Schnittansichten, Explosionsansichten und Export gehören zu Pro: 9 € im Monat, 79 € im Jahr oder 199 € einmalig.':
+      'The viewer yes, permanently and with no time limit: all formats, views, layers and parts lists. Measuring, section views, exploded views and export belong to Pro: 9 € per month, 79 € per year or 199 € once.',
     'FAQ': 'FAQ',
+    'pro Monat': 'per month',
+
     '· Entwickelt von': '· Built by',
     'Widerruf & Erstattung': 'Refund policy',
     'DXF öffnen': 'Open DXF',
