@@ -9,6 +9,17 @@
 
 export const CHANGELOG = [
   {
+    version: '1.7.0',
+    date: '2026-07-21',
+    entries: [
+      {
+        type: 'new',
+        de: 'Versionsverlauf in der App: auf einen Blick sehen, was sich geändert hat. Nach jedem Update zeigt "Was ist neu" die Neuerungen - erreichbar auch über das Über-Fenster und die Optionen.',
+        en: 'Version history in the app: see what has changed at a glance. After every update "What\'s new" shows the highlights - also reachable from the About window and the options.',
+      },
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-07-21',
     entries: [

@@ -148,15 +148,17 @@ describe('Versionsverlauf', () => {
     await win.waitForSelector('#about-version', { timeout: 5000 });
     await win.click('#about-version');
     await win.waitForSelector('#changelog-modal .cl-version', { timeout: 5000 });
-    const info = await win.evaluate(() => ({
+    const info = await win.evaluate(async () => ({
+      laufend: (await window.cubory.appInfo()).version,
       versionen: [...document.querySelectorAll('.cl-vnum')].map((n) => n.textContent),
       tags: [...new Set([...document.querySelectorAll('.cl-tag')].map((n) => n.textContent))],
-      aktuell: !!document.querySelector('.cl-badge-current'),
+      aktuellVersion: document.querySelector('.cl-version .cl-badge-current')
+        ?.closest('.cl-version')?.querySelector('.cl-vnum')?.textContent || null,
       text: document.querySelector('.cl-text')?.textContent || '',
     }));
     // Die laufende (gebaute) Version muss im Verlauf stehen und als aktuell markiert sein.
-    expect(info.versionen).toContain('1.6.0');
-    expect(info.aktuell).toBe(true);
+    expect(info.versionen).toContain(info.laufend);
+    expect(info.aktuellVersion).toBe(info.laufend);
     expect(info.tags.length).toBeGreaterThan(0);
     expect(info.text.length).toBeGreaterThan(0);
     await win.click('#cl-close');
