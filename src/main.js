@@ -31,6 +31,11 @@ if (window.cubory?.platform === 'win32') document.body.classList.add('platform-w
 // im Hintergrund die Lizenz per Heartbeat prüft. Beides wird als Versprechen
 // gekoppelt, damit lizenzabhängige Oberfläche (der Upgrade-Nudge) erst danach
 // entscheidet. So sieht ein Pro-Nutzer nie kurz den Nudge aufblitzen.
+// Die Lizenzprüfung genau einmal anstoßen und teilen: Sie hält die Intro kurz
+// vor der Explosion (der Kristall dreht sich weiter), damit die Oberfläche beim
+// Freigeben schon aktuell ist, und entscheidet danach über den Upgrade-Nudge.
+const licenseSettled = whenLicenseSettled();
+
 let intro = null;
 let introDone;
 if (location.hostname === 'localhost' || localStorage.getItem('cubory-intro') === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -44,7 +49,7 @@ if (location.hostname === 'localhost' || localStorage.getItem('cubory-intro') ==
       document.body.classList.add('intro-done');
       intro = null;
       resolve();
-    });
+    }, licenseSettled);
   });
 }
 
@@ -104,7 +109,7 @@ updateProUi();
 // Versionssprung, einmalig), danach ggf. der Upgrade-Nudge. Nie beide Karten
 // gleichzeitig - der Nudge folgt erst, wenn der Verlauf geschlossen ist. Der
 // Nudge nutzt den endgültigen Kontostand, nicht den ersten (noch anonymen).
-Promise.all([introDone, whenLicenseSettled()]).then(async () => {
+Promise.all([introDone, licenseSettled]).then(async () => {
   const showNudge = () => maybeShowNudge(currentAccount(), { onUpgrade: () => openAccountModal() });
   const info = await window.cubory?.appInfo?.();
   const version = info?.version;

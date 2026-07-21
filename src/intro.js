@@ -12,6 +12,29 @@ import * as THREE from 'three';
 const DURATION = 3.4;
 const T_EXPLODE = 2.6;
 
+// Halte-Stelle (Kristall steht, bereit zu bersten) und die maximale zusätzliche
+// Haltezeit, nach der die Intro auch ohne Freigabe weiterläuft - damit sie nie
+// hängt, falls die Lizenzprüfung ungewöhnlich lange braucht.
+export const HOLD_POINT = T_EXPLODE;
+export const MAX_EXTRA_HOLD = 2.5;
+
+/**
+ * Bildet die reale Uhrzeit `raw` auf die Fortschrittszeit `t` der Intro ab und
+ * hält sie bei HOLD_POINT fest, solange `st.released` false ist - längstens bis
+ * MAX_EXTRA_HOLD nach dem Erreichen der Halte-Stelle (dann greift die Notbremse).
+ * `holdOffset` wird mitgeführt, sodass `t` nach der Freigabe stetig - ohne Sprung -
+ * bei HOLD_POINT weiterläuft. `st = { released, holdOffset, holdStartRaw }`.
+ */
+export function holdProgress(raw, st) {
+  if (!st.released && raw >= HOLD_POINT) {
+    if (st.holdStartRaw === null) st.holdStartRaw = raw;
+    st.holdOffset = raw - HOLD_POINT;               // hält t bei HOLD_POINT
+    if (raw - st.holdStartRaw >= MAX_EXTRA_HOLD) st.released = true; // Notbremse
+    if (!st.released) return HOLD_POINT;
+  }
+  return raw - st.holdOffset;
+}
+
 const PINK = new THREE.Color('#ff3d8a');
 const VIOLET = new THREE.Color('#7c5cff');
 const WHITE = new THREE.Color('#ffffff');
@@ -56,7 +79,7 @@ function glowTexture() {
   return tex;
 }
 
-export function playIntro(onDone) {
+export function playIntro(onDone, ready) {
   const layer = document.createElement('div');
   layer.id = 'intro-layer';
   document.body.appendChild(layer);
@@ -174,6 +197,14 @@ export function playIntro(onDone) {
   let finished = false;
   const clock = new THREE.Clock();
 
+  // Der Kristall hält kurz vor der Explosion, bis die Lizenzprüfung steht
+  // (ready). So ist die Oberfläche beim Freigeben garantiert aktuell - ein
+  // Pro-Nutzer ist genau dann "durch die Animation = eingeloggt" und sieht nie
+  // kurz den Anmelde-/Upgrade-Hinweis. Gehalten wird höchstens MAX_EXTRA_HOLD
+  // (siehe holdProgress); der Kristall dreht und glimmt dabei weiter.
+  const hold = { released: !ready, holdOffset: 0, holdStartRaw: null };
+  if (ready) Promise.resolve(ready).then(() => { hold.released = true; });
+
   function finish() {
     if (finished) return;
     finished = true;
@@ -205,7 +236,8 @@ export function playIntro(onDone) {
   const rot = new THREE.Matrix4();
 
   renderer.setAnimationLoop(() => {
-    const t = clock.getElapsedTime();
+    const raw = clock.getElapsedTime();
+    const t = holdProgress(raw, hold);
     if (t >= DURATION) return finish();
 
     const tE = Math.max(0, t - T_EXPLODE);
@@ -230,7 +262,7 @@ export function playIntro(onDone) {
 
       // Angekommen: feines Glimmern entlang der Kante
       if (e1 >= 1 && eExpl === 0) {
-        const w = Math.sin(t * 7 + twinkle[i]) * 0.045;
+        const w = Math.sin(raw * 7 + twinkle[i]) * 0.045;
         x += w; y += w * 0.6; z -= w * 0.4;
       }
 
@@ -249,10 +281,11 @@ export function playIntro(onDone) {
     pos.needsUpdate = true;
     const arrivedFrac = arrived / N;
 
-    // Kristall dreht sich, sobald er Form annimmt; Puls beim Stehen
-    points.rotation.y = t * 0.55;
-    points.rotation.x = Math.sin(t * 0.8) * 0.12;
-    const pulse = 1 + Math.sin(t * 9) * 0.02 * arrivedFrac;
+    // Kristall dreht sich, sobald er Form annimmt; Puls beim Stehen. Über die
+    // echte Zeit (raw), damit er auch während des Haltens lebendig bleibt.
+    points.rotation.y = raw * 0.55;
+    points.rotation.x = Math.sin(raw * 0.8) * 0.12;
+    const pulse = 1 + Math.sin(raw * 9) * 0.02 * arrivedFrac;
     points.scale.setScalar(pulse * (1 + eExpl * 0.15));
 
     // Kern: wächst mit der Verdichtung, birst bei der Explosion
