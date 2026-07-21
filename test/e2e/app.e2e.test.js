@@ -165,3 +165,27 @@ describe('Versionsverlauf', () => {
     await win.waitForSelector('#changelog-modal', { state: 'detached', timeout: 5000 });
   }, 60000);
 });
+
+describe('Update-Banner', () => {
+  const sende = (s) => app.evaluate(({ BrowserWindow }, st) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('update:state', st), s);
+
+  it('lässt sich wegklicken und bleibt für dieselbe Version weg', async () => {
+    await sende({ status: 'manual', version: '9.9.9' });
+    await win.waitForSelector('#update-banner #update-dismiss', { timeout: 5000 });
+    await win.click('#update-dismiss');
+    await win.waitForSelector('#update-banner', { state: 'detached', timeout: 5000 });
+
+    // Dieselbe Version erneut gemeldet: bleibt weggeklickt
+    await sende({ status: 'manual', version: '9.9.9' });
+    await win.waitForTimeout(300);
+    expect(await win.evaluate(() => !!document.getElementById('update-banner'))).toBe(false);
+
+    // Eine neuere Version taucht wieder auf
+    await sende({ status: 'manual', version: '9.9.10' });
+    await win.waitForSelector('#update-banner', { timeout: 5000 });
+    expect(await win.evaluate(() => !!document.getElementById('update-banner'))).toBe(true);
+
+    await win.evaluate(() => document.getElementById('update-banner')?.remove());
+  }, 60000);
+});

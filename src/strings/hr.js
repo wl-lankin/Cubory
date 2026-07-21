@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Pokreni sad',
   'update.available': 'Verzija {v} dostupna',
   'update.download': 'Preuzmi',
+  'update.dismiss': 'Sakrij',
   'verify.title': 'Potvrdi svoju email adresu',
   'verify.sent': 'Poslali smo 6-znamenkasti kod na {email}.',
   'verify.code': 'Kod',

@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Genstart nu',
   'update.available': 'Version {v} tilgængelig',
   'update.download': 'Download',
+  'update.dismiss': 'Skjul',
   'verify.title': 'Bekræft din email',
   'verify.sent': 'Vi har sendt en 6-cifret kode til {email}.',
   'verify.code': 'Kode',

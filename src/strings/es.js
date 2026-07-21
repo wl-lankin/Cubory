@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Reiniciar ahora',
   'update.available': 'Versión {v} disponible',
   'update.download': 'Descargar',
+  'update.dismiss': 'Descartar',
   'verify.title': 'Confirma tu correo electrónico',
   'verify.sent': 'Te enviamos un código de 6 dígitos a {email}.',
   'verify.code': 'Código',

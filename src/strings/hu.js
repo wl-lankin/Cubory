@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Indítsd újra most',
   'update.available': 'Verzió {v} elérhető',
   'update.download': 'Letöltés',
+  'update.dismiss': 'Elvetés',
   'verify.title': 'Ellenőrizd az email címedet',
   'verify.sent': 'Küldtünk egy 6 jegyű kódot a(z) {email} címre.',
   'verify.code': 'Kód',

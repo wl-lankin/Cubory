@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Käynnistä nyt',
   'update.available': 'Versio {v} saatavilla',
   'update.download': 'Lataa',
+  'update.dismiss': 'Ohita',
   'verify.title': 'Vahvista sähköpostisi',
   'verify.sent': 'Lähetimme 6-numeroisen koodin osoitteeseen {email}.',
   'verify.code': 'Koodi',

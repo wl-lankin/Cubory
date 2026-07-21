@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Repornește acum',
   'update.available': 'Versiune {v} disponibilă',
   'update.download': 'Descarcă',
+  'update.dismiss': 'Ascunde',
   'verify.title': 'Confirmă adresa ta de email',
   'verify.sent': 'Ți-am trimis un cod de 6 cifre la {email}.',
   'verify.code': 'Cod',

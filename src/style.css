@@ -951,6 +951,20 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   animation: intro-rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 #update-banner .btn { padding: 8px 16px; font-size: 12.5px; }
+/* Wegklicken: dezentes X, damit es die primäre Aktion nicht überstrahlt */
+.update-dismiss {
+  flex: 0 0 auto;
+  width: 26px; height: 26px;
+  margin-left: -4px;
+  display: grid; place-items: center;
+  font-size: 12px; line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.update-dismiss:hover { color: var(--text); background: rgba(160, 170, 255, 0.12); }
 
 /* ── Integrierter Datei-Browser ──────────────────────────────────────────── */
 

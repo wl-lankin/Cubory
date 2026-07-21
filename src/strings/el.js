@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Επαναφορά τώρα',
   'update.available': 'Έκδοση {v} διαθέσιμη',
   'update.download': 'Λήψη',
+  'update.dismiss': 'Απόρριψη',
   'verify.title': 'Επιβεβαίωσε το email σου',
   'verify.sent': 'Στάλθηκε ένας 6-ψηφιακός κωδικός στο {email}.',
   'verify.code': 'Κωδικός',

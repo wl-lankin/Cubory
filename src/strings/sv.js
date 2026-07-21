@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Starta om nu',
   'update.available': 'Version {v} tillgänglig',
   'update.download': 'Ladda ner',
+  'update.dismiss': 'Dölj',
   'verify.title': 'Bekräfta din e-post',
   'verify.sent': 'Vi skickade en 6-siffrig kod till {email}.',
   'verify.code': 'Kod',

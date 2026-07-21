@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Restartovat teď',
   'update.available': 'Verze {v} k dispozici',
   'update.download': 'Stáhnout',
+  'update.dismiss': 'Skrýt',
   'verify.title': 'Potvrď svůj email',
   'verify.sent': 'Odeslali jsme 6-místný kód na {email}.',
   'verify.code': 'Kód',

@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Start på nytt nå',
   'update.available': 'Versjon {v} tilgjengelig',
   'update.download': 'Last ned',
+  'update.dismiss': 'Skjul',
   'verify.title': 'Bekreft e-posten din',
   'verify.sent': 'Vi sendte en 6-sifret kode til {email}.',
   'verify.code': 'Kode',

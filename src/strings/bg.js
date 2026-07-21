@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Рестартирай сега',
   'update.available': 'Версия {v} налична',
   'update.download': 'Изтегли',
+  'update.dismiss': 'Скрий',
   'verify.title': 'Потвърди своя имейл',
   'verify.sent': 'Изпратихме 6-цифрен код на {email}.',
   'verify.code': 'Код',

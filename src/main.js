@@ -475,9 +475,15 @@ function escapeHtml(s) {
 
 /* ── OTA-Update-Banner ───────────────────────────────────────────────────── */
 
+// Weggeklickte Version merken, damit dasselbe Update nicht bei jedem Start
+// erneut nervt. Ein neueres Update taucht wieder auf (andere Versionsnummer).
+const DISMISSED_UPDATE_KEY = 'cubory-update-dismissed';
+
 window.cubory.update?.onChange((state) => {
   let bar = document.getElementById('update-banner');
-  if (state.status !== 'ready' && state.status !== 'manual') { bar?.remove(); return; }
+  const active = state.status === 'ready' || state.status === 'manual';
+  const dismissed = active && localStorage.getItem(DISMISSED_UPDATE_KEY) === state.version;
+  if (!active || dismissed) { bar?.remove(); return; }
   if (!bar) {
     bar = document.createElement('div');
     bar.id = 'update-banner';
@@ -486,8 +492,13 @@ window.cubory.update?.onChange((state) => {
   }
   const manual = state.status === 'manual';
   bar.innerHTML = `<span>${t(manual ? 'update.available' : 'update.ready', { v: state.version })}</span>
-    <button class="btn btn-primary" id="update-go">${t(manual ? 'update.download' : 'update.restart')}</button>`;
+    <button class="btn btn-primary" id="update-go">${t(manual ? 'update.download' : 'update.restart')}</button>
+    <button class="update-dismiss" id="update-dismiss" title="${escapeHtml(t('update.dismiss'))}" aria-label="${escapeHtml(t('update.dismiss'))}">✕</button>`;
   document.getElementById('update-go').addEventListener('click', () => window.cubory.update.install());
+  document.getElementById('update-dismiss').addEventListener('click', () => {
+    localStorage.setItem(DISMISSED_UPDATE_KEY, state.version);
+    bar.remove();
+  });
 });
 
 

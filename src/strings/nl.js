@@ -129,6 +129,7 @@ export default {
   'update.restart': 'Nu herstarten',
   'update.available': 'Versie {v} beschikbaar',
   'update.download': 'Downloaden',
+  'update.dismiss': 'Sluiten',
   'verify.title': 'Bevestig je email',
   'verify.sent': 'We hebben een 6-cijferige code naar {email} gestuurd.',
   'verify.code': 'Code',
