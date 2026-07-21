@@ -10,6 +10,7 @@ import { esc } from './modalUtils.js';
 const SEEN_KEY = 'cubory-seen-version';
 
 let overlay = null;
+let onCloseCb = null;   // läuft nach dem Schließen - egal ob per ✕, Klick oder Escape
 
 /** Gibt es eine ungesehene Version? (nach einem Update) */
 export function hasUnseenVersion(installedVersion) {
@@ -51,10 +52,11 @@ export function openChangelog(opts = {}) {
     <div class="cl-body">${versions}</div>
   </div>`;
 
+  onCloseCb = onClose;
   document.body.appendChild(overlay);
   window.addEventListener('keydown', onEsc);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(onClose); });
-  overlay.querySelector('#cl-close').addEventListener('click', () => close(onClose));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  overlay.querySelector('#cl-close').addEventListener('click', () => close());
 }
 
 function versionBlock(v, lang, installedVersion, highlight) {
@@ -101,9 +103,11 @@ function formatDate(iso, lang) {
 
 function onEsc(e) { if (e.key === 'Escape') close(); }
 
-function close(onClose) {
+function close() {
   overlay?.remove();
   overlay = null;
   window.removeEventListener('keydown', onEsc);
-  onClose?.();
+  const cb = onCloseCb;
+  onCloseCb = null;
+  cb?.();
 }
