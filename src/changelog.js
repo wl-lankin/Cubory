@@ -9,6 +9,17 @@
 
 export const CHANGELOG = [
   {
+    version: '1.7.2',
+    date: '2026-07-21',
+    entries: [
+      {
+        type: 'improved',
+        de: 'Der Update-Hinweis lässt sich wegklicken. Wer noch nicht aktualisieren möchte, blendet ihn aus - dieselbe Version meldet sich dann nicht bei jedem Start erneut.',
+        en: 'The update notice can now be dismissed. If you would rather not update yet, hide it - the same version will not reappear on every launch.',
+      },
+    ],
+  },
+  {
     version: '1.7.1',
     date: '2026-07-21',
     entries: [
