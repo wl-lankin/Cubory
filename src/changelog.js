@@ -9,6 +9,17 @@
 
 export const CHANGELOG = [
   {
+    version: '1.7.1',
+    date: '2026-07-21',
+    entries: [
+      {
+        type: 'improved',
+        de: 'Sanfterer Start: die Lizenz wird während der Startanimation geprüft, und der Kristall zündet erst, wenn sie steht. Ein Pro-Konto ist damit direkt angemeldet, sobald die Animation durch ist - ohne kurz aufblitzenden Hinweis.',
+        en: 'Smoother start: your licence is checked during the start animation, and the crystal only ignites once it is ready. A Pro account is signed in the moment the animation finishes - with no prompt flashing by.',
+      },
+    ],
+  },
+  {
     version: '1.7.0',
     date: '2026-07-21',
     entries: [
