@@ -13,6 +13,8 @@ import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
 import { playIntro } from './intro.js';
 import { initAccount, initAbout, can, openAccountModal, currentAccount, whenLicenseSettled } from './account.js';
 import { maybeShowNudge } from './nudge.js';
+import { openChangelog, hasUnseenVersion, markVersionSeen } from './changelogModal.js';
+import { CHANGELOG } from './changelog.js';
 import { initFileBrowser, openFileBrowser } from './fileBrowser.js';
 import { initSettings } from './settings.js';
 import { initHdShot, openHdShot } from './hdShot.js';
@@ -98,11 +100,21 @@ initAccount(() => {
 });
 updateProUi();
 
-// Upgrade-Nudge erst, wenn Intro UND Lizenz aufgelöst sind - dann mit dem
-// endgültigen Zustand (currentAccount), nicht dem ersten, der noch anonym
-// sein kann.
-Promise.all([introDone, whenLicenseSettled()]).then(() => {
-  maybeShowNudge(currentAccount(), { onUpgrade: () => openAccountModal() });
+// Nach dem Intro und aufgelöster Lizenz: erst "Was ist neu" (nur nach einem
+// Versionssprung, einmalig), danach ggf. der Upgrade-Nudge. Nie beide Karten
+// gleichzeitig - der Nudge folgt erst, wenn der Verlauf geschlossen ist. Der
+// Nudge nutzt den endgültigen Kontostand, nicht den ersten (noch anonymen).
+Promise.all([introDone, whenLicenseSettled()]).then(async () => {
+  const showNudge = () => maybeShowNudge(currentAccount(), { onUpgrade: () => openAccountModal() });
+  const info = await window.cubory?.appInfo?.();
+  const version = info?.version;
+  if (version && hasUnseenVersion(version) && CHANGELOG.some((v) => v.version === version)) {
+    markVersionSeen(version);
+    openChangelog({ installedVersion: version, highlight: version, whatsNew: true, onClose: showNudge });
+  } else {
+    if (version) markVersionSeen(version);
+    showNudge();
+  }
 });
 
 /* ── Datei öffnen ────────────────────────────────────────────────────────── */

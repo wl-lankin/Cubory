@@ -1,6 +1,7 @@
 // Optionen-Dialog im Zeichnungsblatt-Stil: Autostart, Sitzung, Tray,
 // Standardprogramm, Sprache, Intro, Crash-Reports, Update-Check.
 import { t, LOCALES, storedLang, setLang } from './i18n.js';
+import { openChangelog } from './changelogModal.js';
 
 let modal = null;
 let onLangChange = null;
@@ -59,6 +60,11 @@ async function open() {
     <div class="set-row" style="cursor:default;padding-top:0">
       <span class="account-hint" id="set-update-state">${esc(t('settings.upToDate'))}</span>
       <button class="btn btn-ghost" id="set-check-updates" style="padding:6px 14px">${esc(t('settings.checkUpdates'))}</button>
+    </div>
+
+    <div class="set-row" style="cursor:default">
+      <span>${esc(t('settings.history'))}</span>
+      <button class="btn btn-ghost" id="set-history" style="padding:6px 14px">${esc(t('settings.historyBtn'))}</button>
     </div>
 
     <div class="account-actions" style="justify-content:center">
@@ -127,6 +133,12 @@ async function open() {
           : t('settings.upToDate');
       }, 1500);
     });
+  });
+
+  modal.querySelector('#set-history').addEventListener('click', async () => {
+    const info = await window.cubory.appInfo();
+    close();
+    openChangelog({ installedVersion: info.version });
   });
 
   modal.querySelector('#set-close').addEventListener('click', close);

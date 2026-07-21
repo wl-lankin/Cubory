@@ -1,6 +1,7 @@
 // Account-UI: Titelleisten-Button, Konto-Modal (Login/Registrierung bzw.
 // Kontoübersicht mit Geräten) und der Offline-Verifikations-Banner.
 import { t } from './i18n.js';
+import { openChangelog } from './changelogModal.js';
 import appiconUrl from './assets/appicon.png';
 import wordmarkUrl from './assets/wordmark.png';
 
@@ -330,7 +331,8 @@ export function initAbout() {
             <img src="${appiconUrl}" alt="" style="width:64px;height:64px;margin-bottom:12px" />
       <img src="${wordmarkUrl}" alt="Cubory" style="height:24px;width:auto;margin:0 auto 6px;display:block" />
       <p class="account-hint" style="margin-bottom:14px">The modern CAD viewer</p>
-      <div class="account-row"><span>${escapeHtml(t('about.version'))}</span><span>${escapeHtml(info.version)}</span></div>
+      <div class="account-row"><span>${escapeHtml(t('about.version'))}</span>
+        <button type="button" id="about-version" class="about-version-btn">${escapeHtml(info.version)}<span class="about-version-chev">›</span></button></div>
       <div class="account-row"><span>${escapeHtml(t('about.dev'))}</span>
         <a href="#" id="about-link" style="color:var(--accent-1);text-decoration:none">Wolfgang Linz</a></div>
       <label class="account-hint" style="display:flex;align-items:center;gap:8px;justify-content:center;margin-top:14px;cursor:pointer">
@@ -349,6 +351,10 @@ export function initAbout() {
     document.body.appendChild(overlay);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     overlay.querySelector('#about-close').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('#about-version').addEventListener('click', () => {
+      overlay.remove();
+      openChangelog({ installedVersion: info.version });
+    });
     const crashBox = overlay.querySelector('#about-crash');
     window.cubory.crash.optIn().then((on) => { crashBox.checked = on; });
     crashBox.addEventListener('change', () => window.cubory.crash.setOptIn(crashBox.checked));

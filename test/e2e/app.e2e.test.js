@@ -49,7 +49,13 @@ beforeAll(async () => {
   win.on('dialog', (d) => d.dismiss().catch(() => {}));
   await win.waitForLoadState('domcontentloaded');
   await win.waitForFunction(() => typeof window.__openPath === 'function', null, { timeout: 30000 });
-  // Der Hinweis auf die Testphase legt sich über die Oberfläche.
+  // Diese Version als gesehen markieren, bevor die Startanimation endet - sonst
+  // öffnete sich "Was ist neu" von selbst und legte sich über die Oberfläche.
+  await win.evaluate(async () => {
+    const info = await window.cubory.appInfo();
+    localStorage.setItem('cubory-seen-version', info.version);
+  });
+  // Der Upgrade-Nudge legt sich ebenfalls über die Oberfläche.
   await win.evaluate(() => document.getElementById('nudge-overlay')?.remove());
 }, 120000);
 
@@ -131,4 +137,29 @@ describe('Dateien öffnen', () => {
     expect(reiter.length).toBe(DATEIEN.length);
     expect(reiter.join(' ')).toContain('slicer.3mf');
   });
+});
+
+describe('Versionsverlauf', () => {
+  it('öffnet sich über das Über-Fenster und zeigt die Versionen mit Tags', async () => {
+    // Der Upgrade-Nudge erscheint erst nach Intro und Lizenzprüfung, also evtl.
+    // nach der einmaligen Entfernung im Setup - vor dem Klick sicher wegräumen.
+    await win.evaluate(() => document.getElementById('nudge-overlay')?.remove());
+    await win.click('#btn-about');
+    await win.waitForSelector('#about-version', { timeout: 5000 });
+    await win.click('#about-version');
+    await win.waitForSelector('#changelog-modal .cl-version', { timeout: 5000 });
+    const info = await win.evaluate(() => ({
+      versionen: [...document.querySelectorAll('.cl-vnum')].map((n) => n.textContent),
+      tags: [...new Set([...document.querySelectorAll('.cl-tag')].map((n) => n.textContent))],
+      aktuell: !!document.querySelector('.cl-badge-current'),
+      text: document.querySelector('.cl-text')?.textContent || '',
+    }));
+    // Die laufende (gebaute) Version muss im Verlauf stehen und als aktuell markiert sein.
+    expect(info.versionen).toContain('1.6.0');
+    expect(info.aktuell).toBe(true);
+    expect(info.tags.length).toBeGreaterThan(0);
+    expect(info.text.length).toBeGreaterThan(0);
+    await win.click('#cl-close');
+    await win.waitForSelector('#changelog-modal', { state: 'detached', timeout: 5000 });
+  }, 60000);
 });
