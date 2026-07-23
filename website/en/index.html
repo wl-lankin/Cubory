@@ -271,7 +271,42 @@ border-radius:14px;padding:18px 24px;text-decoration:none;color:var(--text);back
 .dl a:hover{border-color:rgba(255,61,138,.45);transform:translateY(-2px)}
 .dl b{font-family:'Space Grotesk';font-size:15px}
 .dl span{font-size:12px;color:var(--faint)}
-footer{border-top:1px solid var(--border);padding:34px 0;font-size:12.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+/* Fußzeile als technisches Schriftfeld (Title Block): bordiertes Raster mit
+   Passermarken, Millimeterpapier-Grund und beschrifteten Feldern - wie das
+   Schriftfeld unten rechts auf einer echten CAD-Zeichnung. */
+footer{padding:96px 0 48px}
+.titleblock{position:relative;border:1px solid var(--border);border-radius:14px;overflow:hidden;
+background:repeating-linear-gradient(0deg,transparent 0 31px,rgba(160,170,255,.035) 31px 32px),repeating-linear-gradient(90deg,transparent 0 31px,rgba(160,170,255,.035) 31px 32px)}
+.titleblock::before,.titleblock::after{content:"";position:absolute;width:12px;height:12px;border:1px solid rgba(160,170,255,.55);pointer-events:none;z-index:2}
+.titleblock::before{top:9px;left:9px;border-width:1px 0 0 1px}
+.titleblock::after{bottom:9px;right:9px;border-width:0 1px 1px 0}
+.tb-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.15fr}
+.tb-cell{position:relative;padding:28px 26px;border-left:1px solid var(--border);transition:background .25s}
+.tb-cell:first-child{border-left:none}
+.tb-cell:hover{background:rgba(160,170,255,.03)}
+.tb-k{display:block;font-size:9.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.tb-k::before{content:"";display:inline-block;width:5px;height:5px;margin-right:8px;vertical-align:middle;border:1px solid var(--a1);transform:rotate(45deg)}
+.tb-k+.tb-links,.tb-k+.tb-signer{margin-top:15px}
+.tb-k.mt{margin-top:24px}
+.tb-links a{display:block;width:fit-content;color:var(--muted);text-decoration:none;font-size:13px;padding:4px 0;background:linear-gradient(var(--a1),var(--a1)) no-repeat 0 92%/0 1.5px;transition:background-size .28s,color .2s}
+.tb-links a:hover{color:var(--text);background-size:100% 1.5px}
+.tb-brand{display:flex;flex-direction:column}
+.tb-cube{width:40px;height:44px;margin-bottom:16px}
+.tb-name{font-family:'Space Grotesk';font-weight:700;font-size:21px;letter-spacing:.01em;line-height:1}
+.tb-tag{color:var(--muted);font-size:12.5px;margin-top:6px}
+.tb-dim{display:flex;align-items:center;margin-top:auto;padding-top:24px}
+.tb-dim i{flex:1;height:1px;background:rgba(160,170,255,.28);position:relative}
+.tb-dim i::before,.tb-dim i::after{content:"";position:absolute;top:-3px;width:1px;height:7px;background:rgba(160,170,255,.5)}
+.tb-dim i::before{left:0}.tb-dim i::after{right:0}
+.tb-signer{display:inline-block;font-family:'Space Grotesk';font-size:16px;color:var(--text);text-decoration:none}
+.tb-signer:hover{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+.sig{display:block;width:132px;height:22px;margin-top:12px;overflow:visible}
+.sig path{stroke-dasharray:100;stroke-dashoffset:100;animation:sigdraw 1.5s ease .5s forwards}
+@keyframes sigdraw{to{stroke-dashoffset:0}}
+.tb-strip{display:flex;flex-wrap:wrap;align-items:center;gap:9px 20px;padding:15px 26px;border-top:1px solid var(--border);font-size:11px;letter-spacing:.05em;color:var(--faint)}
+.tb-strip b{color:var(--muted);font-weight:600}
+.tb-strip .sep{width:4px;height:4px;border:1px solid rgba(160,170,255,.4);transform:rotate(45deg)}
+@media(max-width:860px){.tb-grid{grid-template-columns:1fr}.tb-cell{border-left:none;border-top:1px solid var(--border)}.tb-cell:first-child{border-top:none}}
 /* ── Technische-Zeichnung-Ästhetik ── */
 .mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
 .dim{display:flex;align-items:center;gap:14px;justify-content:center;color:var(--faint);
@@ -547,8 +582,60 @@ color:var(--text);text-decoration:none;border-bottom:1px dashed rgba(160,170,255
 
 
 <footer>
-  <span>© 2026 Cubory · The modern CAD viewer</span>
-  <span><a href="/impressum.html" style="color:var(--faint)">Legal notice</a> · <a href="/datenschutz.html" style="color:var(--faint)">Privacy</a> · <a href="/agb.html" style="color:var(--faint)">Terms</a> · <a href="/agb.html#widerruf" style="color:var(--faint)">Refund policy</a> · <a href="/en/open-dxf-file.html">Open DXF</a> · <a href="/en/open-step-file.html">Open STEP files</a> · <a href="/" hreflang="de">Deutsch</a> · Built by <a href="https://wolfgang-linz.de" style="color:var(--muted)">Wolfgang Linz</a></span>
+  <div class="titleblock">
+    <div class="tb-grid">
+      <div class="tb-cell tb-brand">
+        <svg class="tb-cube" viewBox="0 0 40 44" fill="none" aria-hidden="true">
+          <defs><linearGradient id="tbGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ff3d8a"></stop><stop offset="1" stop-color="#7c5cff"></stop>
+          </linearGradient></defs>
+          <path d="M20 2 37 12V32L20 42 3 32V12Z" stroke="url(#tbGrad)" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M20 22 37 12M20 22 3 12M20 22V42" stroke="url(#tbGrad)" stroke-width="1.5" stroke-linejoin="round" opacity=".8"></path>
+        </svg>
+        <span class="tb-name">Cubory</span>
+        <span class="tb-tag">The modern CAD viewer</span>
+        <div class="tb-dim"><i></i></div>
+      </div>
+
+      <div class="tb-cell">
+        <span class="tb-k">Legal</span>
+        <div class="tb-links">
+          <a href="/impressum.html">Legal notice</a>
+          <a href="/datenschutz.html">Privacy</a>
+          <a href="/agb.html">Terms</a>
+          <a href="/agb.html#widerruf">Refund policy</a>
+        </div>
+      </div>
+
+      <div class="tb-cell">
+        <span class="tb-k">Guides</span>
+        <div class="tb-links">
+          <a href="/en/open-dxf-file.html">Open DXF</a>
+          <a href="/en/open-step-file.html">Open STEP files</a>
+        </div>
+        <span class="tb-k mt">Language</span>
+        <div class="tb-links"><a href="/" hreflang="de">Deutsch</a></div>
+      </div>
+
+      <div class="tb-cell tb-sign">
+        <span class="tb-k">Drawn by</span>
+        <a href="https://wolfgang-linz.de" class="tb-signer">Wolfgang Linz</a>
+        <svg class="sig" viewBox="0 0 132 22" fill="none" aria-hidden="true">
+          <path pathLength="100" d="M3 15C13 4 19 4 24 13c4 7 11 7 15-2 4-9 11-8 16 1 4 8 12 7 18-3 5-8 14-5 20 3 5 7 18 5 33-6" stroke="url(#tbGrad)" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      </div>
+    </div>
+
+    <div class="tb-strip">
+      <span>© 2026 Cubory</span>
+      <i class="sep"></i>
+      <span>Scale <b>1:1</b></span>
+      <i class="sep"></i>
+      <span>Sheet <b>1/1</b></span>
+      <i class="sep"></i>
+      <span>The modern CAD viewer</span>
+    </div>
+  </div>
 </footer>
 </div>
 <script type="module" src="/main.js"></script>
