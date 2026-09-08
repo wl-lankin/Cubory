@@ -9,6 +9,22 @@
 
 export const CHANGELOG = [
   {
+    version: '1.7.3',
+    date: '2026-09-08',
+    entries: [
+      {
+        type: 'fixed',
+        de: 'Explosionsansicht: Baugruppen, in denen dasselbe Teil mehrfach verbaut ist, ziehen jetzt richtig auseinander. Bisher rückten diese Teile gemeinsam in dieselbe Richtung, statt sich voneinander zu trennen.',
+        en: 'Exploded view: assemblies that use the same part more than once now separate properly. Those parts used to move together in one direction instead of apart.',
+      },
+      {
+        type: 'fixed',
+        de: 'Das Raster liegt jetzt unter dem Modell. Bei Baugruppen, die in ihrer Datei weit vom Nullpunkt entfernt konstruiert sind, lag es bisher daneben.',
+        en: 'The grid now sits underneath the model. For assemblies modelled far from the origin it used to sit beside them.',
+      },
+    ],
+  },
+  {
     version: '1.7.2',
     date: '2026-07-21',
     entries: [
