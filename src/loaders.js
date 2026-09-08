@@ -8,7 +8,7 @@ import { unzipSync, zipSync } from 'three/examples/jsm/libs/fflate.module.js';
 import { parseString as parseDxf, denormalise, toPolylines, colors as dxfColors } from 'dxf';
 import occtimportjs from 'occt-import-js';
 import occtWasmUrl from 'occt-import-js/dist/occt-import-js.wasm?url';
-import { COLORS } from './viewer.js';
+import { COLORS } from 'cubory-core';
 import { t } from './i18n.js';
 
 let occtPromise = null;

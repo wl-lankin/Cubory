@@ -7,7 +7,7 @@ import './style.css';
 import ambientUrl from './assets/ambient.jpg';
 import wordmarkUrl from './assets/wordmark.png';
 import appiconUrl from './assets/appicon.png';
-import { Viewer } from './viewer.js';
+import { Viewer } from 'cubory-core';
 import { loadCadFile } from './loaders.js';
 import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
 import { playIntro } from './intro.js';
