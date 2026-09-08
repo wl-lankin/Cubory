@@ -4,7 +4,7 @@
 // jedem 3D-Modell (Dreiecksflächen) und muss sich sauber zurücklesen lassen.
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { exportFormats, generateExport } from '../src/exporters.js';
+import { exportFormats, generateExport } from 'cubory-core';
 import { loadCadFile } from '../src/loaders.js';
 
 /** Viewer-Stub mit einem Wurzelknoten aus 2D-Liniensegmenten. */

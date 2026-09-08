@@ -67,6 +67,19 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      # cubory-core ist privat. Der Deploy-Key darf nur lesen und gilt nur
+      # für dieses eine Paket-Repository.
+      - name: Zugang zum privaten Paket
+        shell: bash
+        env:
+          CUBORY_CORE_KEY: ${{ secrets.CUBORY_CORE_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CUBORY_CORE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git config --global core.sshCommand "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new"
+
       - run: npm ci
 
       - name: Unit-Tests
@@ -118,6 +131,19 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      # cubory-core ist privat. Der Deploy-Key darf nur lesen und gilt nur
+      # für dieses eine Paket-Repository.
+      - name: Zugang zum privaten Paket
+        shell: bash
+        env:
+          CUBORY_CORE_KEY: ${{ secrets.CUBORY_CORE_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CUBORY_CORE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git config --global core.sshCommand "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new"
+
       - run: npm ci
       - run: npx vite build
       - name: Installer bauen

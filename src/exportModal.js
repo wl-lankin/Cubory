@@ -5,7 +5,7 @@ import { t } from './i18n.js';
 import { can, openAccountModal } from './account.js';
 import { slug } from './modalUtils.js';
 import { openSaveModal } from './saveModal.js';
-import { exportFormats, generateExport } from './exporters.js';
+import { exportFormats, generateExport } from 'cubory-core';
 
 let viewer = null;
 let getModel = () => null;
