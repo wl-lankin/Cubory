@@ -142,7 +142,7 @@
     }
   },
   "dependencies": {
-    "cubory-core": "github:wl-lankin/cubory-core#v0.1.0",
+    "cubory-core": "github:wl-lankin/cubory-core#v0.3.0",
     "dxf": "^4.7.0",
     "electron-updater": "^6.8.9",
     "node-machine-id": "^1.1.12",
