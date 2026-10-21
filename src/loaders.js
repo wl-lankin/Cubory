@@ -76,8 +76,24 @@ function repairDxf(raw) {
   return out.join('\n');
 }
 
+// DXF up to AutoCAD 2004 is stored in the codepage named in the header
+// ($DWGCODEPAGE), in practice almost always Windows-1252 here.
+function decodeDxf(arrayBuffer) {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(arrayBuffer);
+  } catch {
+    const head = new TextDecoder('latin1').decode(arrayBuffer.slice(0, 64 * 1024));
+    const cp = /\$DWGCODEPAGE\s*\r?\n\s*3\s*\r?\n\s*ANSI_(\d{3,4})/i.exec(head)?.[1];
+    try {
+      return new TextDecoder(cp ? `windows-${cp}` : 'windows-1252').decode(arrayBuffer);
+    } catch {
+      return new TextDecoder('windows-1252').decode(arrayBuffer);
+    }
+  }
+}
+
 function loadDxf(arrayBuffer) {
-  const text = repairDxf(new TextDecoder('utf-8').decode(arrayBuffer));
+  const text = repairDxf(decodeDxf(arrayBuffer));
   const parsed = parseDxf(text);
   const entities = denormalise(parsed);
 
@@ -135,6 +151,7 @@ function loadDxf(arrayBuffer) {
     group.add(layerObj);
     layers.push({ name: layerName, color: displayColor, count });
   }
+  if (!layers.length) throw new Error(t('error.noGeometry'));
 
   return {
     object: group,
@@ -319,8 +336,24 @@ function meshMaterial(flat = false) {
   });
 }
 
+// three only treats an STL as binary when its size is exactly 84 + 50·n bytes.
+// Many CAD programs write "solid ..." into the binary header and some append
+// padding, which three then misreads as an empty ASCII file.
+function binaryStlSlice(arrayBuffer) {
+  if (arrayBuffer.byteLength < 84) return null;
+  const n = new DataView(arrayBuffer).getUint32(80, true);
+  const size = 84 + 50 * n;
+  return n > 0 && size <= arrayBuffer.byteLength ? arrayBuffer.slice(0, size) : null;
+}
+
 function loadStl(arrayBuffer) {
-  const geo = new STLLoader().parse(arrayBuffer);
+  let geo;
+  try {
+    geo = new STLLoader().parse(binaryStlSlice(arrayBuffer) ?? arrayBuffer);
+  } catch {
+    throw new Error(t('error.noGeometry'));
+  }
+  if (!geo.getAttribute('position')?.count) throw new Error(t('error.noGeometry'));
   const mesh = new THREE.Mesh(geo, meshMaterial(needsFlatShading(geo)));
   const group = new THREE.Group();
   group.add(mesh);
@@ -346,6 +379,7 @@ function loadObj(arrayBuffer) {
       if (pos) triangles += (o.geometry.index ? o.geometry.index.count : pos.count) / 3;
     }
   });
+  if (!triangles) throw new Error(t('error.noGeometry'));
   return {
     object,
     mode: '3d',
@@ -407,30 +441,39 @@ function collectParts(root, keepColors = false) {
  *  die Objektdateien deshalb nach vorne: beim Auflösen des Verweises liegen sie
  *  dann schon im gemeinsamen Objektspeicher. Praktisch jede aus einem Slicer
  *  exportierte 3MF-Datei ist so aufgebaut. */
+const UNIT_MM = { micron: 0.001, millimeter: 1, centimeter: 10, inch: 25.4, foot: 304.8, meter: 1000 };
+
 function prepare3mf(arrayBuffer) {
   let zip;
   try {
     zip = unzipSync(new Uint8Array(arrayBuffer));
   } catch {
-    return arrayBuffer; // kein lesbares Archiv - der Loader meldet das selbst
+    return { buffer: arrayBuffer, scale: 1 }; // kein lesbares Archiv - der Loader meldet das selbst
   }
   const names = Object.keys(zip);
   const isRoot = (n) => n.toLowerCase() === '3d/3dmodel.model';
+  // three reads the unit attribute but never applies it; Cubory shows mm.
+  const root = names.find(isRoot);
+  const unit = root && /<model\b[^>]*\bunit\s*=\s*["']([a-z]+)["']/i
+    .exec(new TextDecoder().decode(zip[root].subarray(0, 4096)))?.[1]?.toLowerCase();
+  const scale = UNIT_MM[unit] ?? 1;
   const external = names.filter((n) => /^3D\/.+\.model$/i.test(n) && !isRoot(n));
-  if (!external.length) return arrayBuffer; // klassische 3MF, nichts zu tun
+  if (!external.length) return { buffer: arrayBuffer, scale }; // klassische 3MF, nichts zu tun
 
   const ordered = {};
   for (const n of external) ordered[n] = zip[n];
   for (const n of names) if (!(n in ordered)) ordered[n] = zip[n];
   // Ohne Kompression neu packen - das Archiv wird nur umsortiert und bleibt
   // im Arbeitsspeicher, erneutes Deflaten wäre verschenkte Zeit.
-  return zipSync(ordered, { level: 0 });
+  return { buffer: zipSync(ordered, { level: 0 }), scale };
 }
 
 function load3mf(arrayBuffer) {
   let object;
   try {
-    object = new ThreeMFLoader().parse(prepare3mf(arrayBuffer));
+    const { buffer, scale } = prepare3mf(arrayBuffer);
+    object = new ThreeMFLoader().parse(buffer);
+    if (scale !== 1) object.scale.multiplyScalar(scale);
   } catch {
     // three meldet Archivprobleme auf Englisch und mit Klassennamen - für den
     // Nutzer ist nur relevant, dass die Datei nicht lesbar ist.
@@ -449,7 +492,12 @@ function load3mf(arrayBuffer) {
 }
 
 function loadPly(arrayBuffer) {
-  const geo = new PLYLoader().parse(arrayBuffer);
+  let geo;
+  try {
+    geo = new PLYLoader().parse(arrayBuffer);
+  } catch {
+    throw new Error(t('error.noGeometry'));
+  }
   const group = new THREE.Group();
   const vertexColors = !!geo.getAttribute('color');
   const count = geo.getAttribute('position')?.count ?? 0;
@@ -492,9 +540,11 @@ function loadPly(arrayBuffer) {
 
 function loadGltf(arrayBuffer, format) {
   return new Promise((resolve, reject) => {
-    // Zweites Argument ist der Basispfad für externe Texturen - lokal geladene
-    // Dateien bringen keine mit, .glb hat ohnehin alles eingebettet.
-    new GLTFLoader().parse(
+    // Only embedded data is loaded. A .gltf pointing at https://... would
+    // otherwise make an outside request just by being opened.
+    const manager = new THREE.LoadingManager();
+    manager.setURLModifier((url) => (/^(data|blob):/i.test(url) ? url : 'data:application/octet-stream,'));
+    new GLTFLoader(manager).parse(
       arrayBuffer,
       '',
       (gltf) => {

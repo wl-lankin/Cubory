@@ -38,8 +38,22 @@ async function render(dirPath) {
   ]);
   if (!modal) return;
   if (!listRes.ok) {
-    modal.querySelector('.fb-list')?.replaceChildren(
-      Object.assign(document.createElement('p'), { className: 'fb-empty', textContent: listRes.error.message }));
+    const list = modal.querySelector('.fb-list');
+    const msg = Object.assign(document.createElement('p'), { className: 'fb-empty', textContent: listRes.error.message });
+    if (list) {
+      list.replaceChildren(msg);
+      return;
+    }
+    // Nothing rendered yet: still offer the system dialog as a way out.
+    modal.innerHTML = `<div class="fb-card glass sheet sheet-corners">
+      <div class="fb-list"></div>
+      <div class="fb-foot">
+        <button class="btn btn-ghost" id="fb-system">${esc(t('browser.system'))}</button>
+        <button class="btn btn-ghost" id="fb-close">${esc(t('about.close'))}</button>
+      </div>
+    </div>`;
+    modal.querySelector('.fb-list').replaceChildren(msg);
+    wireFoot();
     return;
   }
   const d = listRes.data;
@@ -85,6 +99,10 @@ async function render(dirPath) {
       await openFile(el.dataset.file);
     });
   });
+  wireFoot();
+}
+
+function wireFoot() {
   modal.querySelector('#fb-system').addEventListener('click', async () => {
     close();
     await systemDialog();

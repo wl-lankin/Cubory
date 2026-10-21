@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('cubory', {
   openDialog: () => ipcRenderer.invoke('dialog:open'),
@@ -9,27 +9,10 @@ contextBridge.exposeInMainWorld('cubory', {
   platform: process.platform,
   appInfo: () => ipcRenderer.invoke('app:info'),
   openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
+  pathForFile: (file) => {
+    try { return webUtils.getPathForFile(file) || null; } catch { return null; }
+  },
 
-  account: {
-    state: () => ipcRenderer.invoke('account:state'),
-    whenReady: () => ipcRenderer.invoke('account:whenReady'),
-    login: (email, password) => ipcRenderer.invoke('account:login', email, password),
-    register: (name, email, password) => ipcRenderer.invoke('account:register', name, email, password),
-    logout: () => ipcRenderer.invoke('account:logout'),
-    devices: () => ipcRenderer.invoke('account:devices'),
-    deactivateDevice: (id) => ipcRenderer.invoke('account:deactivateDevice', id),
-    checkout: (plan) => ipcRenderer.invoke('account:checkout', plan),
-    verifyEmail: (code) => ipcRenderer.invoke('account:verifyEmail', code),
-    resendCode: () => ipcRenderer.invoke('account:resendCode'),
-    deleteAccount: (password) => ipcRenderer.invoke('account:delete', password),
-    portal: () => ipcRenderer.invoke('account:portal'),
-    onChange: (callback) => {
-      ipcRenderer.on('account:changed', (_event, state) => callback(state));
-    },
-  },
-  license: {
-    can: (key) => ipcRenderer.invoke('license:can', key),
-  },
   screenshot: {
     lastDir: () => ipcRenderer.invoke('screenshot:lastDir'),
     saveTo: (payload) => ipcRenderer.invoke('screenshot:saveTo', payload),
@@ -54,14 +37,10 @@ contextBridge.exposeInMainWorld('cubory', {
     saveTabs: (paths) => ipcRenderer.send('session:tabs', paths),
     onRestore: (callback) => ipcRenderer.on('restore-session', (_e, paths) => callback(paths)),
   },
-  crash: {
-    optIn: () => ipcRenderer.invoke('crash:optIn'),
-    setOptIn: (on) => ipcRenderer.invoke('crash:setOptIn', on),
-    report: (payload) => ipcRenderer.send('crash:report', payload),
-  },
   update: {
     state: () => ipcRenderer.invoke('update:state'),
     install: () => ipcRenderer.invoke('update:install'),
+    check: () => ipcRenderer.invoke('update:check'),
     onChange: (callback) => {
       ipcRenderer.on('update:state', (_event, state) => callback(state));
     },

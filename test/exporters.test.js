@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { exportFormats, generateExport } from 'cubory-core';
 import { loadCadFile } from '../src/loaders.js';
 
-/** Viewer-Stub mit einem Wurzelknoten aus 2D-Liniensegmenten. */
+/** Viewer-Stub (cubory-core ab 0.4: exportModel) mit einem Wurzelknoten aus 2D-Liniensegmenten. */
 function viewer2d(segments) {
   const pts = [];
   for (const [x1, y1, x2, y2] of segments) pts.push(x1, y1, 0, x2, y2, 0);
@@ -15,7 +15,8 @@ function viewer2d(segments) {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
   const root = new THREE.Group();
   root.add(new THREE.LineSegments(geo));
-  return { exportRoot: () => root, captureScreenshot: () => 'data:image/png;base64,AAAA' };
+  root.updateMatrixWorld(true);
+  return { exportModel: () => root, captureScreenshot: () => 'data:image/png;base64,AAAA' };
 }
 
 /** Viewer-Stub mit einem Mesh aus Dreiecken (je [x,y,z] pro Ecke). */
@@ -26,7 +27,8 @@ function viewer3d(triangles) {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
   const root = new THREE.Group();
   root.add(new THREE.Mesh(geo));
-  return { exportRoot: () => root, captureScreenshot: () => 'data:image/png;base64,AAAA' };
+  root.updateMatrixWorld(true);
+  return { exportModel: () => root, captureScreenshot: () => 'data:image/png;base64,AAAA' };
 }
 
 const decode = (b64) => Buffer.from(b64, 'base64').toString('utf8');

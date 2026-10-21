@@ -40,7 +40,7 @@ die brauchen kommerziell lizenzierte Bibliotheken.
 
 ## Funktionen
 
-Kostenlos und ohne Zeitlimit:
+Kostenlos, ohne Konto und ohne Zeitlimit:
 
 - Öffnen per Dialog, Drag & Drop oder Doppelklick im Finder/Explorer
   (Dateiverknüpfungen sind registriert)
@@ -54,20 +54,18 @@ Kostenlos und ohne Zeitlimit:
 - Modell-Info: Abmessungen in mm, Elemente, Dreiecke oder Punkte, Dateigröße
 - 20 Sprachen, Standard ist die Systemsprache
 - Optionen: Autostart, zuletzt geöffnete Dateien wieder öffnen, Startanimation,
-  anonyme Fehlerberichte, Sprache, Standardprogramm für Dateitypen,
+  Sprache, Standardprogramm für Dateitypen,
   Update-Prüfung. Dazu auf Windows und Linux „Im Hintergrund weiterlaufen" -
   unter macOS ausgeblendet, weil dort das Schließen des Fensters die App
   ohnehin nicht beendet
 
-Cubory Pro (7 Tage kostenlos bei jedem neuen Konto):
-
 - Messen mit Einrasten auf Ecken und Kanten
 - Schnittansichten entlang X, Y und Z
 - Explosionsansichten für Baugruppen
-- Export nach STL und SVG, HD-Screenshots
+- Export (2D: SVG, PNG; 3D: STL, OBJ, PLY, GLB) und HD-Screenshots
 
-Läuft die Testphase ab, wechselt die App auf Free. Alle Formate, Ansichten und
-Ebenen bleiben unbegrenzt nutzbar - gesperrt werden nur die Pro-Werkzeuge.
+Cubory sendet keine Daten an einen eigenen Server. Die einzige Verbindung nach
+außen ist die Update-Prüfung bei GitHub.
 
 ## Tastatur & Maus
 
@@ -81,18 +79,20 @@ Ebenen bleiben unbegrenzt nutzbar - gesperrt werden nur die Pro-Werkzeuge.
 
 ## Installation
 
-Fertige Installer liegen nach dem Build in `release/`, aktuell in Version 1.5.3:
+Die Installer liegen auf GitHub unter
+[Releases](https://github.com/wl-lankin/Cubory/releases/latest), immer auch
+unter festem Namen:
 
-- `Cubory-1.5.3-arm64.dmg` - macOS (Apple Silicon)
-- `Cubory-1.5.3.dmg` - macOS (Intel)
-- `Cubory Setup 1.5.3.exe` - Windows (64-bit)
-- `Cubory-1.5.3.AppImage` - Linux (x64)
+- `Cubory-macOS-AppleSilicon.dmg` - macOS (Apple Silicon)
+- `Cubory-macOS-Intel.dmg` - macOS (Intel)
+- `Cubory-Windows-Setup.exe` - Windows (64-bit)
+- `Cubory-Linux.AppImage` - Linux (x64)
 
 Die Builds sind nicht code-signiert: macOS-Gatekeeper bzw. Windows SmartScreen
 zeigen beim ersten Start eine Warnung, die sich über „Trotzdem öffnen"
-bestätigen lässt. Automatische Updates laufen über electron-updater gegen
-`https://cubory.app/downloads`; auf macOS greift mangels Signatur ein manueller
-Hinweis statt der stillen Installation.
+bestätigen lässt. Automatische Updates laufen über electron-updater gegen die
+GitHub-Releases; auf macOS greift mangels Signatur ein Hinweis mit
+Download-Link statt der stillen Installation.
 
 ## Entwicklung
 
@@ -138,14 +138,9 @@ npm run dist:linux # nur AppImage (x64)
 
 ### Ausliefern
 
-`dev` ist der Arbeitsbranch, `main` der Auslieferungsstand. Beim Merge nach
-`main` baut GitHub Actions die Installer, lädt sie auf den Server und bringt
-Website und API auf denselben Stand. Details und die einmalige Servereinrichtung
-stehen in [docs/deployment.md](docs/deployment.md).
-
-Ohne erhöhte Version in `package.json` bekommen bestehende Installationen kein
-Update - die Pipeline lädt trotzdem hoch und schreibt eine Warnung in die
-Job-Zusammenfassung.
+`dev` ist der Arbeitsbranch, `main` der Auslieferungsstand. CI testet jeden
+Push. Ein Tag `vX.Y.Z` baut die Installer und legt einen Release-Entwurf auf
+GitHub an; Ablauf in [docs/RELEASE.md](docs/RELEASE.md).
 
 ## Sprachen
 
@@ -175,50 +170,16 @@ electron/          Hauptprozess (main.cjs) und Preload-Bridge (preload.cjs)
 src/main.js        UI-Logik, Datei öffnen, Sprachumschalter
 src/viewer.js      three.js-Szene: Kamera, Licht, Raster, Ansichten, Teil-Isolation
 src/loaders.js     Import aller Formate
-src/proFeatures.js Messen, Schnitt, Explosion, Export
+src/tools.js       Messen, Schnitt, Explosion, Export
 src/i18n.js        Sprachauswahl und t()-Funktion
 src/strings/       en.js (Quelle), de.js (handgepflegt), Rest generiert
-backend/           Go/Gin-API: Konten, Lizenzen, Billing, E-Mail
-website/           Marketingseite (de und en), Kundenportal, Admin, Rechtstexte
+website/           Marketingseite (de und en), Rechtstexte
 test/              Unit-Tests und Rauchtest, Fixtures im Code erzeugt
-deploy/            Servereinrichtung und API-Rollout mit Rollback
-.github/workflows/ CI und Auslieferung
-scripts/           translate-locales.mjs (Ollama), build-en.mjs, build-guides.mjs
-docs/              Screenshots, Deployment, Lizenz-Architektur
+.github/workflows/ CI (ci.yml) und Release per Tag (release.yml)
+scripts/           translate-locales.mjs (Ollama), release-notes.mjs, build-en.mjs, build-guides.mjs
+docs/              Screenshots, Release-Ablauf
 release/           fertige Installer (nach npm run dist)
 ```
-
-## Lizenz-System
-
-Architektur: [docs/licensing-architecture.md](docs/licensing-architecture.md).
-Umgesetzt: Go/Gin-Backend (`backend/`), Electron-Integration, Kundenportal und
-Admin-Backend (`website/portal/`, `website/admin/`).
-
-- **Konten & Trial**: Registrierung mit E-Mail-Bestätigung per Code, danach
-  7 Tage Cubory Pro (nicht zurücksetzbar), anschließend automatisch Free
-- **Lizenzen**: Trial / Free / Pro (monthly, yearly, lifetime); Entitlements als
-  Daten, die App fragt nur `can('export')`
-- **Offline**: Ed25519-signierte Lizenz-Tokens mit rollierendem 30-Tage-Fenster,
-  gerätegebunden; Schutz gegen Zurückstellen der Uhr
-- **Geräte**: Limit pro Plan, Verwaltung in App und Portal
-- **Billing**: Paddle hinter einem `BillingProvider`-Interface (Dev-Provider
-  ohne Keys, Stripe-Implementierung liegt weiterhin bei), Webhooks idempotent
-- **E-Mails**: Bestätigungscode, Willkommen, Passwort zurücksetzen, Trial-Ende -
-  als HTML im App-Design mit Textfassung im selben Versand
-
-```bash
-cd backend
-make db-create   # PostgreSQL-Datenbanken anlegen (einmalig)
-make run         # API auf :8880 (Migrationen laufen automatisch)
-make test        # Tests gegen cubory_test
-```
-
-Die App verbindet sich per `CUBORY_API_URL` (Default: https://api.cubory.app).
-Paddle wird über `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET` und
-`PADDLE_PRICE_MONTHLY|YEARLY|LIFETIME` aktiviert; SMTP über `CUBORY_SMTP_*`.
-Für Produktion sind `CUBORY_JWT_SECRET` und `CUBORY_LICENSE_SIGNING_SEED`
-Pflicht; der zugehörige Public Key muss in
-`electron/services/accountManager.cjs` eingetragen werden.
 
 ## Technik
 

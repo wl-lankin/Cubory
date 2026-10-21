@@ -1,8 +1,5 @@
-// Pro-Features: Messen, Schnittansicht, Explosionsansicht, Export.
-// Jedes Feature prüft sein Entitlement in der UI; die Durchsetzung des
-// Exports passiert zusätzlich im Main-Prozess.
+// Werkzeuge: Messen, Schnittansicht, Explosionsansicht, Export.
 import { t } from './i18n.js';
-import { can, openAccountModal } from './account.js';
 import { initExportModal, openExport } from './exportModal.js';
 
 let viewer = null;
@@ -13,7 +10,7 @@ let explodeOn = false;
 
 const $ = (id) => document.getElementById(id);
 
-export function initProFeatures(v, currentModel) {
+export function initTools(v, currentModel) {
   viewer = v;
   getModel = currentModel;
   initExportModal(v, currentModel);
@@ -53,15 +50,8 @@ export function initProFeatures(v, currentModel) {
   });
 }
 
-function requirePro(entitlement) {
-  if (can(entitlement)) return true;
-  alert(t('pro.locked'));
-  openAccountModal();
-  return false;
-}
-
 /** Von der Toolbar aufgerufen; true = Toggle-Zustand für den Button. */
-export function handleProAction(action, btn) {
+export function handleToolAction(action, btn) {
   switch (action) {
     case 'measure': return toggleMeasure(btn);
     case 'section': return toggleSection(btn);
@@ -72,7 +62,7 @@ export function handleProAction(action, btn) {
 }
 
 /** Beim Laden eines neuen Modells: alles zurücksetzen. */
-export function resetProFeatures() {
+export function resetTools() {
   viewer?.setExplode(0);
   viewer?.setSection(null);
   viewer?.clearMeasurements();
@@ -85,23 +75,9 @@ export function resetProFeatures() {
   ['tool-measure', 'tool-section', 'tool-explode'].forEach((id) => $(id)?.classList.remove('on'));
 }
 
-export function updateProLocks() {
-  const locks = {
-    'tool-measure': 'measurements',
-    'tool-section': 'section_views',
-    'tool-explode': 'exploded_views',
-    'tool-export': 'export',
-    'tool-hdshot': 'hires_screenshot',
-  };
-  for (const [id, ent] of Object.entries(locks)) {
-    $(id)?.classList.toggle('locked', !can(ent));
-  }
-}
-
 /* ── Messen ──────────────────────────────────────────────────────────────── */
 
 function toggleMeasure() {
-  if (!measuring && !requirePro('measurements')) return false;
   measuring = !measuring;
   $('viewport').classList.toggle('measuring', measuring);
   if (!measuring) {
@@ -161,7 +137,6 @@ function roundMm(v) {
 /* ── Schnittansicht ──────────────────────────────────────────────────────── */
 
 function toggleSection() {
-  if (!sectionOn && !requirePro('section_views')) return false;
   sectionOn = !sectionOn;
   if (!sectionOn) {
     viewer.setSection(null);
@@ -214,7 +189,6 @@ function toggleSection() {
 /* ── Explosionsansicht ───────────────────────────────────────────────────── */
 
 function toggleExplode() {
-  if (!explodeOn && !requirePro('exploded_views')) return false;
   explodeOn = !explodeOn;
   if (!explodeOn) {
     viewer.setExplode(0);
@@ -236,8 +210,6 @@ function toggleExplode() {
   });
   return true;
 }
-
-/* ── Export ──────────────────────────────────────────────────────────────── */
 
 /* ── Panel-Helfer ────────────────────────────────────────────────────────── */
 

@@ -2,7 +2,6 @@
 // (DXF/DWG) SVG oder PNG, für 3D STL, OBJ, PLY oder GLB. SVG lässt sich als
 // Quelltext in die Zwischenablage kopieren.
 import { t } from './i18n.js';
-import { can, openAccountModal } from './account.js';
 import { slug } from './modalUtils.js';
 import { openSaveModal } from './saveModal.js';
 import { exportFormats, generateExport } from 'cubory-core';
@@ -16,10 +15,6 @@ export function initExportModal(viewerRef, modelFn) {
 }
 
 export function openExport() {
-  if (!can('export')) {
-    openAccountModal();
-    return;
-  }
   const model = getModel();
   if (!model) return;
 

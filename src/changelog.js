@@ -9,6 +9,32 @@
 
 export const CHANGELOG = [
   {
+    version: '2.0.0',
+    date: '2026-10-21',
+    entries: [
+      {
+        type: 'new',
+        de: 'Cubory ist jetzt komplett frei: Messen, Schnittansicht, Explosionsansicht, Export und HD-Screenshot stehen allen ohne Konto zur Verfügung. Anmeldung, Lizenzen und der Upgrade-Hinweis entfallen.',
+        en: 'Cubory is now completely free: measuring, section view, exploded view, export and HD screenshots are available to everyone without an account. Sign-in, licences and the upgrade prompt are gone.',
+      },
+      {
+        type: 'improved',
+        de: 'Updates kommen jetzt über GitHub. Cubory sendet keine Daten mehr an einen eigenen Server, auch keine Absturzberichte.',
+        en: 'Updates now come from GitHub. Cubory no longer sends any data to its own server, including crash reports.',
+      },
+      {
+        type: 'fixed',
+        de: 'Export: STL, OBJ, PLY und 3D-DXF behalten die Lage aus der CAD-Datei. Bisher lag das Teil im Slicer auf dem Rücken. Ausgeblendete Teile, Kantenlinien und eine geöffnete Explosionsansicht landen nicht mehr in der Datei.',
+        en: 'Export: STL, OBJ, PLY and 3D DXF keep the orientation from the CAD file. Parts used to arrive in the slicer lying on their back. Hidden parts, edge lines and an open exploded view no longer end up in the file.',
+      },
+      {
+        type: 'fixed',
+        de: 'Viele Fehler beim Öffnen behoben: DWG per Doppelklick oder Drag & Drop, binäre STL mit „solid“-Kopf, Umlaute in älteren DXF, Einheiten in 3MF, fehlende Ordner im Datei-Browser. Raster, Drahtgitter und Kanten gelten jetzt pro Tab.',
+        en: 'Many opening issues fixed: DWG by double click or drag and drop, binary STL with a "solid" header, accented characters in older DXF, units in 3MF, missing folders in the file browser. Grid, wireframe and edges now apply per tab.',
+      },
+    ],
+  },
+  {
     version: '1.7.3',
     date: '2026-09-08',
     entries: [

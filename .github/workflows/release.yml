@@ -1,121 +1,27 @@
-name: CI & Release
+# Builds the installers for macOS, Windows and Linux and attaches them to a DRAFT GitHub release.
+# Installed apps only see the update once the draft is published. Trigger: push a tag like v2.0.0
+# (see docs/RELEASE.md).
+#
+# Every installer is attached twice: with the version in the name (referenced by the latest*.yml
+# files electron-updater reads) and under a stable name, so the website can always link to
+# releases/latest/download/<stable name>.
 
-# Auf dev und in Pull Requests laufen nur die Tests. Landet etwas auf main
-# (also beim Merge von dev), kommen Build und Rollout dazu.
+name: Release
+
 on:
   push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+    tags: ["v*"]
 
-# Nur Leserechte. paths-filter braucht in Pull Requests zusätzlich Zugriff auf
-# die Dateiliste des PR - die holt es über die API, nicht über den Git-Verlauf.
 permissions:
-  contents: read
-  pull-requests: read
-
-# Zwei parallele Rollouts würden sich auf dem Server gegenseitig überschreiben.
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+  contents: write
 
 env:
-  DEPLOY_HOST: 91.98.161.167
-  DEPLOY_USER: deploy
-  WEBROOT: /var/www/cubory
+  TAG: ${{ github.ref_name }}
 
 jobs:
-  # Nur bauen, was sich geändert hat - ein Website-Tippfehler soll keine
-  # teure macOS-Buildzeit kosten.
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      app: ${{ steps.filter.outputs.app }}
-      website: ${{ steps.filter.outputs.website }}
-      backend: ${{ steps.filter.outputs.backend }}
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 2
-      - uses: dorny/paths-filter@v4
-        id: filter
-        with:
-          filters: |
-            app:
-              - 'src/**'
-              - 'electron/**'
-              - 'assets/**'
-              - 'index.html'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'vite.config.js'
-            website:
-              - 'website/**'
-            backend:
-              - 'backend/**'
-      - id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
-  test:
-    needs: changes
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: npm
-      # cubory-core ist privat. Der Deploy-Key darf nur lesen und gilt nur
-      # für dieses eine Paket-Repository.
-      - name: Zugang zum privaten Paket
-        shell: bash
-        env:
-          CUBORY_CORE_KEY: ${{ secrets.CUBORY_CORE_KEY }}
-        run: |
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$CUBORY_CORE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
-          git config --global core.sshCommand "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new"
-
-      - run: npm ci
-
-      - name: Unit-Tests
-        run: npm test
-
-      # Electron braucht auf dem Runner einen Bildschirm und ein paar
-      # Systembibliotheken, die im Standard-Image fehlen.
-      - name: Umgebung für den Rauchtest
-        if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2t64 libgtk-3-0t64 \
-            || sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2 libgtk-3-0
-
-      - name: Rauchtest der App
-        if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
-        run: xvfb-run -a npm run test:e2e
-
-      - name: Backend-Tests
-        if: needs.changes.outputs.backend == 'true'
-        uses: actions/setup-go@v7
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-      - name: go test
-        if: needs.changes.outputs.backend == 'true'
-        working-directory: backend
-        run: go test ./...
-
   build:
-    needs: [changes, test]
-    if: |
-      github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-      && (needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch')
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - os: macos-latest
@@ -131,8 +37,15 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      # cubory-core ist privat. Der Deploy-Key darf nur lesen und gilt nur
-      # für dieses eine Paket-Repository.
+
+      - name: Tag passt zur Version
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          base="${TAG#v}"; base="${base%%-*}"
+          [ "$base" = "$version" ] || { echo "Tag $TAG passt nicht zu package.json ($version)"; exit 1; }
+
+      # cubory-core is private; this deploy key can only read that one repository.
       - name: Zugang zum privaten Paket
         shell: bash
         env:
@@ -149,13 +62,14 @@ jobs:
       - name: Installer bauen
         run: npx electron-builder ${{ matrix.flag }} --publish never
         env:
-          # Ohne Apple-Zertifikat würde electron-builder sonst abbrechen.
+          # No Apple certificate yet; without this electron-builder aborts.
           CSC_IDENTITY_AUTO_DISCOVERY: false
+
       - uses: actions/upload-artifact@v7
         with:
           name: installer-${{ matrix.os }}
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 7
           path: |
             release/*.dmg
             release/*.exe
@@ -163,97 +77,35 @@ jobs:
             release/*.blockmap
             release/latest*.yml
 
-  deploy:
-    needs: [changes, test, build]
-    if: |
-      !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-      && needs.test.result == 'success' && needs.build.result != 'failure'
+  release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
-      - name: SSH einrichten
-        run: |
-          install -d -m 700 ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          # Hostschlüssel fest hinterlegt statt per keyscan - sonst würde die
-          # Pipeline jeden Server akzeptieren, der gerade antwortet.
-          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-      - name: Website synchronisieren
-        if: needs.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          rsync -rlv --delete --exclude 'downloads/' --chmod=D2775,F664 \
-            website/ "$DEPLOY_USER@$DEPLOY_HOST:$WEBROOT/"
-
-      - name: Installer herunterladen
-        if: needs.build.result == 'success'
-        uses: actions/download-artifact@v8
+      - uses: actions/setup-node@v7
         with:
-          path: installers
+          node-version: '22'
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: out
           pattern: installer-*
           merge-multiple: true
 
-      - name: Installer hochladen
-        if: needs.build.result == 'success'
+      - name: Feste Dateinamen
         run: |
-          VERSION="${{ needs.changes.outputs.version }}"
-          LIVE=$(ssh "$DEPLOY_USER@$DEPLOY_HOST" \
-            "awk '/^version:/{print \$2}' $WEBROOT/downloads/latest.yml 2>/dev/null" || true)
+          cd out
+          cp Cubory-*-arm64.dmg Cubory-macOS-AppleSilicon.dmg
+          cp "$(ls Cubory-*.dmg | grep -v -e arm64 -e macOS | head -1)" Cubory-macOS-Intel.dmg
+          cp Cubory-Setup-*.exe Cubory-Windows-Setup.exe
+          cp Cubory-*.AppImage Cubory-Linux.AppImage
+          ls -l
 
-          # Erst die Installer, danach die Update-Metadaten: electron-updater
-          # darf keine Version melden, deren Datei noch nicht vollständig da ist.
-          rsync -rlv --chmod=F664 --exclude 'latest*.yml' \
-            installers/ "$DEPLOY_USER@$DEPLOY_HOST:$WEBROOT/downloads/"
-          rsync -rlv --chmod=F664 \
-            installers/latest*.yml "$DEPLOY_USER@$DEPLOY_HOST:$WEBROOT/downloads/"
-
-          {
-            echo "## Installer $VERSION veröffentlicht"
-            ls -1 installers | sed 's/^/- /'
-            if [ "$LIVE" = "$VERSION" ]; then
-              echo
-              echo "> **Achtung:** Auf dem Server lag bereits $VERSION."
-              echo "> Die Dateien wurden ersetzt, aber bestehende Installationen"
-              echo "> erhalten kein OTA-Update - dafür muss die Version in"
-              echo "> package.json erhöht werden."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Erreichbarkeit prüfen
+      - name: Draft-Release anlegen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for url in https://cubory.app/ https://cubory.app/downloads/latest.yml; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
-            echo "$url -> $code"
-            [ "$code" = "200" ] || exit 1
-          done
-
-  api:
-    needs: [changes, test]
-    if: |
-      github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-      && needs.changes.outputs.backend == 'true' && needs.test.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-      - name: Binary bauen
-        working-directory: backend
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o cubory-api ./cmd/api
-      - name: SSH einrichten
-        run: |
-          install -d -m 700 ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-      - name: Ausrollen
-        run: |
-          scp backend/cubory-api "$DEPLOY_USER@$DEPLOY_HOST:/srv/cubory-staging/cubory-api"
-          # Das Skript prüft danach /healthz und rollt bei Fehlschlag zurück.
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" sudo /usr/local/sbin/cubory-deploy-api
+          node scripts/release-notes.mjs "${TAG#v}" > notes.md
+          prerelease=""
+          case "$TAG" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" out/* --draft $prerelease --title "Cubory ${TAG#v}" --notes-file notes.md

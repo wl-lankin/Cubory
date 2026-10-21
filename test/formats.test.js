@@ -27,7 +27,7 @@ const supported = list(/const SUPPORTED = \[([\s\S]*?)\];/.exec(mainProcess)[1])
 
 /** Endungen im Dateiauswahldialog. */
 const dialogFilter = list(
-  /name: 'CAD-Dateien', extensions: \[([\s\S]*?)\]/.exec(mainProcess)[1]);
+  /'CAD files', extensions: \[([\s\S]*?)\]/.exec(mainProcess)[1]);
 
 /** Dateizuordnungen, die der Installer registriert. */
 const associations = pkg.build.fileAssociations.map((a) => a.ext);
