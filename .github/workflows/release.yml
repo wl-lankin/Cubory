@@ -94,11 +94,14 @@ jobs:
 
       - name: Feste Dateinamen
         run: |
+          # Exact names from electron-builder; cp fails the job if one is missing.
+          # The website links to the stable names, so never change them.
+          v=$(node -p "require('./package.json').version")
           cd out
-          cp Cubory-*-arm64.dmg Cubory-macOS-AppleSilicon.dmg
-          cp "$(ls Cubory-*.dmg | grep -v -e arm64 -e macOS | head -1)" Cubory-macOS-Intel.dmg
-          cp Cubory-Setup-*.exe Cubory-Windows-Setup.exe
-          cp Cubory-*.AppImage Cubory-Linux.AppImage
+          cp "Cubory-$v-arm64.dmg" Cubory-macOS-AppleSilicon.dmg
+          cp "Cubory-$v.dmg" Cubory-macOS-Intel.dmg
+          cp "Cubory-Setup-$v.exe" Cubory-Windows-Setup.exe
+          cp "Cubory-$v.AppImage" Cubory-Linux.AppImage
           ls -l
 
       - name: Draft-Release anlegen

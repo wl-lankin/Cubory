@@ -96,7 +96,14 @@ Download-Link statt der stillen Installation.
 
 ## Entwicklung
 
-Voraussetzung: Node.js ≥ 22.
+Voraussetzung: Node.js ≥ 22 und Lesezugriff auf das private Repo
+[`wl-lankin/cubory-core`](https://github.com/wl-lankin/cubory-core). Der
+3D-Kern (Szene, Messen, Schnitt, Explosion, Export) liegt dort und wird von
+`npm install` per SSH geholt. Ohne diesen Zugriff schlägt `npm install` fehl,
+Cubory lässt sich also von außen nicht selbst bauen. Das gilt auch für Pull
+Requests aus Forks: Deren CI-Lauf bekommt den Deploy-Key nicht und bricht beim
+Installieren ab. Die fertigen Installer unter Releases sind davon nicht
+betroffen.
 
 ```bash
 npm install
