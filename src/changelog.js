@@ -9,6 +9,17 @@
 
 export const CHANGELOG = [
   {
+    version: '2.0.1',
+    date: '2026-10-21',
+    entries: [
+      {
+        type: 'improved',
+        de: 'Zuverlässigere Auslieferung: Die Download-Dateien für Website und Updates werden jetzt eindeutig zugeordnet. An der App selbst ändert sich nichts.',
+        en: 'More reliable delivery: the download files for the website and updates are now matched exactly. Nothing changes in the app itself.',
+      },
+    ],
+  },
+  {
     version: '2.0.0',
     date: '2026-10-21',
     entries: [
