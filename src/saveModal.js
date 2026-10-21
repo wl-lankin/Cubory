@@ -49,8 +49,12 @@ function close() {
   window.removeEventListener('keydown', onEsc);
 }
 
+// Every await can outlive the modal (Escape, or another modal opened right
+// after), so each step checks that its session `my` is still the current one.
 async function init() {
+  const my = st;
   const res = await cfg.lastDir();
+  if (st !== my) return;
   st.dir = res.ok ? res.data : null;
   updateFoot();
   browse(st.dir);
@@ -60,15 +64,21 @@ async function init() {
 /** Inhalt in der gewählten Option erzeugen - nur die Vorschau tauscht, damit
  *  nichts flackert. */
 async function generate() {
+  const my = st;
+  const run = cfg.generate;
   st.busy = true;
   updatePreview();
   updateControls();
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  if (st !== my) return;
+  let gen = null;
   try {
-    st.gen = await cfg.generate(st.option);
+    gen = await run(my.option);
   } catch {
-    st.gen = null;
+    gen = null;
   }
+  if (st !== my) return;
+  st.gen = gen;
   st.busy = false;
   st.saved = null;
   updatePreview();
@@ -78,8 +88,9 @@ async function generate() {
 }
 
 async function browse(dirPath) {
+  const my = st;
   const res = await window.cubory.files.listDir(dirPath ?? st.dir ?? null);
-  if (!res.ok) return;
+  if (st !== my || !res.ok) return;
   st.dir = res.data.path;
   st.browse = res.data;
   st.saved = null;
@@ -217,7 +228,9 @@ function updateFoot() {
 async function onSave() {
   if (!st.gen) return;
   const filename = modal.querySelector('#sm-name')?.value || '';
+  const my = st;
   const res = await cfg.saveTo({ base64: st.gen.base64, dir: st.dir, filename, ext: st.gen.ext });
+  if (st !== my) return;
   if (res.ok && res.data) {
     st.saved = res.data.path;
     updateFoot();

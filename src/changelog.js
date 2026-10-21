@@ -9,6 +9,22 @@
 
 export const CHANGELOG = [
   {
+    version: '2.0.0',
+    date: '2026-10-21',
+    entries: [
+      {
+        type: 'new',
+        de: 'Cubory ist jetzt komplett frei: Messen, Schnittansicht, Explosionsansicht, Export und HD-Screenshot stehen allen ohne Konto zur Verfügung. Anmeldung, Lizenzen und der Upgrade-Hinweis entfallen.',
+        en: 'Cubory is now completely free: measuring, section view, exploded view, export and HD screenshots are available to everyone without an account. Sign-in, licences and the upgrade prompt are gone.',
+      },
+      {
+        type: 'improved',
+        de: 'Updates kommen jetzt über GitHub. Cubory sendet keine Daten mehr an einen eigenen Server, auch keine Absturzberichte.',
+        en: 'Updates now come from GitHub. Cubory no longer sends any data to its own server, including crash reports.',
+      },
+    ],
+  },
+  {
     version: '1.7.3',
     date: '2026-09-08',
     entries: [

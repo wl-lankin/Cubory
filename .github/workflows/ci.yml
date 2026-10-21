@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      # cubory-core is private; this deploy key can only read that one repository.
+      - name: Zugang zum privaten Paket
+        shell: bash
+        env:
+          CUBORY_CORE_KEY: ${{ secrets.CUBORY_CORE_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CUBORY_CORE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git config --global core.sshCommand "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new"
+
+      - run: npm ci
+
+      - name: Unit-Tests
+        run: npm test
+
+      - name: Umgebung für den Rauchtest
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2t64 libgtk-3-0t64 \
+            || sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2 libgtk-3-0
+
+      - name: Rauchtest der App
+        run: xvfb-run -a npm run test:e2e

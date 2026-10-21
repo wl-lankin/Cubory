@@ -54,7 +54,11 @@ function systemLang() {
 
 /** Gespeicherte Wahl: Sprachcode oder 'system' (Standard) */
 export function storedLang() {
-  return localStorage.getItem(STORAGE_KEY) || 'system';
+  try {
+    return localStorage.getItem(STORAGE_KEY) || 'system';
+  } catch {
+    return 'system';
+  }
 }
 
 /** Effektiv aktive Sprache */
@@ -64,7 +68,7 @@ export function currentLang() {
 }
 
 export function setLang(code) {
-  localStorage.setItem(STORAGE_KEY, code);
+  try { localStorage.setItem(STORAGE_KEY, code); } catch { /* not persisted */ }
 }
 
 /** Übersetzung mit {platzhalter}-Ersetzung; fällt auf Englisch zurück */

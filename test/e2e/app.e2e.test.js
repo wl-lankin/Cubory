@@ -55,8 +55,6 @@ beforeAll(async () => {
     const info = await window.cubory.appInfo();
     localStorage.setItem('cubory-seen-version', info.version);
   });
-  // Der Upgrade-Nudge legt sich ebenfalls über die Oberfläche.
-  await win.evaluate(() => document.getElementById('nudge-overlay')?.remove());
 }, 120000);
 
 afterAll(async () => {
@@ -141,9 +139,6 @@ describe('Dateien öffnen', () => {
 
 describe('Versionsverlauf', () => {
   it('öffnet sich über das Über-Fenster und zeigt die Versionen mit Tags', async () => {
-    // Der Upgrade-Nudge erscheint erst nach Intro und Lizenzprüfung, also evtl.
-    // nach der einmaligen Entfernung im Setup - vor dem Klick sicher wegräumen.
-    await win.evaluate(() => document.getElementById('nudge-overlay')?.remove());
     await win.click('#btn-about');
     await win.waitForSelector('#about-version', { timeout: 5000 });
     await win.click('#about-version');

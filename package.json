@@ -1,7 +1,7 @@
 {
   "name": "cubory",
   "productName": "Cubory",
-  "version": "1.7.3",
+  "version": "2.0.0",
   "description": "Cubory - The modern CAD viewer",
   "author": "Wolfgang Linz",
   "license": "MIT",
@@ -13,7 +13,6 @@
     "dist": "npm run build:renderer && electron-builder --mac --win --linux",
     "dist:mac": "npm run build:renderer && electron-builder --mac",
     "dist:win": "npm run build:renderer && electron-builder --win",
-    "release:publish": "node scripts/publish-release.mjs",
     "dev:app": "node scripts/dev.mjs",
     "dist:linux": "npm run build:renderer && electron-builder --linux",
     "test": "vitest run",
@@ -120,13 +119,15 @@
       ]
     },
     "nsis": {
+      "artifactName": "Cubory-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
     "publish": [
       {
-        "provider": "generic",
-        "url": "https://cubory.app/downloads"
+        "provider": "github",
+        "owner": "wl-lankin",
+        "repo": "Cubory"
       }
     ],
     "linux": {
@@ -145,7 +146,6 @@
     "cubory-core": "github:wl-lankin/cubory-core#v0.3.0",
     "dxf": "^4.7.0",
     "electron-updater": "^6.8.9",
-    "node-machine-id": "^1.1.12",
     "occt-import-js": "^0.0.23",
     "three": "^0.170.0"
   },

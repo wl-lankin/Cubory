@@ -2,12 +2,10 @@ const { app, BrowserWindow, dialog, ipcMain, Menu, shell, Tray, nativeImage, cli
 const path = require('path');
 const fs = require('fs');
 const { SecureStore } = require('./services/secureStore.cjs');
-const { AccountManager } = require('./services/accountManager.cjs');
 const { UpdateManager } = require('./services/updateManager.cjs');
 
 let updates = null; // UpdateManager
 
-let account = null; // AccountManager, initialisiert in app.whenReady
 let appStore = null; // SecureStore - merkt sich u.a. den zuletzt genutzten Ordner
 let tray = null;
 let isQuitting = false;
@@ -30,17 +28,26 @@ function applyAutostart(on) {
   } catch { /* Linux ohne Desktop-Integration */ }
 }
 
+const isGerman = () => app.getLocale().toLowerCase().startsWith('de');
+
+function showMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
 function createTray() {
   if (tray) return;
   const icon = nativeImage.createFromPath(path.join(__dirname, 'tray.png'));
   tray = new Tray(icon.resize({ width: 18, height: 18 }));
   tray.setToolTip('Cubory');
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Cubory öffnen', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { label: isGerman() ? 'Cubory öffnen' : 'Open Cubory', click: showMainWindow },
     { type: 'separator' },
-    { label: 'Beenden', click: () => { isQuitting = true; app.quit(); } },
+    { label: isGerman() ? 'Beenden' : 'Quit', click: () => { isQuitting = true; app.quit(); } },
   ]));
-  tray.on('click', () => { mainWindow?.show(); mainWindow?.focus(); });
+  tray.on('click', showMainWindow);
 }
 
 function destroyTray() {
@@ -72,7 +79,7 @@ const os = require('os');
 
 function findDwg2dxf() {
   const candidates = process.platform === 'win32'
-    ? ['dwg2dxf.exe', 'C\\Program Files\\LibreDWG\\dwg2dxf.exe']
+    ? ['dwg2dxf.exe', path.join(process.env.ProgramFiles || 'C:\\Program Files', 'LibreDWG', 'dwg2dxf.exe')]
     : ['dwg2dxf', '/opt/homebrew/bin/dwg2dxf', '/usr/local/bin/dwg2dxf', '/usr/bin/dwg2dxf'];
   for (const c of candidates) {
     try {
@@ -88,10 +95,8 @@ function findDwg2dxf() {
 function convertDwg(filePath) {
   const tool = findDwg2dxf();
   if (!tool) {
-    const hint = process.platform === 'darwin' ? 'brew install libredwg'
-      : process.platform === 'win32' ? 'LibreDWG von github.com/LibreDWG/libredwg/releases installieren'
-      : 'Paket libredwg-tools installieren';
-    const err = new Error(`DWG-Dateien benötigen den freien Konverter LibreDWG.\nInstallation: ${hint}`);
+    // The renderer shows a translated message for the code.
+    const err = new Error('DWG files need the free LibreDWG converter (dwg2dxf).');
     err.code = 'dwg_converter_missing';
     throw err;
   }
@@ -101,7 +106,7 @@ function convertDwg(filePath) {
     return out;
   } catch (err) {
     if (fs.existsSync(out) && fs.statSync(out).size > 0) return out; // dwg2dxf warnt oft trotz Erfolg
-    const e = new Error('Die DWG-Datei konnte nicht konvertiert werden.');
+    const e = new Error('The DWG file could not be converted.');
     e.code = 'dwg_convert_failed';
     throw e;
   }
@@ -116,9 +121,18 @@ function fileFromArgv(argv) {
 function sendFileToRenderer(filePath) {
   if (!filePath) return;
   if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.isLoading() === false) {
-    mainWindow.webContents.send('open-file', readFilePayload(filePath));
+    rememberFile(filePath);
+    mainWindow.webContents.send('open-file', safePayload(filePath));
   } else {
     pendingFile = filePath;
+  }
+}
+
+function safePayload(filePath) {
+  try {
+    return readFilePayload(filePath);
+  } catch (err) {
+    return { name: path.basename(filePath), error: err.message, errorCode: err.code };
   }
 }
 
@@ -170,22 +184,19 @@ function createWindow() {
     }
   });
 
-  mainWindow.webContents.on('render-process-gone', (_e, details) => {
-    reportCrash('renderer', `render-process-gone: ${details.reason}`, '');
-  });
-
   mainWindow.webContents.on('did-finish-load', () => {
-    if (pendingFile) {
-      mainWindow.webContents.send('open-file', readFilePayload(pendingFile));
-      pendingFile = null;
-      return;
-    }
-    if (getSetting('restore_tabs')) {
-      const paths = (appStore?.get('session_tabs') || []).filter((p) => {
+    // A file opened by double click joins the restored session instead of
+    // replacing it.
+    const paths = getSetting('restore_tabs')
+      ? (appStore?.get('session_tabs') || []).filter((p) => {
         try { fs.accessSync(p); return true; } catch { return false; }
-      });
-      if (paths.length) mainWindow.webContents.send('restore-session', paths);
+      })
+      : [];
+    if (pendingFile) {
+      paths.push(pendingFile);
+      pendingFile = null;
     }
+    if (paths.length) mainWindow.webContents.send('restore-session', [...new Set(paths)]);
   });
 }
 
@@ -193,6 +204,9 @@ function createWindow() {
 app.on('open-file', (event, filePath) => {
   event.preventDefault();
   sendFileToRenderer(filePath);
+  // macOS keeps running without a window; a double click must bring one back.
+  if (app.isReady() && (!mainWindow || mainWindow.isDestroyed())) createWindow();
+  else showMainWindow();
 });
 
 // Windows/Linux: zweite Instanz reicht Datei an die erste weiter
@@ -203,10 +217,7 @@ if (!gotLock) {
   app.on('second-instance', (event, argv) => {
     const file = fileFromArgv(argv);
     if (file) sendFileToRenderer(file);
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    showMainWindow();
   });
 }
 
@@ -215,18 +226,14 @@ ipcMain.handle('dialog:open', async () => {
     defaultPath: appStore?.get('last_open_dir') || undefined,
     properties: ['openFile'],
     filters: [
-      { name: 'CAD-Dateien', extensions: ['dxf', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep',
+      { name: isGerman() ? 'CAD-Dateien' : 'CAD files', extensions: ['dxf', 'dwg', 'step', 'stp', 'iges', 'igs', 'brep',
         'stl', 'obj', '3mf', 'ply', 'gltf', 'glb'] },
-      { name: 'Alle Dateien', extensions: ['*'] },
+      { name: isGerman() ? 'Alle Dateien' : 'All files', extensions: ['*'] },
     ],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   rememberFile(result.filePaths[0]);
-  try {
-    return readFilePayload(result.filePaths[0]);
-  } catch (err) {
-    return { error: err.message };
-  }
+  return safePayload(result.filePaths[0]);
 });
 
 // Auch Doppelklick/„Öffnen mit" aktualisiert Ordner + Zuletzt-geöffnet-Liste
@@ -242,7 +249,9 @@ function rememberFile(filePath) {
 // Integrierter Datei-Browser: Ordnerinhalt (nur Ordner + CAD-Dateien)
 ipcMain.handle('fs:listDir', (_event, dirPath) => {
   try {
-    const target = path.resolve(dirPath || appStore?.get('last_open_dir') || app.getPath('home'));
+    // The last folder may sit on a removed drive; fall back to home then.
+    let target = path.resolve(dirPath || appStore?.get('last_open_dir') || app.getPath('home'));
+    if (!dirPath && !fs.existsSync(target)) target = app.getPath('home');
     const entries = fs.readdirSync(target, { withFileTypes: true });
     const dirs = [];
     const files = [];
@@ -289,62 +298,27 @@ ipcMain.handle('fs:recent', () => {
 ipcMain.handle('file:read', async (_event, filePath) => {
   if (!SUPPORTED.includes(path.extname(filePath).toLowerCase())) return null;
   rememberFile(filePath);
-  try {
-    return readFilePayload(filePath);
-  } catch (err) {
-    return { error: err.message };
-  }
+  return safePayload(filePath);
 });
 
-// Account/License-IPC: dünne Wrapper; Fehler gehen strukturiert an den Renderer.
-function wrap(fn) {
-  return async (_event, ...args) => {
-    try {
-      return { ok: true, data: await fn(...args) };
-    } catch (err) {
-      return { ok: false, error: { code: err.code || 'unknown', message: err.message } };
-    }
-  };
-}
+// Left over from versions before 2.0, which still had accounts and licences.
+const LEGACY_KEYS = ['user', 'access_token', 'refresh_token', 'license_token', 'license_status',
+  'last_heartbeat_at', 'last_seen_wallclock', 'crash_reports'];
 
-// Crash-Reporting (opt-in): sendet anonyme Fehlerberichte an die API.
-function reportCrash(procName, message, stack) {
-  if (!appStore?.get('crash_reports')) return;
-  const API = process.env.CUBORY_API_URL || 'https://api.cubory.app';
-  fetch(`${API}/api/crashes`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      app_version: app.getVersion(),
-      platform: `${process.platform}-${process.arch}`,
-      process: procName,
-      message: String(message).slice(0, 2000),
-      stack: String(stack || '').slice(0, 16000),
-    }),
-    signal: AbortSignal.timeout(8000),
-  }).catch(() => {});
-}
-
-process.on('uncaughtException', (err) => {
-  reportCrash('main', err.message, err.stack);
-});
-
-function setupAccountIpc() {
+function setupIpc() {
   appStore = new SecureStore();
+  for (const key of LEGACY_KEYS) {
+    if (appStore.get(key) !== undefined) appStore.delete(key);
+  }
   // Optionen
   ipcMain.handle('settings:get', () => ({
     autostart: getSetting('autostart'),
     restore_tabs: getSetting('restore_tabs'),
     close_to_tray: getSetting('close_to_tray'),
     intro: getSetting('intro'),
-    crash_reports: !!appStore.get('crash_reports'),
     platform: process.platform,
   }));
   ipcMain.handle('settings:set', (_e, key, value) => {
-    if (key === 'crash_reports') {
-      appStore.set('crash_reports', !!value);
-      return true;
-    }
     if (!(key in SETTINGS_DEFAULTS)) return false;
     appStore.set('opt_' + key, !!value);
     if (key === 'autostart') applyAutostart(value);
@@ -362,23 +336,11 @@ function setupAccountIpc() {
     appStore.set('session_tabs', Array.isArray(paths) ? paths.slice(0, 20) : []);
   });
 
-  ipcMain.handle('crash:optIn', () => !!appStore.get('crash_reports'));
-  ipcMain.handle('crash:setOptIn', (_e, on) => { appStore.set('crash_reports', !!on); return !!on; });
-  ipcMain.on('crash:report', (_e, payload) => {
-    reportCrash('renderer', payload?.message, payload?.stack);
-  });
   ipcMain.handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }));
   const ALLOWED_LINKS = ['https://wolfgang-linz.de', 'https://cubory.app', 'https://github.com/wl-lankin/Cubory'];
   ipcMain.handle('app:openExternal', (_e, url) => {
     if (ALLOWED_LINKS.some((a) => url === a || url.startsWith(a + '/'))) shell.openExternal(url);
   });
-
-  account = new AccountManager(appStore, app.getVersion(), (state) => {
-    for (const win of BrowserWindow.getAllWindows()) {
-      win.webContents.send('account:changed', state);
-    }
-  });
-  account.startHeartbeat();
 
   updates = new UpdateManager((state) => {
     for (const win of BrowserWindow.getAllWindows()) {
@@ -389,30 +351,8 @@ function setupAccountIpc() {
 
   ipcMain.handle('update:state', () => updates.state);
   ipcMain.handle('update:install', () => updates.install());
+  ipcMain.handle('update:check', () => updates.checkNow());
 
-  ipcMain.handle('account:state', wrap(() => account.state()));
-  ipcMain.handle('account:whenReady', wrap(() => account.whenReady()));
-  ipcMain.handle('account:login', wrap((email, password) => account.login(email, password)));
-  ipcMain.handle('account:register', wrap((name, email, password) => account.register(name, email, password)));
-  ipcMain.handle('account:logout', wrap(() => account.logout()));
-  ipcMain.handle('account:devices', wrap(() => account.devices()));
-  ipcMain.handle('account:deactivateDevice', wrap((id) => account.deactivateDevice(id)));
-  ipcMain.handle('account:verifyEmail', wrap((code) => account.verifyEmail(code)));
-  ipcMain.handle('account:resendCode', wrap(() => account.resendVerifyCode()));
-  ipcMain.handle('account:delete', wrap((password) => account.deleteAccount(password)));
-  ipcMain.handle('license:can', (_e, key) => account.can(key));
-  ipcMain.handle('account:checkout', wrap(async (plan) => {
-    const url = await account.createCheckout(plan);
-    await shell.openExternal(url);
-    return url;
-  }));
-  ipcMain.handle('account:portal', wrap(async () => {
-    const url = await account.portalUrl();
-    await shell.openExternal(url);
-    return url;
-  }));
-
-  // Export (Pro): Durchsetzung im Main-Prozess
   // Zielordner, den der Export-Dialog beim Öffnen vorschlägt.
   ipcMain.handle('export:lastDir', () => {
     let dir = appStore?.get('last_export_dir');
@@ -422,12 +362,11 @@ function setupAccountIpc() {
 
   // Speichern in den im Modal gewählten Ordner - kein System-Dialog.
   ipcMain.handle('export:saveTo', async (_event, { base64, dir, filename, ext }) => {
-    if (!account.can('export')) {
-      return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
-    }
     try {
       let name = String(filename || '').replace(/[/\\?%*:|"<>]/g, '_').trim() || `cubory-export`;
-      const suffix = '.' + String(ext || 'dat').toLowerCase();
+      const cleanExt = String(ext || 'dat').toLowerCase();
+      if (!/^[a-z0-9]{1,8}$/.test(cleanExt)) throw new Error('invalid extension');
+      const suffix = '.' + cleanExt;
       if (!name.toLowerCase().endsWith(suffix)) name += suffix;
       const target = path.join(path.resolve(dir), name);
       fs.writeFileSync(target, Buffer.from(base64, 'base64'));
@@ -440,15 +379,9 @@ function setupAccountIpc() {
 
   // Textinhalt (SVG-Quelltext) in die Zwischenablage.
   ipcMain.handle('export:copyText', async (_event, text) => {
-    if (!account.can('export')) {
-      return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
-    }
     try { clipboard.writeText(String(text || '')); return { ok: true, data: null }; }
     catch (err) { return { ok: false, error: { code: 'clipboard_error', message: err.message } }; }
   });
-
-  // Beispiel-Pro-Feature: HD-Screenshot. Durchsetzung im Main-Prozess -
-  // der Renderer kann das Gating nicht umgehen.
 
   // Zielordner, den sich der HD-Shot-Dialog beim Öffnen vorschlägt: zuletzt
   // genutzter Ordner, sonst der Bilder-Ordner des Systems.
@@ -460,9 +393,6 @@ function setupAccountIpc() {
 
   // Speichern in einen vom Nutzer im Modal gewählten Ordner - kein System-Dialog.
   ipcMain.handle('screenshot:saveTo', async (_event, { base64, dir, filename }) => {
-    if (!account.can('hires_screenshot')) {
-      return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
-    }
     try {
       // Dateinamen entschärfen: keine Pfadtrenner oder für Dateisysteme
       // ungültige Zeichen zulassen.
@@ -479,9 +409,6 @@ function setupAccountIpc() {
 
   // In die Zwischenablage - als echtes Bild, nicht als Text.
   ipcMain.handle('screenshot:copy', async (_event, dataUrl) => {
-    if (!account.can('hires_screenshot')) {
-      return { ok: false, error: { code: 'upgrade_required', message: 'Pro-Feature' } };
-    }
     try {
       clipboard.writeImage(nativeImage.createFromDataURL(dataUrl));
       return { ok: true, data: null };
@@ -499,7 +426,7 @@ function setupAccountIpc() {
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
-  setupAccountIpc();
+  setupIpc();
   applyAutostart(getSetting('autostart'));
   if (getSetting('close_to_tray') && process.platform !== 'darwin') createTray();
   const file = fileFromArgv(process.argv);

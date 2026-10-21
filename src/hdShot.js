@@ -2,7 +2,6 @@
 // gemeinsame Speichern-Modal (saveModal). Hier steckt nur die HD-Shot-Konfig:
 // Auflösungsstufen als Optionen, PNG als Ergebnis, Bild in die Zwischenablage.
 import { t } from './i18n.js';
-import { can, openAccountModal } from './account.js';
 import { slug, stamp } from './modalUtils.js';
 import { openSaveModal } from './saveModal.js';
 
@@ -15,11 +14,6 @@ export function initHdShot(viewerRef, nameFn) {
 }
 
 export function openHdShot() {
-  // Durchsetzung liegt zusätzlich im Main-Prozess; hier nur die Anzeige.
-  if (!can('hires_screenshot')) {
-    openAccountModal();
-    return;
-  }
   openSaveModal({
     title: t('hdshot.title'),
     optionsLabel: t('hdshot.resolution'),

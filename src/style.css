@@ -203,23 +203,7 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 }
 .lang-check { color: var(--accent-1); font-weight: 700; font-size: 11px; }
 
-/* ── Account ─────────────────────────────────────────────────────────────── */
-
-.btn-account { display: flex; align-items: center; gap: 7px; }
-.account-icon { font-size: 8px; color: var(--text-faint); }
-.btn-account.pro .account-icon { color: var(--accent-1); text-shadow: 0 0 6px var(--accent-1); }
-
-.account-badge {
-  background: var(--grad);
-  color: #fff;
-  font-weight: 700;
-  font-size: 9.5px;
-  letter-spacing: 0.06em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  text-transform: uppercase;
-}
-.account-badge.big { font-size: 11px; padding: 4px 12px; }
+/* ── Dialoge ─────────────────────────────────────────────────────────────── */
 
 #account-modal {
   position: fixed;
@@ -257,24 +241,6 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   margin: 22px 0 10px;
 }
 
-.account-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-.account-tab {
-  flex: 1;
-  font: 600 12.5px 'Inter', sans-serif;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid rgba(160, 170, 255, 0.18);
-  border-radius: 999px;
-  padding: 8px 0;
-  cursor: pointer;
-}
-.account-tab.on {
-  color: var(--text);
-  background: linear-gradient(92deg, rgba(255, 61, 138, 0.25), rgba(124, 92, 255, 0.25));
-  border-color: rgba(255, 61, 138, 0.4);
-}
-
-#account-form { display: flex; flex-direction: column; gap: 10px; }
 .account-input {
   font: 500 13.5px 'Inter', sans-serif;
   color: var(--text);
@@ -285,7 +251,6 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
   outline: none;
 }
 .account-input:focus { border-color: var(--accent-1); }
-.account-submit { margin-top: 6px; }
 .account-hint { font-size: 12px; color: var(--text-muted); }
 .account-error { font-size: 12.5px; color: #ff7b9c; }
 
@@ -315,32 +280,6 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
    E-Mail als Unterzeile direkt darunter. Beide rechtsbündig und umbruchfähig,
    damit lange Namen und Adressen das Modal nicht sprengen. */
 .account-name { color: var(--text); font-weight: 600; text-align: right; overflow-wrap: anywhere; }
-.account-row-sub { padding-top: 0; margin-top: -3px; }
-.account-email { color: var(--text-muted); text-align: right; overflow-wrap: anywhere; }
-
-.account-devices { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.account-devices li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12.5px;
-  padding: 8px 10px;
-  border: 1px solid rgba(160, 170, 255, 0.12);
-  border-radius: 10px;
-}
-.device-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.device-meta { color: var(--text-faint); font-size: 11px; }
-.device-remove {
-  font: 600 11px 'Inter', sans-serif;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid rgba(160, 170, 255, 0.25);
-  border-radius: 999px;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-.device-remove:hover { color: #ff7b9c; border-color: #ff7b9c; }
-
 .account-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
 .account-danger { color: #ff8ba0; }
 .account-danger:hover { background: rgba(255, 110, 130, 0.12); }
@@ -452,59 +391,6 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 .cl-tag-fixed { color: #ffca7a; background: rgba(255, 170, 60, 0.13); border: 1px solid rgba(255, 170, 60, 0.3); }
 .cl-text { font-size: 13px; line-height: 1.5; color: var(--text); }
 
-/* ── Upgrade-Nudge ───────────────────────────────────────────────────────── */
-
-#nudge-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 55;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(7, 11, 34, 0.45);
-  backdrop-filter: blur(3px);
-}
-
-.nudge-card {
-  width: 380px;
-  padding: 30px;
-  text-align: left;
-  animation: intro-rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-}
-
-.nudge-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 21px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.nudge-body { font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px; }
-
-.nudge-list { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px; }
-.nudge-list li { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
-.nudge-check {
-  color: var(--accent-1);
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(255, 61, 138, 0.6);
-}
-
-.nudge-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-
-/* Plan-Buttons im Konto-Modal */
-.account-plans { display: flex; gap: 8px; margin-top: 10px; }
-.account-plan {
-  flex: 1;
-  font: 600 12px 'Inter', sans-serif;
-  color: var(--text);
-  background: linear-gradient(92deg, rgba(255, 61, 138, 0.2), rgba(124, 92, 255, 0.2));
-  border: 1px solid rgba(255, 61, 138, 0.35);
-  border-radius: 10px;
-  padding: 10px 0;
-  cursor: pointer;
-}
-.account-plan:hover { background: linear-gradient(92deg, rgba(255, 61, 138, 0.35), rgba(124, 92, 255, 0.35)); }
-
 /* ── Feature-Panel (Schnitt/Explosion) + Mess-Labels ─────────────────────── */
 
 #feature-panel {
@@ -572,25 +458,6 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 }
 #viewport.measuring { cursor: crosshair; }
 
-/* Gesperrte Pro-Tools: Schloss statt Verbot - Klick erklärt das Upgrade */
-.tool.locked { opacity: 0.55; }
-.tool.locked::after { content: ' 🔒'; font-size: 10px; }
-
-#verify-banner {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  font-size: 12.5px;
-  color: var(--text);
-  background: rgba(120, 40, 60, 0.5);
-  border: 1px solid rgba(255, 100, 130, 0.35);
-  border-radius: 999px;
-  padding: 9px 18px;
-  backdrop-filter: blur(12px);
-}
-
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 
 .btn {
@@ -624,13 +491,11 @@ body.platform-win #titlebar { padding: 0 150px 0 16px; }
 /* Sichtbarer Button-Hintergrund nur in Modals (Schließen/Abmelden/Updates …)
    - nicht in der Titelleiste, nicht bei Breadcrumbs */
 .account-card .btn-ghost,
-.fb-foot .btn-ghost,
-.nudge-actions .btn-ghost {
+.fb-foot .btn-ghost {
   background: rgba(160, 170, 255, 0.1);
 }
 .account-card .btn-ghost:hover,
-.fb-foot .btn-ghost:hover,
-.nudge-actions .btn-ghost:hover {
+.fb-foot .btn-ghost:hover {
   background: rgba(160, 170, 255, 0.18);
 }
 

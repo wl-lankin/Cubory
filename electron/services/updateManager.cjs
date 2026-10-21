@@ -1,15 +1,13 @@
-// OTA-Updates über electron-updater gegen den generic Feed
-// (https://cubory.app/downloads). Downloads laufen im Hintergrund;
-// installiert wird erst, wenn der Nutzer zustimmt oder die App beendet wird.
+// OTA updates via electron-updater from the GitHub releases of wl-lankin/Cubory.
+// Downloads run in the background; installing waits for the user's consent or
+// the next quit.
 //
-// macOS-Fallback: Squirrel.Mac verlangt eine signierte App. Ist die App
-// nicht signiert, prüfen wir den Feed selbst (latest-mac.yml) und bieten
-// den Download der neuen DMG im Browser an ('manual'-Status) - sobald ein
-// Developer-ID-Zertifikat da ist, greift automatisch der volle OTA-Pfad.
+// Squirrel.Mac only accepts signed apps. Unsigned macOS builds read
+// latest-mac.yml themselves and offer the new DMG in the browser ('manual').
 const { app, shell } = require('electron');
 
 const CHECK_INTERVAL = 4 * 60 * 60 * 1000;
-const FEED_URL = process.env.CUBORY_UPDATE_FEED || 'https://cubory.app/downloads';
+const FEED_URL = process.env.CUBORY_UPDATE_FEED || 'https://github.com/wl-lankin/Cubory/releases/latest/download';
 
 // Grob-Check: signierte macOS-Apps tragen einen CodeResources-Eintrag
 function macAppIsSigned() {
@@ -82,7 +80,14 @@ class UpdateManager {
   }
 
   check() {
-    this.autoUpdater?.checkForUpdates().catch(() => {});
+    return this.autoUpdater?.checkForUpdates().catch(() => {});
+  }
+
+  /** Manual check from the options dialog; resolves with the resulting state. */
+  async checkNow() {
+    if (!app.isPackaged) return this.state;
+    await this.check();
+    return this.state;
   }
 
   /** Update jetzt installieren (Neustart) bzw. Download-Seite öffnen. */

@@ -11,14 +11,13 @@ import { Viewer } from 'cubory-core';
 import { loadCadFile } from './loaders.js';
 import { t, LOCALES, storedLang, currentLang, setLang } from './i18n.js';
 import { playIntro } from './intro.js';
-import { initAccount, initAbout, can, openAccountModal, currentAccount, whenLicenseSettled } from './account.js';
-import { maybeShowNudge } from './nudge.js';
+import { initAbout } from './about.js';
 import { openChangelog, hasUnseenVersion, markVersionSeen } from './changelogModal.js';
 import { CHANGELOG } from './changelog.js';
 import { initFileBrowser, openFileBrowser } from './fileBrowser.js';
 import { initSettings } from './settings.js';
 import { initHdShot, openHdShot } from './hdShot.js';
-import { initProFeatures, handleProAction, resetProFeatures, updateProLocks } from './proFeatures.js';
+import { initTools, handleToolAction, resetTools } from './tools.js';
 
 document.getElementById('app').style.setProperty('--ambient-bg', `url(${ambientUrl})`);
 document.getElementById('brand-wordmark').src = wordmarkUrl;
@@ -27,14 +26,6 @@ if (window.cubory?.platform === 'win32') document.body.classList.add('platform-w
 
 // Start-Animation: Partikel-Vortex → Kristall → Schockwelle; danach UI-Einflug.
 // Bei reduzierter Bewegung oder direktem Dateistart wird sie übersprungen.
-// Das Intro läuft ein paar Sekunden - genau die Zeit, in der der Hauptprozess
-// im Hintergrund die Lizenz per Heartbeat prüft. Beides wird als Versprechen
-// gekoppelt, damit lizenzabhängige Oberfläche (der Upgrade-Nudge) erst danach
-// entscheidet. So sieht ein Pro-Nutzer nie kurz den Nudge aufblitzen.
-// Die Lizenzprüfung genau einmal anstoßen und teilen: Sie hält die Intro kurz
-// vor der Explosion (der Kristall dreht sich weiter), damit die Oberfläche beim
-// Freigeben schon aktuell ist, und entscheidet danach über den Upgrade-Nudge.
-const licenseSettled = whenLicenseSettled();
 
 let intro = null;
 let introDone;
@@ -49,7 +40,7 @@ if (location.hostname === 'localhost' || localStorage.getItem('cubory-intro') ==
       document.body.classList.add('intro-done');
       intro = null;
       resolve();
-    }, licenseSettled);
+    });
   });
 }
 
@@ -72,7 +63,7 @@ const el = {
 };
 
 const viewer = new Viewer(document.getElementById('viewport'));
-initProFeatures(viewer, () => current);
+initTools(viewer, () => current);
 initHdShot(viewer, () => current?.name);
 
 /* ── Sprache ─────────────────────────────────────────────────────────────── */
@@ -89,36 +80,21 @@ function applyStatic() {
 
 initSettings(() => {
   applyStatic();
-  if (current) renderModelUi(false);
+  if (current) renderModelUi();
 });
 applyStatic();
 
-// Pro-Features spiegeln den Lizenzzustand: gesperrte Tools bekommen ein Schloss
-function updateProUi() {
-  updateProLocks();
-}
-
 initAbout();
-initAccount(() => {
-  // bei jeder Lizenzänderung nur die Werkzeug-Schlösser spiegeln
-  updateProUi();
-});
-updateProUi();
 
-// Nach dem Intro und aufgelöster Lizenz: erst "Was ist neu" (nur nach einem
-// Versionssprung, einmalig), danach ggf. der Upgrade-Nudge. Nie beide Karten
-// gleichzeitig - der Nudge folgt erst, wenn der Verlauf geschlossen ist. Der
-// Nudge nutzt den endgültigen Kontostand, nicht den ersten (noch anonymen).
-Promise.all([introDone, licenseSettled]).then(async () => {
-  const showNudge = () => maybeShowNudge(currentAccount(), { onUpgrade: () => openAccountModal() });
+// Nach dem Intro einmalig "Was ist neu", wenn die Version gewechselt hat.
+introDone.then(async () => {
   const info = await window.cubory?.appInfo?.();
   const version = info?.version;
   if (version && hasUnseenVersion(version) && CHANGELOG.some((v) => v.version === version)) {
     markVersionSeen(version);
-    openChangelog({ installedVersion: version, highlight: version, whatsNew: true, onClose: showNudge });
-  } else {
-    if (version) markVersionSeen(version);
-    showNudge();
+    openChangelog({ installedVersion: version, highlight: version, whatsNew: true });
+  } else if (version) {
+    markVersionSeen(version);
   }
 });
 
@@ -153,7 +129,8 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
     openFileBrowser();
   }
-  if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey && e.target.tagName !== 'SELECT') viewer.fit();
+  if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey
+    && !e.target.closest?.('input, textarea, select, [contenteditable]')) viewer.fit();
 });
 
 /* Drag & Drop */
@@ -174,8 +151,12 @@ window.addEventListener('drop', async (e) => {
   el.dropOverlay.hidden = true;
   const file = e.dataTransfer?.files?.[0];
   if (!file) return;
-  const data = await file.arrayBuffer();
-  await openPayload({ name: file.name, size: file.size, data });
+  // With a real path the main process reads the file: DWG gets converted, and
+  // the tab lands in the session and in the recent list.
+  const filePath = window.cubory?.pathForFile?.(file);
+  const payload = filePath ? await window.cubory.readFile(filePath) : null;
+  if (payload) return openPayload(payload);
+  await openPayload({ name: file.name, size: file.size, data: await file.arrayBuffer() });
 });
 
 /* ── Laden & Anzeigen ────────────────────────────────────────────────────── */
@@ -183,6 +164,21 @@ window.addEventListener('drop', async (e) => {
 let current = null;
 // Sichtbarkeits-Zustand der Listen, überlebt einen Sprachwechsel
 let uiState = { layerVis: {}, partVis: {}, isolated: null };
+
+const DEFAULT_VIEW = { grid: true, wireframe: false, edges: true };
+
+// Grid, wireframe and edges belong to each tab. The viewer only keeps global
+// flags, so they are written back to the scene whenever a tab becomes active.
+function applyView(v) {
+  viewer.gridVisible = v.grid;
+  viewer.wireframe = v.wireframe;
+  viewer.edgesVisible = v.edges;
+  if (viewer.grid) viewer.grid.visible = v.grid;
+  viewer.modelGroup.traverse((o) => {
+    if (o.isMesh) o.material.wireframe = v.wireframe;
+    if (o.userData.isEdgeLines && o.parent?.material?.opacity !== 0.07) o.visible = v.edges;
+  });
+}
 
 /* ── Tabs: jede Datei bleibt geparst im Speicher ─────────────────────────── */
 
@@ -221,6 +217,7 @@ function saveActiveTabState() {
   if (!tab) return;
   tab.cam = viewer.saveCamera();
   tab.uiState = uiState;
+  tab.view = { grid: viewer.gridVisible, wireframe: viewer.wireframe, edges: viewer.edgesVisible };
 }
 
 function activateTab(id) {
@@ -231,10 +228,11 @@ function activateTab(id) {
   activeTabId = id;
   current = tab.data;
   uiState = tab.uiState || { layerVis: {}, partVis: {}, isolated: null };
-  resetProFeatures();
+  resetTools();
   viewer.setModel(tab.data.object, tab.data.mode);
+  applyView(tab.view || DEFAULT_VIEW);
   if (tab.cam) viewer.restoreCamera(tab.cam);
-  renderModelUi(false);
+  renderModelUi();
   renderTabbar();
 }
 
@@ -251,7 +249,7 @@ function closeTab(id) {
     } else {
       activeTabId = 0;
       current = null;
-      resetProFeatures();
+      resetTools();
       viewer.clear();
       showEmptyState();
     }
@@ -275,7 +273,10 @@ async function openPayload(payload) {
   await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 30)));
 
   try {
-    if (payload.error) throw new Error(payload.error);
+    if (payload.error) {
+      const translated = payload.errorCode && t(`error.${payload.errorCode}`);
+      throw new Error(translated && translated !== `error.${payload.errorCode}` ? translated : payload.error);
+    }
     // Bereits geöffnet? Dann nur aktivieren.
     const existing = payload.path && tabs.find((x) => x.path === payload.path);
     if (existing) {
@@ -297,9 +298,10 @@ async function openPayload(payload) {
     activeTabId = tab.id;
     current = tab.data;
     uiState = tab.uiState;
-    resetProFeatures();
+    resetTools();
     viewer.setModel(result.object, result.mode);
-    renderModelUi(true);
+    applyView(DEFAULT_VIEW);
+    renderModelUi();
     renderTabbar();
   } catch (err) {
     console.error(err);
@@ -309,17 +311,12 @@ async function openPayload(payload) {
   }
 }
 
-function renderModelUi(reset) {
+function renderModelUi() {
   el.dropzone.style.display = 'none';
   el.toolbar.hidden = false;
   el.sidebar.hidden = false;
   el.statusbar.hidden = false;
 
-  if (reset) {
-    viewer.gridVisible = true;
-    viewer.wireframe = false;
-    viewer.edgesVisible = true;
-  }
   document.querySelector('[data-action="grid"]').classList.toggle('on', viewer.gridVisible);
   document.querySelector('[data-action="wireframe"]').classList.toggle('on', viewer.wireframe);
   document.querySelector('[data-action="edges"]').classList.toggle('on', current.mode === '3d' && viewer.edgesVisible);
@@ -448,7 +445,7 @@ el.toolbar.addEventListener('click', (e) => {
     case 'section':
     case 'explode':
     case 'export': {
-      const on = handleProAction(action, btn);
+      const on = handleToolAction(action, btn);
       if (on !== null) btn.classList.toggle('on', on);
       break;
     }
@@ -491,22 +488,12 @@ window.cubory.update?.onChange((state) => {
     document.body.appendChild(bar);
   }
   const manual = state.status === 'manual';
-  bar.innerHTML = `<span>${t(manual ? 'update.available' : 'update.ready', { v: state.version })}</span>
-    <button class="btn btn-primary" id="update-go">${t(manual ? 'update.download' : 'update.restart')}</button>
+  bar.innerHTML = `<span>${escapeHtml(t(manual ? 'update.available' : 'update.ready', { v: state.version }))}</span>
+    <button class="btn btn-primary" id="update-go">${escapeHtml(t(manual ? 'update.download' : 'update.restart'))}</button>
     <button class="update-dismiss" id="update-dismiss" title="${escapeHtml(t('update.dismiss'))}" aria-label="${escapeHtml(t('update.dismiss'))}">✕</button>`;
   document.getElementById('update-go').addEventListener('click', () => window.cubory.update.install());
   document.getElementById('update-dismiss').addEventListener('click', () => {
     localStorage.setItem(DISMISSED_UPDATE_KEY, state.version);
     bar.remove();
   });
-});
-
-
-/* ── Crash-Reporting (opt-in, Durchsetzung im Main-Prozess) ─────────────── */
-
-window.addEventListener('error', (e) => {
-  window.cubory.crash?.report({ message: e.message, stack: e.error?.stack });
-});
-window.addEventListener('unhandledrejection', (e) => {
-  window.cubory.crash?.report({ message: String(e.reason?.message || e.reason), stack: e.reason?.stack });
 });

@@ -43,7 +43,6 @@ async function open() {
     ${toggle('restore_tabs', t('settings.restoreTabs'), s.restore_tabs)}
     ${s.platform !== 'darwin' ? toggle('close_to_tray', t('settings.tray'), s.close_to_tray) : ''}
     ${toggle('intro', t('settings.intro'), s.intro)}
-    ${toggle('crash_reports', t('about.crash'), s.crash_reports)}
 
     <h3 class="account-subtitle">${esc(t('settings.language'))}</h3>
     <button id="set-lang-btn" class="account-input set-lang-btn">
@@ -125,13 +124,10 @@ async function open() {
   modal.querySelector('#set-check-updates').addEventListener('click', () => {
     const el = document.getElementById('set-update-state');
     el.textContent = '…';
-    window.cubory.update.state().then(() => {
-      setTimeout(async () => {
-        const st = await window.cubory.update.state();
-        el.textContent = st?.status === 'ready' || st?.status === 'manual'
-          ? t('update.available', { v: st.version })
-          : t('settings.upToDate');
-      }, 1500);
+    window.cubory.update.check().then((st) => {
+      el.textContent = ['ready', 'manual', 'downloading'].includes(st?.status)
+        ? t('update.available', { v: st.version })
+        : t('settings.upToDate');
     });
   });
 
