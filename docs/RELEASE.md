@@ -57,5 +57,5 @@ Feste Links für die Website:
 ## Einschränkungen
 
 - TODO Apple-Notarisierung: Die DMG ist nicht signiert. Beim ersten Öffnen: Systemeinstellungen, Datenschutz und Sicherheit, „Trotzdem öffnen“, oder `xattr -dr com.apple.quarantine /Applications/Cubory.app`.
-- TODO Windows-Signierung (Azure Artifact Signing, wie bei den anderen Apps): Bis dahin meldet sich SmartScreen beim ersten Start.
+- Windows-Signierung: App und Installer werden im Release-Workflow mit Azure Artifact Signing signiert, siehe [CODE-SIGNING.md](CODE-SIGNING.md).
 - Versionen bis 1.7.3 suchen Updates unter `https://cubory.app/downloads`. Sie finden 2.0.0 nur, wenn dort `latest.yml`, `latest-mac.yml` und `latest-linux.yml` samt Installern liegen (oder dorthin weitergeleitet wird).

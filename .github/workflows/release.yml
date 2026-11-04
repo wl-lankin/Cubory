@@ -5,6 +5,9 @@
 # Every installer is attached twice: with the version in the name (referenced by the latest*.yml
 # files electron-updater reads) and under a stable name, so the website can always link to
 # releases/latest/download/<stable name>.
+#
+# The Windows app and installer are Authenticode-signed with Azure Artifact Signing
+# (docs/CODE-SIGNING.md); latest.yml carries the hash of the signed installer.
 
 name: Release
 
@@ -14,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write # Windows signing logs in to Azure Artifact Signing through OIDC
 
 env:
   TAG: ${{ github.ref_name }}
@@ -31,6 +35,11 @@ jobs:
           - os: ubuntu-latest
             flag: --linux
     runs-on: ${{ matrix.os }}
+    # The Azure login for signing only trusts jobs in this environment.
+    environment: release
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -59,6 +68,14 @@ jobs:
 
       - run: npm ci
       - run: npx vite build
+
+      # electron-builder signs through scripts/sign-windows.cjs (build.win.signtoolOptions.sign).
+      - name: Signierung vorbereiten (Windows)
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/windows-signing
+        with:
+          description: Cubory
+
       - name: Installer bauen
         run: npx electron-builder ${{ matrix.flag }} --publish never
         env:

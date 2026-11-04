@@ -88,9 +88,10 @@ unter festem Namen:
 - `Cubory-Windows-Setup.exe` - Windows (64-bit)
 - `Cubory-Linux.AppImage` - Linux (x64)
 
-Die Builds sind nicht code-signiert: macOS-Gatekeeper bzw. Windows SmartScreen
-zeigen beim ersten Start eine Warnung, die sich über „Trotzdem öffnen"
-bestätigen lässt. Automatische Updates laufen über electron-updater gegen die
+Der Windows-Installer ist ab Version 2.0.2 code-signiert (Herausgeber Wolfgang
+Linz); solange das Zertifikat neu ist, kann SmartScreen beim ersten Start noch
+einmal nachfragen. Die macOS-Builds sind nicht signiert: Gatekeeper zeigt beim
+ersten Start eine Warnung, die sich über „Trotzdem öffnen" bestätigen lässt. Automatische Updates laufen über electron-updater gegen die
 GitHub-Releases; auf macOS greift mangels Signatur ein Hinweis mit
 Download-Link statt der stillen Installation.
 

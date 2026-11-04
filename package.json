@@ -116,7 +116,13 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "signtoolOptions": {
+        "sign": "scripts/sign-windows.cjs",
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      }
     },
     "nsis": {
       "artifactName": "Cubory-Setup-${version}.${ext}",
