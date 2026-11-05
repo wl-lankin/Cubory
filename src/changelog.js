@@ -9,6 +9,17 @@
 
 export const CHANGELOG = [
   {
+    version: '2.0.2',
+    date: '2026-11-05',
+    entries: [
+      {
+        type: 'improved',
+        de: 'Der Windows-Installer und die App sind jetzt digital signiert (Herausgeber: Wolfgang Linz). Windows warnt dadurch nicht mehr vor einem unbekannten Herausgeber.',
+        en: 'The Windows installer and app are now digitally signed (publisher: Wolfgang Linz), so Windows no longer warns about an unknown publisher.',
+      },
+    ],
+  },
+  {
     version: '2.0.1',
     date: '2026-10-21',
     entries: [
