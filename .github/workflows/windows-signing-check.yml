@@ -1,0 +1,73 @@
+# Builds and signs the Windows installer without releasing anything, then checks the signatures
+# of the installer and of every .exe in the unpacked app. Runs on pull requests that touch the
+# signing setup, or by hand. The installer is kept as a workflow artifact.
+
+name: Windows signing check
+
+on:
+  pull_request:
+    paths:
+      - .github/actions/windows-signing/**
+      - .github/workflows/windows-signing-check.yml
+      - scripts/sign-windows.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  sign:
+    runs-on: windows-latest
+    environment: release
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      # cubory-core is private; this deploy key can only read that one repository.
+      - name: Zugang zum privaten Paket
+        shell: bash
+        env:
+          CUBORY_CORE_KEY: ${{ secrets.CUBORY_CORE_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CUBORY_CORE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git config --global core.sshCommand "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new"
+
+      - run: npm ci
+      - run: npx vite build
+
+      - name: Signierung vorbereiten
+        uses: ./.github/actions/windows-signing
+        with:
+          description: Cubory
+
+      - name: Installer bauen und signieren
+        run: npx electron-builder --win --publish never
+
+      - name: Signaturen prüfen
+        shell: pwsh
+        run: |
+          $files = @(Get-ChildItem release/*.exe) + @(Get-ChildItem release/win-unpacked -Recurse -Filter *.exe)
+          if (-not ($files.Name -contains 'Cubory.exe')) { throw "Cubory.exe missing: $($files.Name -join ', ')" }
+          $bad = 0
+          foreach ($f in $files) {
+            $s = Get-AuthenticodeSignature $f.FullName
+            "{0}: {1} | {2} | timestamp: {3}" -f $f.Name, $s.Status, $s.SignerCertificate.Subject, ($null -ne $s.TimeStamperCertificate)
+            if ($s.Status -ne 'Valid' -or $s.SignerCertificate.Subject -notmatch 'CN=Wolfgang Linz' -or -not $s.TimeStamperCertificate) { $bad++ }
+          }
+          if ($bad) { throw "$bad file(s) not signed correctly" }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cubory-windows-signed
+          path: release/*.exe
+          retention-days: 7
